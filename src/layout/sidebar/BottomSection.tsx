@@ -1,8 +1,13 @@
 import { Settings, User } from "lucide-solid";
 
-export default function BottomSection() {
+interface Props {
+    setIsOpen: (isOpen: boolean) => void;
+    isOpen: boolean;
+}
+
+export default function BottomSection(props : Props) {
   return (
-    <div class="h-24 flex items-center justify-between w-full px-4 py-2 bg-sidebar text-white">
+    <div class={`h-24 flex items-center justify-between w-full px-4 py-2 bg-sidebar text-white ${props.isOpen ? 'flex-row' : 'flex-col gap-2'}`}>
 
       {/* user icon + username + settings button */}
 
@@ -11,7 +16,7 @@ export default function BottomSection() {
         <div class="bg-gradient-to-br from-primary to-primary-dark-3 rounded-full px-2 py-2 flex items-center gap-2 overflow-hidden">
           < User class="w-4 h-4 text-text" />
         </div>
-        <span class="truncate text-primary-dark-1 text-sm font-semibold w-30">
+        <span class={`truncate text-primary-dark-1 text-sm font-semibold ${props.isOpen ? 'w-30' : 'hidden'}`}>
           Mohaned_Dz
         </span>
       </a>

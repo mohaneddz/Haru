@@ -4,7 +4,7 @@ import Titlebar from "@/layout/Titlebar";
 import Sidebar from "@/layout/Sidebar";
 import Statebar from "@/layout/Statebar";
 
-import {routes} from "@/routes/Routes";
+import { routes } from "@/routes/Routes";
 
 import '@/App.css'
 
@@ -18,7 +18,16 @@ function App() {
           <Titlebar />
           <Sidebar />
           <div class="relative overflow-hidden w-full h-full flex flex-col">
+
+            {/* Upper Fade */}
+            <div class="absolute bg-background w-full h-4" />
+            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-background via-90% to-background/20 z-40" />
+            
             {props.children}
+            
+            {/* Lower Fade */}
+            <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40" />
+            
             <Statebar />
           </div>
         </section>

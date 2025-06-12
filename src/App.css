@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 /* apply ZenDots-Regular.ttf */
+* {
+  user-select: none;
+}
 
 @font-face {
   font-family: 'Zen Dots';
@@ -9,7 +12,7 @@
   font-weight: 400;
 }
 
-@theme{
+@theme {
 
   --color-primary: #22D3EE;
   --color-primary-light-1: #68E1F4;
@@ -18,7 +21,7 @@
   --color-primary-dark-1: #1EB8D0;
   --color-primary-dark-2: #199CB0;
   --color-primary-dark-3: #147F90;
-  
+
   --color-secondary: #1B233A;
   --color-secondary-light-1: #2A3554;
   --color-secondary-light-2: #3A476E;
@@ -26,7 +29,7 @@
   --color-secondary-dark-1: #141A2B;
   --color-secondary-dark-2: #0E121D;
   --color-secondary-dark-3: #090B14;
-  
+
   --color-tertiary: #1B233A;
   --color-tertiary-light-1: #2A3554;
   --color-tertiary-light-2: #3A476E;
@@ -48,8 +51,8 @@
   --color-sidebar-light-2: #333E5C;
   --color-sidebar-light-3: #424F72;
   --color-sidebar-dark-1: #101524;
-  --color-sidebar-dark-2: #0B0E18;  
-  --color-sidebar-dark-3: #06080D;  
+  --color-sidebar-dark-2: #0B0E18;
+  --color-sidebar-dark-3: #06080D;
 
   --color-text: #EBF0F7;
   --color-text-light-1: #A9B8D2;
@@ -100,31 +103,34 @@
   --color-info-dark-3: #003060;
 
   --color-border: #2A3554;
-  --color-border-light-1: #39476A;
-  --color-border-light-2: #485980;
+  --color-border-light-1: #6C7187;
+  --color-border-light-2: #6C7187;
   --color-border-light-3: #576B96;
   --color-border-dark-1: #1B233A;
-  --color-border-dark-2: #0C111F;
+  --color-border-dark-2: #1F222D;
   --color-border-dark-3: #000004;
 
-  --color-shadow: rgba(0, 0, 0, 0.2);
-  --color-shadow-light-1: rgba(0, 0, 0, 0.1);
+  --color-shadow: #111420;
+  --color-shadow-light-1: #111420;
   --color-shadow-light-2: rgba(0, 0, 0, 0.05);
   --color-shadow-light-3: rgba(0, 0, 0, 0.01);
-  --color-shadow-dark-1: rgba(0, 0, 0, 0.3);
+  --color-shadow-dark-1: #111420;
   --color-shadow-dark-2: rgba(0, 0, 0, 0.4);
   --color-shadow-dark-3: rgba(0, 0, 0, 0.5);
 }
 
-body{
-    font-size: 16px;
-    @apply bg-background text-text font-sans;
-    font-family: 'Zen Dots', sans-serif;
+body {
+  font-size: 16px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: sans-serif;
+  font-family: 'Zen Dots', sans-serif;
 }
 
 .titlebar {
   height: 30px;
   /* background: #314057; */
+  /* width: min-content; */
   user-select: none;
   display: flex;
   justify-content: flex-end;
@@ -144,8 +150,83 @@ body{
   user-select: none;
   -webkit-user-select: none;
   filter: invert(1);
+  z-index: 1000;
 }
 
 .titlebar-button:hover {
   background: #5a77a2;
+  z-index: 1000;
+
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0e17;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #13b0d2;
+  border-radius: 4px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #13b0d2 #0b0e17;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-accent-dark-1);
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-accent-light-1);
+  margin: 0;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent-dark-1);
+  margin: 0;
+}
+
+
+.tree {
+  list-style: none;
+  padding-left: 0;
+  white-space: nowrap;
+  overflow: auto;
+  font-size: 14px;
+}
+
+.tree ul {
+  padding-left: 0.7rem;
+  border-left: 1px solid #555;
+}
+
+.tree li {
+  position: relative;
+  margin: 0.25rem 0;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding-left: 0.1rem;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tree .icon {
+  margin-right: 0.5rem;
+  flex-shrink: 0;
 }

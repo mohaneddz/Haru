@@ -16,19 +16,16 @@ export default function Statebar() {
 
   return (
 
-    <div class="relative bottom-0 w-full flex justify-between items-center px-6 opacity-75 text-white overflow-hidden">
+    <div class="relative bottom-0 w-full flex justify-between items-center px-6 opacity-75 text-white overflow-hidden z-50">
 
       {/* left side */}
 
         <div class="text-xs text-gray-400 capitalize">           {
             (() => {
-              console.log('Location:', location.pathname);
 
               const segments = location.pathname
                 .split('/')
                 .map(s => s.replace(/-/g, ' '));
-
-              console.log('Segments:', segments);
 
               return segments.length > 1
                 ? segments.filter(Boolean).join(' > ')

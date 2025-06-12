@@ -1,58 +1,25 @@
 import { sections, entries } from '@/layout/sidebar/Entries';
-// @ts-ignore
-import {
-  Home,
-  Compass,
-  Library,
-  BookOpen,
-  FileText,
-  GraduationCap,
-  PenLine,
-  Swords,
-  Gamepad2,
-  ListChecks,
-  Trophy,
-  BarChart,
-  Target,
-  Clock,
-  PencilRuler,
-  Puzzle,
-  LayoutDashboard,
-  Calculator,
-  AlarmClock,
-  Activity,
-  ChevronRight,
-} from 'lucide-solid';
-import { For } from 'solid-js';
+import * as icons from 'lucide-solid';
+import { For, createSignal, Component, JSX } from 'solid-js'; // Added Component and JSX
 
-// Create icon mapping
-const iconMap = {
-  Home,
-  Compass,
-  Library,
-  BookOpen,
-  FileText,
-  GraduationCap,
-  PenLine,
-  Swords,
-  Gamepad2,
-  ListChecks,
-  Trophy,
-  BarChart,
-  Target,
-  Clock,
-  PencilRuler,
-  Puzzle,
-  LayoutDashboard,
-  Calculator,
-  AlarmClock,
-  Activity,
-};
+// Define a more specific type for Lucide icon components.
+// Lucide icons typically accept props like size, color, strokeWidth,
+// and standard SVG attributes.
+type LucideIconProps = {
+  size?: number | string;
+  color?: string;
+  strokeWidth?: number | string;
+  absoluteStrokeWidth?: boolean;
+} & JSX.SvgSVGAttributes<SVGSVGElement>;
 
-import { createSignal } from 'solid-js';
+type LucideIconComponent = Component<LucideIconProps>;
 
-export default function MiddleSection() {
+interface Props {
+  setIsOpen: (isOpen: boolean) => void;
+  isOpen: boolean;
+}
 
+export default function MiddleSection(props: Props) {
   const [activeSection, setActiveSection] = createSignal<string | null>(null);
   const [activeEntry, setActiveEntry] = createSignal<string | null>(null);
 
@@ -60,52 +27,57 @@ export default function MiddleSection() {
     <div class="h-full w-full flex flex-col items-center text-white gap-0">
 
       <For each={sections}>
-
         {(section) => {
-          const SectionIconComponent = iconMap[section.icon as keyof typeof iconMap];
+          const iconName = section.icon as keyof typeof icons;
+          const SectionIcon = icons[iconName] as LucideIconComponent;
+          const ChevronRightIcon = icons['ChevronRight'] as LucideIconComponent;
 
           return (
             <div class="w-full bg-sidebar m-0">
 
-              <div class="text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 hover:cursor-pointer py-4 w-full  px-6"
+              <div
+                class={`text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 hover:cursor-pointer w-full py-4 ${props.isOpen? ` px-6 ` : `pl-4`}`}
                 onClick={() => setActiveSection(activeSection() === section.title ? null : section.title)}
               >
-                {SectionIconComponent && <SectionIconComponent class="inline-block mr-2 text-accent" />}
-                {section.title}
-                <ChevronRight class={`inline-block ml-2 text-xsm text-accent transition-transform duration-200 ${activeSection() === section.title ? 'rotate-90' : ''}`} />
+                {SectionIcon && <SectionIcon class={`inline-block text-accent ${props.isOpen ? ` mr-2 ` : ``}`} />}
+                {props.isOpen ? section.title : ''}
+                {ChevronRightIcon && (
+                  <ChevronRightIcon
+                    class={`inline-block ml-2 text-xsm text-accent transition-transform duration-200 ${
+                      activeSection() === section.title ? 'rotate-90' : ''
+                    }`}
+                  />
+                )}
               </div>
 
-              <div class="flex flex-col  bg-sidebar-dark-2">
-
+              <div class="flex flex-col bg-sidebar-dark-2">
                 <For each={entries.filter(entry => entry.section === section.section)}>
-
                   {(entry) => {
-                    const EntryIconComponent = iconMap[entry.icon as keyof typeof iconMap];
+                    const entryIconName = entry.icon as keyof typeof icons;
+                    const EntryIcon = icons[entryIconName] as LucideIconComponent;
 
                     return (
                       <a
                         class={
                           activeSection() !== section.title
-                            ? "hidden"
+                            ? 'hidden'
                             : activeEntry() === entry.title
-                              ? "text-xs py-3 text-accent-light-1 cursor-pointer  px-6 bg-sidebar-light-3 pl-14 "
-                              : "text-xs py-3 text-accent-dark-1 hover:text-accent-light-1 hover:bg-sidebar-light-1 cursor-pointer px-6 pl-14 "
+                            ? `text-xs py-3 text-accent-light-1 cursor-pointer bg-sidebar-light-3 ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
+                            : `text-xs py-3 text-accent-dark-1 hover:text-accent-light-1 hover:bg-sidebar-light-1 cursor-pointer ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
                         }
                         onClick={() =>
                           setActiveEntry(activeEntry() === entry.title ? null : entry.title)
                         }
-                        href={'/' + section.slug + '/' + entry.slug}
+                        href={`/${section.slug}/${entry.slug}`}
                       >
-                        {EntryIconComponent && (
-                          <EntryIconComponent class="text-xsm h-4 w-4 inline-block mr-2 text-accent-dark-1 hover:text-accent-light-1" />
+                        {EntryIcon && (
+                          <EntryIcon class="text-xsm h-4 w-4 inline-block mr-2 text-accent-dark-1 hover:text-accent-light-1" />
                         )}
-                        {entry.title}
+                        {props.isOpen ? entry.title : ''}
                       </a>
                     );
                   }}
-
                 </For>
-
               </div>
 
             </div>

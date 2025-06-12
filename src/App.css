@@ -1,62 +1,71 @@
 @import "tailwindcss";
 
+/* apply ZenDots-Regular.ttf */
+
+@font-face {
+  font-family: 'Zen Dots';
+  font-style: normal;
+  src: url('/fonts/ZenDots-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
 @theme{
 
-  --color-primary: #314057;
-  --color-primary-light-1: #5a77a2;
-  --color-primary-light-2: #8aa0c3;
-  --color-primary-light-3: #b0c8e4;
-  --color-primary-dark-1: #25304a;
-  --color-primary-dark-2: #1a1f33;
-  --color-primary-dark-3: #0f1421;
+  --color-primary: #22D3EE;
+  --color-primary-light-1: #68E1F4;
+  --color-primary-light-2: #93EAF7;
+  --color-primary-light-3: #BFF3FA;
+  --color-primary-dark-1: #1EB8D0;
+  --color-primary-dark-2: #199CB0;
+  --color-primary-dark-3: #147F90;
   
-  --color-secondary: #314057;
-  --color-secondary-light-1: #5a77a2;
-  --color-secondary-light-2: #8aa0c3;
-  --color-secondary-light-3: #b0c8e4;
-  --color-secondary-dark-1: #25304a;
-  --color-secondary-dark-2: #1a1f33;
-  --color-secondary-dark-3: #0f1421;
+  --color-secondary: #1B233A;
+  --color-secondary-light-1: #2A3554;
+  --color-secondary-light-2: #3A476E;
+  --color-secondary-light-3: #495988;
+  --color-secondary-dark-1: #141A2B;
+  --color-secondary-dark-2: #0E121D;
+  --color-secondary-dark-3: #090B14;
   
-  --color-tertiary: #314057;
-  --color-tertiary-light-1: #5a77a2;
-  --color-tertiary-light-2: #8aa0c3;
-  --color-tertiary-light-3: #b0c8e4;
-  --color-tertiary-dark-1: #25304a;
-  --color-tertiary-dark-2: #1a1f33;
-  --color-tertiary-dark-3: #0f1421;
+  --color-tertiary: #1B233A;
+  --color-tertiary-light-1: #2A3554;
+  --color-tertiary-light-2: #3A476E;
+  --color-tertiary-light-3: #495988;
+  --color-tertiary-dark-1: #141A2B;
+  --color-tertiary-dark-2: #0E121D;
+  --color-tertiary-dark-3: #090B14;
 
-  --color-background: #314057;
-  --color-background-light-1: #5a77a2;
-  --color-background-light-2: #8aa0c3;
-  --color-background-light-3: #b0c8e4;
-  --color-background-dark-1: #25304a;
-  --color-background-dark-2: #1a1f33;
-  --color-background-dark-3: #0f1421;
+  --color-background: #0b0e17;
+  --color-background-light-1: #101625;
+  --color-background-light-2: #161E30;
+  --color-background-light-3: #1D263C;
+  --color-background-dark-1: #070A13;
+  --color-background-dark-2: #04060B;
+  --color-background-dark-3: #000000;
 
-  --color-sidebar: #314057;
-  --color-sidebar-light-1: #5a77a2;
-  --color-sidebar-light-2: #8aa0c3;
-  --color-sidebar-light-3: #b0c8e4;
-  --color-sidebar-dark-1: #25304a;
-  --color-sidebar-dark-2: #1a1f33;  
-  --color-sidebar-dark-3: #0f1421;  
+  --color-sidebar: #111625;
+  --color-sidebar-light-1: #242D46;
+  --color-sidebar-light-2: #333E5C;
+  --color-sidebar-light-3: #424F72;
+  --color-sidebar-dark-1: #101524;
+  --color-sidebar-dark-2: #0B0E18;  
+  --color-sidebar-dark-3: #06080D;  
 
-  --color-text: #ffffff;
-  --color-text-light-1: #e0e0e0;
-  --color-text-light-2: #c0c0c0;
-  --color-text-light-3: #a0a0a0;
-  --color-text-dark-1: #d0d0d0;
-  --color-text-dark-2: #b0b0b0;
-  --color-text-dark-3: #909090;
+  --color-text: #EBF0F7;
+  --color-text-light-1: #A9B8D2;
+  --color-text-light-2: #8C9AB4;
+  --color-text-light-3: #6E7C96;
+  --color-text-dark-1: #D1DAE8;
+  --color-text-dark-2: #B7C3D8;
+  --color-text-dark-3: #9DAAC9;
 
-  --color-accent: #ff4081;
-  --color-accent-light-1: #ff79b0;
-  --color-accent-light-2: #ff9ac0;
-  --color-accent-light-3: #ffb3d0;
-  --color-accent-dark-1: #e60073;
-  --color-accent-dark-2: #b3005c;
-  --color-accent-dark-3: #800046;
+  --color-accent: #22D3EE;
+  --color-accent-light-1: #68E1F4;
+  --color-accent-light-2: #93EAF7;
+  --color-accent-light-3: #BFF3FA;
+  --color-accent-dark-1: #1EB8D0;
+  --color-accent-dark-2: #1F7386;
+  --color-accent-dark-3: #147F90;
 
   --color-error: #f44336;
   --color-error-light-1: #ff7961;
@@ -90,13 +99,13 @@
   --color-info-dark-2: #004d80;
   --color-info-dark-3: #003060;
 
-  --color-border: #d0d0d0;
-  --color-border-light-1: #e0e0e0;
-  --color-border-light-2: #f0f0f0;
-  --color-border-light-3: #ffffff;
-  --color-border-dark-1: #b0b0b0;
-  --color-border-dark-2: #909090;
-  --color-border-dark-3: #707070;
+  --color-border: #2A3554;
+  --color-border-light-1: #39476A;
+  --color-border-light-2: #485980;
+  --color-border-light-3: #576B96;
+  --color-border-dark-1: #1B233A;
+  --color-border-dark-2: #0C111F;
+  --color-border-dark-3: #000004;
 
   --color-shadow: rgba(0, 0, 0, 0.2);
   --color-shadow-light-1: rgba(0, 0, 0, 0.1);
@@ -109,9 +118,8 @@
 
 body{
     font-size: 16px;
-    background-color: rgb(17, 155, 168);
-    color: white;
-    font-family: 'Roboto', sans-serif;
+    @apply bg-background text-text font-sans;
+    font-family: 'Zen Dots', sans-serif;
 }
 
 .titlebar {
@@ -124,6 +132,7 @@ body{
   top: 0;
   left: 0;
   right: 0;
+  z-index: 1000;
 }
 
 .titlebar-button {

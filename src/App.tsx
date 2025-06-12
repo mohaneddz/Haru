@@ -1,31 +1,37 @@
-// import { createSignal } from "solid-js";
-// import { invoke } from "@tauri-apps/api/core";
-import Titlebar from "@/components/Titlebar";
-import { Router } from "@solidjs/router";
-import { lazy } from "solid-js";
+import { Router, Route } from "@solidjs/router";
 
-const routes = [
-  {
-    path: "/",
-    component: lazy(() => import("@/routes/Home.tsx")),
-  },
-]
+import Titlebar from "@/layout/Titlebar";
+import Sidebar from "@/layout/Sidebar";
+import Statebar from "@/layout/Statebar";
 
-import "./App.css";
+import {routes} from "@/routes/Routes";
+
+import '@/App.css'
+
+
 
 function App() {
-
-  // const [name, setName] = createSignal("");
-
-  // async function greet() {
-  //   setGreetMsg(await invoke("greet", { name: name() }));
-  // }
-
   return (
-    <main class="h-screen w-screen flex flex-col">
-      <Titlebar />
-      <Router>{routes}</Router>
-    </main>
+    <Router
+      root={(props) => (
+        <section class="h-screen w-screen overflow-hidden flex">
+          <Titlebar />
+          <Sidebar />
+          <div class="relative overflow-hidden w-full h-full flex flex-col">
+            {props.children}
+            <Statebar />
+          </div>
+        </section>
+      )}
+    >
+      {routes.map(({ path, component: C, children }) => (
+        <Route path={path} component={C}>
+          {children?.map(({ path, component }) => (
+            <Route path={path} component={component} />
+          ))}
+        </Route>
+      ))}
+    </Router>
   );
 }
 

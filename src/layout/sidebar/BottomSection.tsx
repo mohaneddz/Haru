@@ -11,7 +11,7 @@ export default function BottomSection(props : Props) {
 
       {/* user icon + username + settings button */}
 
-      <a class="flex justify-center items-center gap-4" href="/profile">
+      <a class="flex justify-center items-center gap-4" href="/auth/profile">
 
         <div class="bg-gradient-to-br from-primary to-primary-dark-3 rounded-full px-2 py-2 flex items-center gap-2 overflow-hidden">
           < User class="w-4 h-4 text-text" />

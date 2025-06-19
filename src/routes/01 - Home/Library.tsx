@@ -11,7 +11,7 @@ const Documents = lazy(() => import("@/routes/01 - Home/tabs/Documents"));
 const Books = lazy(() => import("@/routes/01 - Home/tabs/Books"));
 
 
-const tabs = ["Courses", "Videos", "Documents", "Books"];
+const tabs = ["Courses", "Videos", "Documents", "Links"];
 
 export default function Library() {
 

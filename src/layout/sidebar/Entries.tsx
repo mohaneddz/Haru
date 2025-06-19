@@ -9,7 +9,7 @@ export const entries = [
   { title: 'Challenges', icon: 'Swords', section: 'practice', slug: 'challenges' },
   { title: 'Games', icon: 'Gamepad2', section: 'practice', slug: 'games' },
 
-  { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },
+  // { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },
   { title: 'Achievements', icon: 'Trophy', section: 'track', slug: 'achievements' },
   { title: 'Insights', icon: 'BarChart', section: 'track', slug: 'insights' },
   { title: 'Goals', icon: 'Target', section: 'track', slug: 'goals' },

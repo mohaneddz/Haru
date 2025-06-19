@@ -131,7 +131,7 @@ export default function NotesToolBar() {
 
   return (
     <div class='
-      absolute top-[25vh] flex flex-col h-[24rem] w-12 
+      absolute top-[25vh] flex flex-col h-max w-12 
       bg-sidebar-light-1/80 backdrop-blur-sm border border-gray-200 
       rounded-xl right-4 justify-start items-center py-3 
       shadow-lg hover:shadow-xl transition-shadow duration-300

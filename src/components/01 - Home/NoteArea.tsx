@@ -1,57 +1,23 @@
-// Rendering Logic 
-import { onMount, onCleanup, createSignal } from "solid-js";
-import { useKatex } from "@/utils/katex_support";
-import { useMarkdown } from "@/utils/markdown_support";
-import { TextExample } from "@/data/TextExample";
+import { createEffect } from "solid-js";
 
-// Functions 
-import { handleInput } from "@/functions/handle_input";
-import { scheduleProcessing } from "@/functions/schedule_processing";
-import { setupMarkdownWatcher } from "@/functions/use_markdown_watcher";
-import { processContent } from "@/functions/use_process_content";
+interface Props {
+  text: string;
+  class?: string;
 
-export default function NoteArea() {
+}
+
+export default function TextDisplayArea(props: Props) {
   let textContainerRef: HTMLDivElement | undefined;
-  const [observer, setObserver] = createSignal<MutationObserver | null>(null);
-  const [isProcessing, setIsProcessing] = createSignal(false);
 
-  const katex = useKatex();
-  const markdown = useMarkdown();
-
-  onMount(() => {
+  createEffect(() => {
     if (!textContainerRef) return;
-
-    textContainerRef.textContent = TextExample;
-    textContainerRef.dataset.markdown = TextExample;
-
-    processContent(textContainerRef, markdown, katex, isProcessing, setIsProcessing);
-
-    const inputHandler = () =>
-      handleInput(textContainerRef, markdown, katex, isProcessing, setIsProcessing);
-
-    textContainerRef.addEventListener("input", inputHandler);
-    textContainerRef.addEventListener("paste", () =>
-      setTimeout(() => inputHandler(), 0)
-    );
-
-    const mutationObserver = setupMarkdownWatcher(textContainerRef, () => {
-      if (!isProcessing()) {
-        scheduleProcessing(textContainerRef, markdown, katex, isProcessing, setIsProcessing);
-      }
-    });
-
-    if (mutationObserver) setObserver(mutationObserver);
-
-    onCleanup(() => {
-      textContainerRef?.removeEventListener("input", inputHandler);
-      const obs = observer();
-      if (obs) obs.disconnect();
-    });
+    const htmlContent = props.text.replace(/\n/g, '<br>');
+    textContainerRef.innerHTML = htmlContent;
   });
 
   return (
     <div
-      class="p-4 prose prose-sm max-w-none dark:prose-invert"
+      class={`p-4 prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap ${props.class || ""}`}
       id="text"
       ref={textContainerRef}
       contentEditable={false}

@@ -1,5 +1,4 @@
 import { createSignal, onMount } from "solid-js";
-
 import { dropDummy, testDummy, testInert, testUpdate, testDelete, testGetAll, testGetById } from "@/database/api/test";
 
 function Button(props) {
@@ -122,6 +121,7 @@ export default function Profile() {
         readonly
         placeholder="Results will appear here..."
       />
+
     </div>
   );
 }

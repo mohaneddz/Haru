@@ -12,6 +12,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@solid-primitives/refs": "^1.1.1",
     "@solidjs/router": "^0.15.3",
     "@tailwindcss/vite": "^4.1.8",
     "@tauri-apps/api": "^2",
@@ -21,13 +22,24 @@
     "@tauri-apps/plugin-sql": "~2",
     "@types/katex": "^0.16.7",
     "@types/marked": "^6.0.0",
+    "@types/plotly.js": "^3.0.0",
+    "@types/three": "^0.177.0",
+    "autoprefixer": "^10.4.21",
+    "chart.js": "^4.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.22",
     "lucide-solid": "^0.514.0",
     "marked": "^15.0.12",
     "marked-highlight": "^2.2.1",
+    "plotly.js-dist-min": "^3.0.1",
+    "postcss": "^8.5.6",
     "solid-js": "^1.9.3",
-    "tailwindcss": "^4.1.8"
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.8",
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.177.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

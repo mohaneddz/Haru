@@ -57,7 +57,8 @@ export default function UpperNavigation(props: Props) {
     };
 
     return (
-        <div class="relative h-12 bg-background-light-3 w-full z-50">
+        <div id="navigation" class="absolute h-12 bg-background-light-3 w-full z-50">
+
             <ul class="absolute bottom-0 flex w-full justify-around h-min z-50 text-accent-dark-3">
                 <For each={props.tabs || []}>
                     {(tab) => (

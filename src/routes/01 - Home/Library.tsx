@@ -4,11 +4,11 @@ import UpperNavigation from "@/layout/UpperNavigation";
 // lazy load tabs
 import { lazy } from "solid-js";
 
-const Courses = lazy(() => import("@/routes/01 - Home/tabs/Courses"));
+const Courses = lazy(() => import("@/routes/01 - Home/library/Courses"));
 // @ts-ignore
-const Videos = lazy(() => import("@/routes/01 - Home/tabs/Videos"));
-const Documents = lazy(() => import("@/routes/01 - Home/tabs/Documents"));
-const Books = lazy(() => import("@/routes/01 - Home/tabs/Books"));
+const Videos = lazy(() => import("@/routes/01 - Home/library/Videos"));
+const Documents = lazy(() => import("@/routes/01 - Home/library/Documents"));
+const Books = lazy(() => import("@/routes/01 - Home/library/Books"));
 
 
 const tabs = ["Courses", "Videos", "Documents", "Links"];
@@ -31,3 +31,4 @@ export default function Library() {
     </div>
   );
 };
+

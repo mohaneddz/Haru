@@ -55,7 +55,7 @@ export default function Tutor() {
   return (
     <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-24 mx-auto ">
 
-      <div id="message-container" class="h- flex-col w-[70%] flex flex-wrap items-center justify-start relative border-1 border-white/40 rounded-md mb-4">
+      <div id="message-container" class="h-full mt-8 flex-col w-[80%] flex flex-nowrap items-center justify-start relative rounded-md mb-4 overflow-y-auto">
 
         <For each={messages()}>
           {(message) => <Message text={message.text} user={message.user} />}
@@ -65,7 +65,7 @@ export default function Tutor() {
 
 
 
-      <div class=" bg-background-light-3/25 h-max w-[70%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4">
+      <div class=" bg-background-light-3/25 h-max w-[80%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4">
 
         <textarea class="text-sm pt-4 px-8 text-text-light-2/70 font-bold m-auto flex-1/1 outline-none h-max focus:outline-none focus:ring-0 focus:border-transparent text-wrap"
           placeholder="Type your message here..."

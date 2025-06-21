@@ -6,7 +6,7 @@ export async function CoursesTable() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       course_name TEXT NOT NULL,
       course_description TEXT,
-      course_image TEXT,
+      time-series TEXT,
       course_overview TEXT,
       roadmap_id INTEGER,
       course_status TEXT DEFAULT 'not_started',

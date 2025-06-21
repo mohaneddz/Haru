@@ -1,18 +1,26 @@
 import { createEffect } from "solid-js";
+import { useKatex } from "@/utils/katex_support";
+import { useMarkdown } from "@/utils/markdown_support";
 
 interface Props {
   text: string;
   class?: string;
-
 }
 
 export default function TextDisplayArea(props: Props) {
   let textContainerRef: HTMLDivElement | undefined;
+  const { renderInElement } = useKatex();
+  const { parse } = useMarkdown();
 
-  createEffect(() => {
+  createEffect(async () => {
     if (!textContainerRef) return;
-    const htmlContent = props.text.replace(/\n/g, '<br>');
+    
+    // Parse markdown first (which preserves LaTeX as script tags)
+    const htmlContent = await parse(props.text);
     textContainerRef.innerHTML = htmlContent;
+    
+    // Then render LaTeX/KaTeX from the script tags and any remaining LaTeX
+    renderInElement(textContainerRef);
   });
 
   return (

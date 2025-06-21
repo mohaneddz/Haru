@@ -4,25 +4,24 @@ import UpperNavigation from "@/layout/UpperNavigation";
 // lazy load tabs
 import { lazy } from "solid-js";
 
-const Courses = lazy(() => import("@/routes/01 - Home/library/Courses"));
-// @ts-ignore
-const Videos = lazy(() => import("@/routes/01 - Home/library/Videos"));
-const Documents = lazy(() => import("@/routes/01 - Home/library/Documents"));
-const Books = lazy(() => import("@/routes/01 - Home/library/Books"));
+const Featured = lazy(() => import("@/routes/01 - Home/resources/Featured"));
+const Videos = lazy(() => import("@/routes/01 - Home/resources/Videos"));
+const Documents = lazy(() => import("@/routes/01 - Home/resources/Documents"));
+const Books = lazy(() => import("@/routes/01 - Home/resources/Books"));
 
 
-const tabs = ["Courses", "Videos", "Documents", "Links"];
+const tabs = ["Featured", "Videos", "Documents", "Links"];
 
-export default function Library() {
+export default function Resources() {
 
   const [activeTab, setActiveTab] = createSignal(tabs[0]);
 
   return (
     <div class="w-full h-full flex flex-col items-center justify-start">
-      <UpperNavigation tabs={tabs} onTabChange={setActiveTab} />
+      <UpperNavigation  tabs={tabs} onTabChange={setActiveTab} />
       
       <div class="h-full w-full justify-center items-center flex flex-col">
-        {activeTab() === "Courses" ? <Courses /> :
+        {activeTab() === "Featured" ? <Featured /> :
           activeTab() === "Videos" ? <Videos /> :
             activeTab() === "Documents" ? <Documents /> :
               activeTab() === "Books" ? <Books /> : null

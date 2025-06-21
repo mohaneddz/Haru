@@ -254,3 +254,61 @@ h3 {
   margin-right: 0.5rem;
   flex-shrink: 0;
 }
+
+/* Custom Scrollbar Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(34, 211, 238, 0.5); /* accent color with transparency */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(34, 211, 238, 0.7); /* slightly more opaque on hover */
+}
+
+/* Enhanced scrollbar for better visibility */
+.enhanced-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-accent), var(--color-accent-dark-1));
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light-1);
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-track {
+  background-color: var(--color-background-light-1);
+  border-radius: 8px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--color-accent-light-1), var(--color-accent));
+}
+
+* .excalidraw {
+  --color-primary: red;
+}
+* .excalidraw.theme--dark {
+  --color-primary: pink;
+}

@@ -15,6 +15,7 @@ export default function CourseCard(props: Props) {
   return (
     <a class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 hover:cursor-pointer active:scale-100 overflow-hidden"
       href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}>
+        
       <div class="relative animated pulse bg-background-light-3 rounded-lg p-0 shadow-md hover:shadow-lg transition-shadow duration-300 aspect-[5/3] w-full">
 
         <img

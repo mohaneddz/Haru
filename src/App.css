@@ -110,6 +110,31 @@
   --color-border-dark-2: #1F222D;
   --color-border-dark-3: #000004;
 
+  --color-good: #4caf50;
+  --color-good-light-1: #80e27e;
+  --color-good-light-2: #a5d6a7;
+  --color-good-light-3: #c8e6c9;
+  --color-good-dark-1: #087f23;
+  --color-good-dark-2: #005f1a;
+  --color-good-dark-3: #003f0d;
+
+  --color-bad: #f44336;
+  --color-bad-light-1: #ff7961;
+  --color-bad-light-2: #ff9a8d;
+  --color-bad-light-3: #ffb3a6;
+  --color-bad-dark-1: #ba000d;
+  --color-bad-dark-2: #87000d;
+  --color-bad-dark-3: #54000d;
+
+  /* neutral : yellow */
+  --color-neutral: #ff9800;
+  --color-neutral-light-1: #ffc947;
+  --color-neutral-light-2: #ffd54f;
+  --color-neutral-light-3: #ffecb3;
+  --color-neutral-dark-1: #c66900;
+  --color-neutral-dark-2: #8e4400;
+  --color-neutral-dark-3: #5a2a00;
+
   --color-shadow: #111420;
   --color-shadow-light-1: #111420;
   --color-shadow-light-2: rgba(0, 0, 0, 0.05);
@@ -117,15 +142,14 @@
   --color-shadow-dark-1: #111420;
   --color-shadow-dark-2: rgba(0, 0, 0, 0.4);
   --color-shadow-dark-3: rgba(0, 0, 0, 0.5);
-}
-
-body {
+  }
+  body {
   font-size: 16px;
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: sans-serif;
   font-family: 'Zen Dots', sans-serif;
-}
+  }
 
 .titlebar {
   height: 30px;

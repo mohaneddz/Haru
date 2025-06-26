@@ -1,0 +1,130 @@
+2025-06-26 12:54:16,239 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 12:54:22,459 - INFO - Gemma model loaded successfully!
+2025-06-26 12:54:22,460 - INFO - Starting server on port 5000
+2025-06-26 12:54:23,768 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 12:54:23,768 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 12:54:29,761 - INFO - 127.0.0.1 - - [26/Jun/2025 12:54:29] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:54:30,001 - INFO - Processing message: 'say smt long...' (history: 0 messages)
+2025-06-26 12:54:30,638 - INFO - 127.0.0.1 - - [26/Jun/2025 12:54:30] "POST /chat HTTP/1.1" 200 -
+2025-06-26 12:54:41,231 - INFO - 127.0.0.1 - - [26/Jun/2025 12:54:41] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:54:41,496 - INFO - Processing message: 'hello?...' (history: 3 messages)
+2025-06-26 12:54:41,511 - ERROR - Generation error: Conversation roles must alternate user/assistant/user/assistant/...
+Traceback (most recent call last):
+  File "D:\Programming\Projects\Tauri\haru\backend\app.py", line 90, in generate_stream
+    response_stream = llm.create_chat_completion(
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\llama_cpp\llama.py", line 2001, in create_chat_completion
+    return handler(
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\llama_cpp\llama_chat_format.py", line 589, in chat_completion_handler
+    result = chat_formatter(
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\llama_cpp\llama_chat_format.py", line 229, in __call__
+    prompt = self._environment.render(
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\jinja2\sandbox.py", line 401, in call
+    return __context.call(__obj, *args, **kwargs)
+  File "C:\Users\Mohaned\miniconda3\envs\haru\lib\site-packages\llama_cpp\llama_chat_format.py", line 227, in raise_exception
+    raise ValueError(message)
+ValueError: Conversation roles must alternate user/assistant/user/assistant/...
+2025-06-26 12:54:41,560 - INFO - 127.0.0.1 - - [26/Jun/2025 12:54:41] "POST /chat HTTP/1.1" 200 -
+2025-06-26 12:54:41,562 - INFO - Stream completed. Response length: 0
+2025-06-26 12:54:44,543 - INFO - Processing message: 'hmm...' (history: 4 messages)
+2025-06-26 12:55:02,135 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 12:55:03,875 - INFO - Gemma model loaded successfully!
+2025-06-26 12:55:03,875 - INFO - Starting server on port 5000
+2025-06-26 12:55:05,152 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 12:55:05,152 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 12:55:16,498 - INFO - 127.0.0.1 - - [26/Jun/2025 12:55:16] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:55:16,761 - INFO - Processing message: 'hello...' (history: 4 messages)
+2025-06-26 12:55:17,584 - INFO - 127.0.0.1 - - [26/Jun/2025 12:55:17] "POST /chat HTTP/1.1" 200 -
+2025-06-26 12:55:22,807 - INFO - Stream completed. Response length: 216
+2025-06-26 12:55:23,217 - INFO - 127.0.0.1 - - [26/Jun/2025 12:55:23] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:55:23,483 - INFO - Processing message: 'say something long...' (history: 6 messages)
+2025-06-26 12:55:24,414 - INFO - 127.0.0.1 - - [26/Jun/2025 12:55:24] "POST /chat HTTP/1.1" 200 -
+2025-06-26 12:55:28,468 - INFO - 127.0.0.1 - - [26/Jun/2025 12:55:28] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:55:28,816 - INFO - Processing message: 'ok...' (history: 8 messages)
+2025-06-26 12:58:27,209 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 12:58:32,643 - INFO - Gemma model loaded successfully!
+2025-06-26 12:58:32,653 - INFO - Starting server on port 5000
+2025-06-26 12:58:33,956 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 12:58:33,956 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 12:58:36,877 - INFO - 127.0.0.1 - - [26/Jun/2025 12:58:36] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 12:58:37,132 - INFO - Processing message: 'hi...' (history: 0 messages)
+2025-06-26 12:58:38,118 - INFO - 127.0.0.1 - - [26/Jun/2025 12:58:38] "POST /chat HTTP/1.1" 200 -
+2025-06-26 12:58:40,125 - INFO - Processing message: 'hello...' (history: 2 messages)
+2025-06-26 12:58:46,433 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 12:58:48,214 - INFO - Gemma model loaded successfully!
+2025-06-26 12:58:48,214 - INFO - Starting server on port 5000
+2025-06-26 12:58:49,488 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 12:58:49,488 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 13:00:58,474 - INFO - 127.0.0.1 - - [26/Jun/2025 13:00:58] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:00:58,719 - INFO - Processing message: 'hi...' (history: 0 messages)
+2025-06-26 13:00:59,612 - INFO - 127.0.0.1 - - [26/Jun/2025 13:00:59] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:01:10,805 - INFO - Stream completed. Response length: 183
+2025-06-26 13:02:13,680 - INFO - 127.0.0.1 - - [26/Jun/2025 13:02:13] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:02:13,911 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:02:14,112 - INFO - 127.0.0.1 - - [26/Jun/2025 13:02:14] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:02:19,699 - INFO - Stream completed. Response length: 182
+2025-06-26 13:02:48,220 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 13:02:50,489 - INFO - Gemma model loaded successfully!
+2025-06-26 13:02:50,489 - INFO - Starting server on port 5000
+2025-06-26 13:02:51,786 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 13:02:51,787 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 13:02:52,049 - INFO - 127.0.0.1 - - [26/Jun/2025 13:02:52] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:02:52,295 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:02:53,141 - INFO - 127.0.0.1 - - [26/Jun/2025 13:02:53] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:05:37,699 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-06-26 13:05:39,549 - INFO - Gemma model loaded successfully!
+2025-06-26 13:05:39,549 - INFO - Starting server on port 5000
+2025-06-26 13:05:40,839 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.192.222:5000
+2025-06-26 13:05:40,839 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-26 13:07:22,876 - INFO - 127.0.0.1 - - [26/Jun/2025 13:07:22] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:07:23,086 - INFO - Processing message: 'hi...' (history: 0 messages)
+2025-06-26 13:07:24,129 - INFO - 127.0.0.1 - - [26/Jun/2025 13:07:24] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:09:18,569 - INFO - 127.0.0.1 - - [26/Jun/2025 13:09:18] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:09:18,833 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:09:19,064 - INFO - 127.0.0.1 - - [26/Jun/2025 13:09:19] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:10:24,368 - INFO - 127.0.0.1 - - [26/Jun/2025 13:10:24] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:10:24,607 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:10:24,792 - INFO - 127.0.0.1 - - [26/Jun/2025 13:10:24] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:12:27,370 - INFO - 127.0.0.1 - - [26/Jun/2025 13:12:27] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:12:27,633 - INFO - Processing message: 'a...' (history: 0 messages)
+2025-06-26 13:12:27,802 - INFO - 127.0.0.1 - - [26/Jun/2025 13:12:27] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:20:56,614 - INFO - 127.0.0.1 - - [26/Jun/2025 13:20:56] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:20:56,850 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:20:57,896 - INFO - 127.0.0.1 - - [26/Jun/2025 13:20:57] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:22:15,268 - INFO - 127.0.0.1 - - [26/Jun/2025 13:22:15] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:22:15,518 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-06-26 13:22:16,161 - INFO - 127.0.0.1 - - [26/Jun/2025 13:22:16] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:24:36,921 - INFO - 127.0.0.1 - - [26/Jun/2025 13:24:36] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:24:37,185 - INFO - Processing message: 'hi...' (history: 0 messages)
+2025-06-26 13:24:37,359 - INFO - 127.0.0.1 - - [26/Jun/2025 13:24:37] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:25:26,820 - INFO - 127.0.0.1 - - [26/Jun/2025 13:25:26] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:25:27,077 - INFO - Processing message: 'hello...' (history: 2 messages)
+2025-06-26 13:25:27,659 - INFO - 127.0.0.1 - - [26/Jun/2025 13:25:27] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:25:36,365 - INFO - 127.0.0.1 - - [26/Jun/2025 13:25:36] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:25:36,641 - INFO - Processing message: 'idk mate u tell me...' (history: 4 messages)
+2025-06-26 13:25:37,427 - INFO - 127.0.0.1 - - [26/Jun/2025 13:25:37] "POST /chat HTTP/1.1" 200 -
+2025-06-26 13:26:04,294 - INFO - 127.0.0.1 - - [26/Jun/2025 13:26:04] "OPTIONS /chat HTTP/1.1" 200 -
+2025-06-26 13:26:04,545 - INFO - Processing message: 'write different thing in diff markdown and dollar ...' (history: 6 messages)
+2025-06-26 13:26:06,138 - INFO - 127.0.0.1 - - [26/Jun/2025 13:26:06] "POST /chat HTTP/1.1" 200 -

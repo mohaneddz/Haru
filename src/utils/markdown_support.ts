@@ -63,7 +63,6 @@ export function useMarkdown() {
     gfm: true,
     breaks: true,
     pedantic: false,
-    smartypants: true,
   });
 
   const parse = async (content: string): Promise<string> => {

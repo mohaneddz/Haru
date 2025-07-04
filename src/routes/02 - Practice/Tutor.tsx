@@ -1,5 +1,5 @@
 import { Paperclip, Send } from "lucide-solid"; // Removed XCircle since stopping is disabled
-import TextDisplayArea from "@/components/01 - Home/NoteArea";
+import TextDisplayArea from "@/components/01 - Home/Notes/NoteArea";
 import { createSignal, For, createEffect, onCleanup } from "solid-js"; // Import onCleanup
 
 interface MessageData {
@@ -29,7 +29,8 @@ export default function Tutor() {
   const [messages, setMessages] = createSignal<MessageData[]>([
     {
       id: Date.now(),
-      text: "Okay, here’s a demonstration of different things written in different markdown, dollar sign LaTeX, and plain text formats:\n\n**1. Markdown:**\n\n markdown\n# This is a Heading\n## A Subheading\n* This is a bullet point\n* Another bullet point\n* And a third!\n\nThis is a paragraph of text.  It’s pretty simple.\n \n\n**2. LaTeX (using dollar signs):**\n\n$$\n\\int_0^\\infty x^2 e^{-x} dx = 1\n$$\n\nThis represents the integral of x²e⁻x from 0 to infinity, which equals 1.  LaTeX is often used for mathematical equations.\n\n**3. Plain Text:**\n\nThis is a simple sentence.  It’s just regular text, without any formatting.  It’s easy to read.\n\n---\n\n**Explanation:**\n\n*   **Markdown:** ``` Markdown is a lightweight markup language designed to make writing readable. It’s used for formatting text in online platforms and documents.  The symbols like `#` for headings, `*` for bullet points, and `>` for lists are all part of the Markdown syntax.\n\n*   **LaTeX (using dollar signs):**  LaTeX is a typesetting system primarily used for creating high-quality documents, especially those with mathematical formulas. The `$$` symbols tell LaTeX that the following text is a displayed equation. ``` You can also use `$` for inline equations:  `$e = mc^2$`.\n\n*   **Plain Text  ",
+      // text: "Okay, here’s a demonstration of different things written in different markdown, dollar sign LaTeX, and plain text formats:\n\n**1. Markdown:**\n\n markdown\n# This is a Heading\n## A Subheading\n* This is a bullet point\n* Another bullet point\n* And a third!\n\nThis is a paragraph of text.  It’s pretty simple.\n \n\n**2. LaTeX (using dollar signs):**\n\n$$\n\\int_0^\\infty x^2 e^{-x} dx = 1\n$$\n\n This represents the integral of x²e⁻x from 0 to infinity, which equals 1.  LaTeX is often used for mathematical equations.\n\n**3. Plain Text:**\n\nThis is a simple sentence.  It’s just regular text, without any formatting.  It’s easy to read.\n\n---\n\n**Explanation:**\n\n*   **Markdown:** ``` Markdown is a lightweight markup language designed to make writing readable. It’s used for formatting text in online platforms and documents.  The symbols like `#` for headings, `*` for bullet points, and `>` for lists are all part of the Markdown syntax.\n\n*   **LaTeX (using dollar signs):**  LaTeX is a typesetting system primarily used for creating high-quality documents, especially those with mathematical formulas. The `$$` symbols tell LaTeX that the following text is a displayed equation. ``` You can also use `$` for inline equations:  `$e = mc^2$`.\n\n*   **Plain Text  ",
+      text: "Hello There, how can I help you today?",
       user: false,
     },
   ]);

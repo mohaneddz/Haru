@@ -3,8 +3,8 @@
 import { createSignal } from 'solid-js';
 import * as LucideIcons from 'lucide-solid';
 
-import { useCalculator } from '@/hooks/useCalculator';
-import { useCalculatorKeyboard } from '@/hooks/useCalculatorKeyboard';
+import { useCalculator } from '@/hooks/plugins/useCalculator';
+import { useCalculatorKeyboard } from '@/hooks/plugins/useCalculatorKeyboard';
 import Display from '@/components/04 - Tools/Calculator/CalculatorDisplay';
 import Keypad from '@/components/04 - Tools/Calculator/CalculatorKeypad';
 import ScientificKeypad from '@/components/04 - Tools/Calculator/CalculatorScientificKeypad';

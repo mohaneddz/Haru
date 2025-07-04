@@ -1,4 +1,4 @@
-import MainSeperator from "@/components/01 - Home/MainSeperator";
+import MainSeperator from "@/components/01 - Home/Cards/MainSeperator";
 import GameCard from "@/components/02 - Practice/GameCard";
 
 // ✅ Your chosen images

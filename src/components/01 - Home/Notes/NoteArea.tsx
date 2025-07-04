@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from "solid-js";
-import { useKatex } from "@/utils/katex_support";
-import { useMarkdown } from "@/utils/markdown_support";
+import { useKatex } from "@/utils/katexSupport";
+import { useMarkdown } from "@/utils/markdownSupport";
 
 interface Props {
   text: string;

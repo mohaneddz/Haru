@@ -1,8 +1,8 @@
 import { createSignal } from 'solid-js';
-import { AngleMode, Operation, ScientificFunction, Constant } from '../types/calculator';
-import { toRadians, toDegrees, factorial } from '../utils/mathUtils';
-import { mathematicalConstants } from '../utils/constants';
-import { getOperationSymbol } from '../utils/operationUtils';
+import { AngleMode, Operation, ScientificFunction, Constant } from '@/types/calculator';
+import { toRadians, toDegrees, factorial } from '@/utils/mathUtils';
+import { mathematicalConstants } from '@/utils/constants';
+import { getOperationSymbol } from '@/utils/operationUtils';
 
 export function useCalculator() {
   const [display, setDisplay] = createSignal('0');

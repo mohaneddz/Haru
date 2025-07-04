@@ -14,7 +14,7 @@ export const routes = [
       { path: "/home/library", component: lazy(() => import("@/routes/01 - Home/Library")) },
       { path: "/home/notes", component: lazy(() => import("@/routes/01 - Home/Notes")) },
 
-      { path: "/home/discover/*", component: lazy(() => import("@/routes/01 - Home/course/Course")) },
+      { path: "/home/discover/*", component: lazy(() => import("@/routes/01 - Home/Course")) },
       
       // 02 - Practice
       // { path: "/practice/", component: lazy(() => import("@/routes/02 - Practice/Practice")) },

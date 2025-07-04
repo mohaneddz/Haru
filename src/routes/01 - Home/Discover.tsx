@@ -14,8 +14,8 @@ import NaturalLanguageProcessingImage from '@/data/ai/natural-language-processin
 import ReinforcementLearningImage from '@/data/ai/reinforcement-learning.jpg';
 import SignalProcessingImage from '@/data/ai/signal-processing.jpg';
 
-import CourseCard from "@/components/01 - Home/CourseCard";
-import MainSeperator from '@/components/01 - Home/MainSeperator';
+import CourseCard from "@/components/01 - Home/Cards/CourseCard";
+import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
 
 export default function Discover() {
   return (

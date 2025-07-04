@@ -20,13 +20,13 @@ function App() {
           <div class="relative overflow-hidden w-full h-full flex flex-col">
 
             {/* Upper Fade */}
-            <div class="absolute bg-background w-full h-4" />
-            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-background via-90% to-background/20 z-40" />
+            <div class="absolute bg-background w-full h-4 pointer-events-none" />
+            <div class="absolute top-0 left-0 w-full h-min bg-gradient-to-b from-background via-90% to-background/20 z-40 pointer-events-none" />
             
             {props.children}
             
             {/* Lower Fade */}
-            <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40" />
+            <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40 pointer-events-none" />
             
             <Statebar />
           </div>

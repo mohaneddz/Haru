@@ -1,7 +1,7 @@
 import courseImage from '@/data/math/time-series.jpg';
 
-import CourseCard from "@/components/01 - Home/CourseCard";
-import MainSeperator from '@/components/01 - Home/MainSeperator';
+import CourseCard from "@/components/01 - Home/Cards/CourseCard";
+import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
 
 export default function Books () {
   return (

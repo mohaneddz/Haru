@@ -1,5 +1,5 @@
-import {  For } from 'solid-js';
-import TreeNode from '@/components/01 - Home/TreeNode';
+import { For } from 'solid-js';
+import TreeNode from '@/components/01 - Home/Notes/TreeNode';
 
 interface FileNode {
     id: string;
@@ -45,8 +45,10 @@ export default function Files(props: Props) {
         <div
             class={`relative h-full w-80 resize-x flex flex-col bg-cyan-dark-2 border-r border-border text-white overflow-x-auto ${props?.class || ""}`}
         >
-            <div class="h-16 bg-background-light-1 border-b-1 border-border-light-1 flex justify-center items-center">
-                Files
+            <div class="py-4 h-16 w-full bg-background-light-1 flex items-center px-4 border-b-1 border-border-light-1 justify-center z-50 ">
+                <div class="text-lg font-semibold text-text-light-1 justify-center">
+                    Notes
+                </div>
             </div>
 
             <ul id="files-list" class="tree flex-1 overflow-hidden"> {/* Apply "tree" class, removed conflicting Tailwind classes */}

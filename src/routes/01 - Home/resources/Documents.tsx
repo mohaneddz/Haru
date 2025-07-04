@@ -4,8 +4,8 @@ import doc3 from '@/data/documents/doc3.png';
 import doc4 from '@/data/documents/doc4.png';
 
 // @ts-ignore
-import DocumentCard from "@/components/01 - Home/DocumentCard";
-import MainSeperator from '@/components/01 - Home/MainSeperator';
+import DocumentCard from "@/components/01 - Home/Cards/DocumentCard";
+import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
 
 export default function Documents() {
   return (

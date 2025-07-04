@@ -1,8 +1,8 @@
 import Files from "@/routes/01 - Home/sidebar/Files";
 
-import TextDisplayArea from "@/components/01 - Home/NoteArea";
-import NoteTopBar from "@/components/01 - Home/NoteTopBar";
-import NotesToolBar from "@/components/01 - Home/NotesToolBar";
+import TextDisplayArea from "@/components/01 - Home/Notes/NoteArea";
+import NoteTopBar from "@/components/01 - Home/Notes/NoteTopBar";
+import NotesToolBar from "@/components/01 - Home/Notes/NotesToolBar";
 import { TextExample } from "@/data/TextExample";
 
 import { Paperclip } from "lucide-solid";
@@ -23,11 +23,13 @@ export default function Notes() {
 
       <Files class='z-50' />
 
-      <div class="w-full items-center flex flex-col h-full justify-start">
+      <div class="w-full flex flex-col h-full relative">
 
         <NoteTopBar />
-        <TextDisplayArea text={TextExample}/>
         <NotesToolBar />
+        <div class="flex-1 overflow-hidden justify-center items-center">
+          <TextDisplayArea text={TextExample}/>
+        </div>
         {/* <FileSelectorButton /> */}
       </div>
     </div>

@@ -23,6 +23,7 @@ export default function Sidebar() {
                     <img src={Seperator} class='w-[80%] mt-8' />
 
                     <BottomSection isOpen={isOpen()} setIsOpen={setIsOpen} />
+                    
                 </div>
             ) : (
                 <div class='relative h-full min-w-max w-24 bg-sidebar text-white flex flex-col items-center justify-start '>

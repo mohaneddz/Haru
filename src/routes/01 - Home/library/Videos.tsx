@@ -1,5 +1,5 @@
-import VideoCard from "@/components/01 - Home/VideoCard";
-import MainSeperator from "@/components/01 - Home/MainSeperator";
+import VideoCard from "@/components/01 - Home/Cards/VideoCard";
+import MainSeperator from "@/components/01 - Home/Cards/MainSeperator";
 
 import rl from '@/data/videos/rl.jpg';
 import dl from '@/data/videos/dl.jpg';

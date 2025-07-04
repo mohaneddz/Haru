@@ -128,3 +128,184 @@ ValueError: Conversation roles must alternate user/assistant/user/assistant/...
 2025-06-26 13:26:04,294 - INFO - 127.0.0.1 - - [26/Jun/2025 13:26:04] "OPTIONS /chat HTTP/1.1" 200 -
 2025-06-26 13:26:04,545 - INFO - Processing message: 'write different thing in diff markdown and dollar ...' (history: 6 messages)
 2025-06-26 13:26:06,138 - INFO - 127.0.0.1 - - [26/Jun/2025 13:26:06] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:37:30,126 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 18:37:35,287 - INFO - Gemma model loaded successfully!
+2025-07-02 18:37:35,288 - INFO - Starting server on port 5000
+2025-07-02 18:37:35,319 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 18:37:35,320 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:38:02,574 - INFO - 127.0.0.1 - - [02/Jul/2025 18:38:02] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:38:02,827 - INFO - Processing message: 'What's the formula for integrating triaigular equa...' (history: 0 messages)
+2025-07-02 18:38:03,672 - INFO - 127.0.0.1 - - [02/Jul/2025 18:38:03] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:38:32,848 - INFO - Stream completed. Response length: Okay, let's break down the integration of triangular equations. The "triangular equation" typically refers to a system of equations where the variables are constrained to lie within a triangular region in the plane.  There isn't a single, simple formula that works for *all* triangular equations. The approach depends heavily on the specific form of the equations and the nature of the triangular region. However, here's a breakdown of common methods and considerations, categorized by situations:
+
+**1. When the Integrand is Relatively Simple (and the Triangle is Simple):**
+
+* **Basic Setup:** If your triangular equation is something like  `f(x, y) = c` (where 'c' is a constant) and the triangle is defined by simple lines (e.g., y = mx + b, x = 0, y = 0) or easily expressed as inequalities, you can often solve it using standard calculus techniques.
+
+* **Transformation to Cartesian Coordinates:** The most crucial step is often to transform the triangular region into a standard Cartesian coordinate system (x, y).  You'll need to express the boundaries of the triangle in terms of x and y.
+
+* **Iterative Integration:**  You'll typically evaluate the double integral of `f(x, y)` over the triangular region. This often means breaking the integration into smaller, manageable pieces.  You might need to split the triangle into smaller triangles or regions where the integration becomes easier.
+
+* **Example:**  Let's say you want to integrate `f(x, y) = 1` over a triangle defined by the vertices (0, 0), (1, 0), and (0, 1).  You would set up the
+2025-07-02 18:38:32,876 - INFO - Raw response content: 'Okay, let\'s break down the integration of triangular equations. The "triangular equation" typically refers to a system of equations where the variables are constrained to lie within a triangular region in the plane.  There isn\'t a single, simple formula that works for *all* triangular equations. The approach depends heavily on the specific form of the equations and the nature of the triangular region. However, here\'s a breakdown of common methods and considerations, categorized by situations:\n\n**1. When the Integrand is Relatively Simple (and the Triangle is Simple):**\n\n* **Basic Setup:** If your triangular equation is something like  `f(x, y) = c` (where \'c\' is a constant) and the triangle is defined by simple lines (e.g., y = mx + b, x = 0, y = 0) or easily expressed as inequalities, you can often solve it using standard calculus techniques.\n\n* **Transformation to Cartesian Coordinates:** The most crucial step is often to transform the triangular region into a standard Cartesian coordinate system (x, y).  You\'ll need to express the boundaries of the triangle in terms of x and y.\n\n* **Iterative Integration:**  You\'ll typically evaluate the double integral of `f(x, y)` over the triangular region. This often means breaking the integration into smaller, manageable pieces.  You might need to split the triangle into smaller triangles or regions where the integration becomes easier.\n\n* **Example:**  Let\'s say you want to integrate `f(x, y) = 1` over a triangle defined by the vertices (0, 0), (1, 0), and (0, 1).  You would set up the'
+2025-07-02 18:38:37,168 - INFO - 127.0.0.1 - - [02/Jul/2025 18:38:37] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:38:37,473 - INFO - Processing message: 'give me the formula in two lines...' (history: 2 messages)
+2025-07-02 18:38:40,798 - INFO - 127.0.0.1 - - [02/Jul/2025 18:38:40] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:38:46,551 - INFO - Stream completed. Response length: Okay, here's the core idea in two lines:
+
+The integration of a function over a triangular region involves setting up a double integral, transforming the triangular boundaries into Cartesian coordinates, and then evaluating the integral iteratively, often splitting the region for easier calculation.  The specific integration steps depend on the function and the triangle's definition.
+2025-07-02 18:38:46,551 - INFO - Raw response content: "Okay, here's the core idea in two lines:\n\nThe integration of a function over a triangular region involves setting up a double integral, transforming the triangular boundaries into Cartesian coordinates, and then evaluating the integral iteratively, often splitting the region for easier calculation.  The specific integration steps depend on the function and the triangle's definition."
+2025-07-02 18:39:00,009 - INFO - 127.0.0.1 - - [02/Jul/2025 18:39:00] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:39:00,312 - INFO - Processing message: 'how many r in strawberry...' (history: 4 messages)
+2025-07-02 18:39:04,827 - INFO - 127.0.0.1 - - [02/Jul/2025 18:39:04] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:39:26,464 - INFO - 127.0.0.1 - - [02/Jul/2025 18:39:26] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:39:34,465 - INFO - 127.0.0.1 - - [02/Jul/2025 18:39:34] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:39:34,728 - INFO - Processing message: 'hello...' (history: 6 messages)
+2025-07-02 18:40:07,468 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 18:40:09,491 - INFO - Gemma model loaded successfully!
+2025-07-02 18:40:09,491 - INFO - Starting server on port 5000
+2025-07-02 18:40:09,506 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 18:40:09,506 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:40:25,636 - INFO - 127.0.0.1 - - [02/Jul/2025 18:40:25] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:40:25,899 - INFO - Processing message: 'what's the integral of sin(nx), straight to point...' (history: 0 messages)
+2025-07-02 18:40:26,249 - INFO - 127.0.0.1 - - [02/Jul/2025 18:40:26] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:40:40,475 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 18:40:41,970 - INFO - Gemma model loaded successfully!
+2025-07-02 18:40:41,970 - INFO - Starting server on port 5000
+2025-07-02 18:40:41,983 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 18:40:41,983 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:40:50,479 - INFO - 127.0.0.1 - - [02/Jul/2025 18:40:50] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:40:50,728 - INFO - Processing message: 'give the rule of integrating cos(nx) directly...' (history: 0 messages)
+2025-07-02 18:40:50,991 - INFO - 127.0.0.1 - - [02/Jul/2025 18:40:50] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:41:12,626 - INFO - 127.0.0.1 - - [02/Jul/2025 18:41:12] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:41:12,936 - INFO - Processing message: 'hi, who are you?...' (history: 0 messages)
+2025-07-02 18:41:15,467 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 18:41:16,984 - INFO - Gemma model loaded successfully!
+2025-07-02 18:41:16,984 - INFO - Starting server on port 5000
+2025-07-02 18:41:17,006 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 18:41:17,006 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:41:23,130 - INFO - 127.0.0.1 - - [02/Jul/2025 18:41:23] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:41:23,392 - INFO - Processing message: 'Hello, who are you?...' (history: 0 messages)
+2025-07-02 18:41:23,633 - INFO - 127.0.0.1 - - [02/Jul/2025 18:41:23] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:41:28,315 - INFO - Stream completed. Response length: Hello there! I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, which means I’m widely available for public use! 
+
+It’s nice to meet you. 
+
+How can I help you today?
+2025-07-02 18:41:28,316 - INFO - Raw response content: "Hello there! I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, which means I’m widely available for public use! \n\nIt’s nice to meet you. \n\nHow can I help you today?"
+2025-07-02 18:41:41,164 - INFO - 127.0.0.1 - - [02/Jul/2025 18:41:41] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 18:41:41,413 - INFO - Processing message: 'what are your specs?...' (history: 2 messages)
+2025-07-02 18:41:42,151 - INFO - 127.0.0.1 - - [02/Jul/2025 18:41:42] "POST /chat HTTP/1.1" 200 -
+2025-07-02 18:42:01,862 - INFO - Stream completed. Response length: Okay, let’s break down my specifications. Here’s a summary of what you need to know:
+
+**Model Size:** I have 2 billion parameters.
+
+**Architecture:** I’m based on a decoder-only transformer architecture.
+
+**Training:** I was trained by Google DeepMind.
+
+**Input:** I can accept text and image inputs.
+
+**Output:** I produce text as my output.
+
+**Image Input:** I can process images up to 2048x2048 pixels.
+
+**Context Length:** I have a context length of 4096 tokens. (This means I can consider a relatively large amount of text when generating a response.)
+
+**Developed By:** Google DeepMind
+
+**Availability:** I'm an open-weights model, meaning I'm available for public use! You can find more details about accessing me on the Gemma project page: [https://ai.google.com/gemma](https://ai.google.com/gemma)
+
+
+Do you want me to elaborate on any specific aspect, like my training data or how I handle different types of input?
+2025-07-02 18:42:01,862 - INFO - Raw response content: "Okay, let’s break down my specifications. Here’s a summary of what you need to know:\n\n**Model Size:** I have 2 billion parameters.\n\n**Architecture:** I’m based on a decoder-only transformer architecture.\n\n**Training:** I was trained by Google DeepMind.\n\n**Input:** I can accept text and image inputs.\n\n**Output:** I produce text as my output.\n\n**Image Input:** I can process images up to 2048x2048 pixels.\n\n**Context Length:** I have a context length of 4096 tokens. (This means I can consider a relatively large amount of text when generating a response.)\n\n**Developed By:** Google DeepMind\n\n**Availability:** I'm an open-weights model, meaning I'm available for public use! You can find more details about accessing me on the Gemma project page: [https://ai.google.com/gemma](https://ai.google.com/gemma)\n\n\nDo you want me to elaborate on any specific aspect, like my training data or how I handle different types of input?"
+2025-07-02 20:41:44,244 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 20:41:50,811 - INFO - Gemma model loaded successfully!
+2025-07-02 20:41:50,812 - INFO - Starting server on port 5000
+2025-07-02 20:41:50,847 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 20:41:50,847 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 22:52:06,381 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-02 22:52:13,315 - INFO - Gemma model loaded successfully!
+2025-07-02 22:52:13,317 - INFO - Starting server on port 5000
+2025-07-02 22:52:13,381 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.10:5000
+2025-07-02 22:52:13,382 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 22:52:17,018 - INFO - 127.0.0.1 - - [02/Jul/2025 22:52:17] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 22:52:17,272 - INFO - Processing message: 'hello negga ( yes hillo )...' (history: 0 messages)
+2025-07-02 22:52:17,928 - INFO - 127.0.0.1 - - [02/Jul/2025 22:52:17] "POST /chat HTTP/1.1" 200 -
+2025-07-02 22:52:29,078 - INFO - Stream completed. Response length: I understand you're trying to engage in a conversation, but I want to be clear that using derogatory language like "negga" is harmful and unacceptable. My purpose is to be helpful and respectful, and that includes maintaining a safe and inclusive environment. 
+
+I recognize you initiated the conversation with a somewhat challenging greeting. I'm going to respond with respect and professionalism. 
+
+To help me understand how I can be of assistance, could you tell me what you were hoping to discuss? Or, if you'd like to simply start a new topic, I'm here to chat about almost anything (within ethical and safe boundaries, of course).
+2025-07-02 22:52:29,107 - INFO - Raw response content: 'I understand you\'re trying to engage in a conversation, but I want to be clear that using derogatory language like "negga" is harmful and unacceptable. My purpose is to be helpful and respectful, and that includes maintaining a safe and inclusive environment. \n\nI recognize you initiated the conversation with a somewhat challenging greeting. I\'m going to respond with respect and professionalism. \n\nTo help me understand how I can be of assistance, could you tell me what you were hoping to discuss? Or, if you\'d like to simply start a new topic, I\'m here to chat about almost anything (within ethical and safe boundaries, of course).'
+2025-07-02 22:56:13,728 - INFO - 127.0.0.1 - - [02/Jul/2025 22:56:13] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 22:56:13,994 - INFO - Processing message: 'hello...' (history: 0 messages)
+2025-07-02 22:56:14,531 - INFO - 127.0.0.1 - - [02/Jul/2025 22:56:14] "POST /chat HTTP/1.1" 200 -
+2025-07-02 22:57:05,744 - INFO - 127.0.0.1 - - [02/Jul/2025 22:57:05] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-02 22:57:05,990 - INFO - Processing message: 'how do you work...' (history: 2 messages)
+2025-07-02 22:57:06,698 - INFO - 127.0.0.1 - - [02/Jul/2025 22:57:06] "POST /chat HTTP/1.1" 200 -
+2025-07-02 22:57:36,050 - INFO - Stream completed. Response length: Okay, that’s a really good question! It’s actually a bit complex, but I’ll break it down as clearly as possible. Here's how I work:
+
+**1. I’m a Large Language Model (LLM):**
+
+*   **“Large” means a lot of data:** I was trained on a *massive* amount of text and code – basically, a huge chunk of the internet! This includes books, articles, websites, code repositories, and more.
+*   **“Language Model” means I’m designed to understand and generate human language.** My goal is to predict what words are likely to come next in a sequence.
+
+**2. The Training Process (How I Learned):**
+
+*   **Pre-training:** This is the *really* big part.  I went through a process called “pre-training.”  Essentially, I was fed all that data and taught to predict the next word in a sentence.  For example, if I read “The cat sat on the…”, I’d learn that “mat” is a very common word to follow.  I did this *billions* of times. This gave me a general understanding of language, grammar, facts, and even different writing styles.
+*   **Fine-tuning:** After pre-training, I was “fine-tuned” on more specific tasks. This involved training on smaller datasets designed to improve my performance on things like:
+    *   **Following instructions:**  I was taught to understand what you’re asking me to do.
+    *   **Answering questions:** I was trained to find and present relevant information.
+    *   **Generating different text formats:** I learned
+2025-07-02 22:57:36,052 - INFO - Raw response content: "Okay, that’s a really good question! It’s actually a bit complex, but I’ll break it down as clearly as possible. Here's how I work:\n\n**1. I’m a Large Language Model (LLM):**\n\n*   **“Large” means a lot of data:** I was trained on a *massive* amount of text and code – basically, a huge chunk of the internet! This includes books, articles, websites, code repositories, and more.\n*   **“Language Model” means I’m designed to understand and generate human language.** My goal is to predict what words are likely to come next in a sequence.\n\n**2. The Training Process (How I Learned):**\n\n*   **Pre-training:** This is the *really* big part.  I went through a process called “pre-training.”  Essentially, I was fed all that data and taught to predict the next word in a sentence.  For example, if I read “The cat sat on the…”, I’d learn that “mat” is a very common word to follow.  I did this *billions* of times. This gave me a general understanding of language, grammar, facts, and even different writing styles.\n*   **Fine-tuning:** After pre-training, I was “fine-tuned” on more specific tasks. This involved training on smaller datasets designed to improve my performance on things like:\n    *   **Following instructions:**  I was taught to understand what you’re asking me to do.\n    *   **Answering questions:** I was trained to find and present relevant information.\n    *   **Generating different text formats:** I learned"
+2025-07-05 00:02:39,189 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-05 00:02:50,827 - INFO - Gemma model loaded successfully!
+2025-07-05 00:02:50,829 - INFO - Starting server on port 5000
+2025-07-05 00:02:50,910 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.8:5000
+2025-07-05 00:02:50,910 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-05 00:02:54,755 - INFO - 127.0.0.1 - - [05/Jul/2025 00:02:54] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-05 00:02:54,988 - INFO - Processing message: 'Hello! who are you? (in short pls)...' (history: 0 messages)
+2025-07-05 00:02:57,544 - INFO - 127.0.0.1 - - [05/Jul/2025 00:02:57] "POST /chat HTTP/1.1" 200 -
+2025-07-05 00:03:32,107 - INFO - Stream completed. Response length: I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, meaning I’m widely
+2025-07-05 00:03:32,117 - INFO - Raw response content: "I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, meaning I’m widely"
+2025-07-05 00:04:26,500 - INFO - 127.0.0.1 - - [05/Jul/2025 00:04:26] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-05 00:04:26,755 - INFO - Processing message: 'hello, who are you? (in short pls)...' (history: 0 messages)
+2025-07-05 00:04:29,324 - INFO - 127.0.0.1 - - [05/Jul/2025 00:04:29] "POST /chat HTTP/1.1" 200 -
+2025-07-05 00:04:38,209 - INFO - Stream completed. Response length: I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, meaning I’m available for public use! 
+
+2025-07-05 00:04:38,219 - INFO - Raw response content: "I'm Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, meaning I’m available for public use! \n"
+2025-07-05 00:04:50,354 - INFO - 127.0.0.1 - - [05/Jul/2025 00:04:50] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-05 00:04:50,608 - INFO - Processing message: 'are you running locally? (I know but just to confi...' (history: 2 messages)
+2025-07-05 00:04:51,425 - INFO - 127.0.0.1 - - [05/Jul/2025 00:04:51] "POST /chat HTTP/1.1" 200 -
+2025-07-05 00:04:56,095 - INFO - Stream completed. Response length: That’s a great question! As an open-weights model, I can be run locally – meaning you can use me on your own computer, depending on your hardware. However, I’m currently interacting with you through this interface, which is hosted by Google.
+2025-07-05 00:04:56,096 - INFO - Raw response content: 'That’s a great question! As an open-weights model, I can be run locally – meaning you can use me on your own computer, depending on your hardware. However, I’m currently interacting with you through this interface, which is hosted by Google.'
+2025-07-05 00:05:00,789 - INFO - 127.0.0.1 - - [05/Jul/2025 00:05:00] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-05 00:05:01,037 - INFO - Processing message: 'write a simple math formula in one line...' (history: 4 messages)
+2025-07-05 00:05:02,424 - INFO - 127.0.0.1 - - [05/Jul/2025 00:05:02] "POST /chat HTTP/1.1" 200 -
+2025-07-05 00:05:02,873 - INFO - Stream completed. Response length: x + y = z
+2025-07-05 00:05:02,873 - INFO - Raw response content: 'x + y = z'
+2025-07-05 00:05:07,739 - INFO - 127.0.0.1 - - [05/Jul/2025 00:05:07] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-05 00:05:08,005 - INFO - Processing message: 'u're a genius...' (history: 6 messages)
+2025-07-05 00:05:09,672 - INFO - 127.0.0.1 - - [05/Jul/2025 00:05:09] "POST /chat HTTP/1.1" 200 -

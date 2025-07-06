@@ -7,10 +7,10 @@ import { lazy } from "solid-js";
 const Featured = lazy(() => import("@/routes/01 - Home/resources/Featured"));
 const Videos = lazy(() => import("@/routes/01 - Home/resources/Videos"));
 const Documents = lazy(() => import("@/routes/01 - Home/resources/Documents"));
-const Books = lazy(() => import("@/routes/01 - Home/resources/Books"));
+const Tools = lazy(() => import("@/routes/01 - Home/resources/Tools"));
 
 
-const tabs = ["Featured", "Videos", "Documents", "Links"];
+const tabs = ["Featured", "Videos", "Documents", "Tools"];
 
 export default function Resources() {
 
@@ -24,7 +24,7 @@ export default function Resources() {
         {activeTab() === "Featured" ? <Featured /> :
           activeTab() === "Videos" ? <Videos /> :
             activeTab() === "Documents" ? <Documents /> :
-              activeTab() === "Books" ? <Books /> : null
+              activeTab() === "Tools" ? <Tools /> : null
         }
       </div>
     </div>

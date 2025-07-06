@@ -1,5 +1,6 @@
 import overlay from '@/assets/overlay.png';
 import * as LucideIcons from 'lucide-solid';
+import { For } from 'solid-js';
 
 interface Props {
   img: string;
@@ -8,7 +9,9 @@ interface Props {
   icon: string;
   duration?: string;
   type?: 'video' | 'playlist';
-  count?: number; 
+  count?: number;
+  tags?: string[];
+  field?: string;
 }
 
 export default function VideoCard(props: Props) {
@@ -34,8 +37,8 @@ export default function VideoCard(props: Props) {
           class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
         />
 
-        <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1 ">
-          <div class="flex items-center gap-2 ">
+        <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1">
+          <div class="flex items-center gap-2">
             {IconComponent && (
               <IconComponent class="text-accent w-5 h-5 group-hover:text-white transition-colors duration-200" />
             )}
@@ -44,6 +47,31 @@ export default function VideoCard(props: Props) {
             </span>
           </div>
           <span class="text-xs text-gray-300 truncate w-70 group-hover:text-gray-300">{props.description}</span>
+          
+          {/* Tags */}
+          {props.tags && props.tags.length > 0 && (
+            <div class="flex flex-wrap gap-1 mt-1">
+              <For each={props.tags.slice(0, 2)}>
+                {(tag) => (
+                  <span class="px-1.5 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
+                    {tag}
+                  </span>
+                )}
+              </For>
+              {props.tags.length > 2 && (
+                <span class="px-1.5 py-0.5 bg-accent/10 text-accent text-xs rounded-full">
+                  +{props.tags.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+          
+          {/* Field indicator */}
+          {props.field && (
+            <span class="text-xs text-accent-light-1 font-medium mt-0.5">
+              {props.field}
+            </span>
+          )}
         </div>
 
         <div class="absolute top-2 right-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-white group-hover:text-accent">

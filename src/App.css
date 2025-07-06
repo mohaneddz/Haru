@@ -345,3 +345,15 @@ code {
   padding: 0.2rem;
   border-radius: 4px;
 }
+
+.textLayer {
+  pointer-events: none;
+  font-family: sans-serif;
+  color: transparent;
+}
+
+.textLayer>span {
+  pointer-events: all;
+  color: black !important;
+  white-space: pre;
+}

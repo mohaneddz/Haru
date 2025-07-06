@@ -1,5 +1,6 @@
 import overlay from '@/assets/overlay.png';
 import * as LucideIcons from 'lucide-solid';
+import { For } from 'solid-js';
 
 interface Props {
   title: string;
@@ -8,6 +9,8 @@ interface Props {
   img?: string; 
   type: 'PDF' | 'Book' | 'Sheet' | 'Paper' | 'Notes';
   href?: string;
+  tags?: string[];
+  field?: string;
 }
 
 export default function DocumentCard(props: Props) {
@@ -15,8 +18,8 @@ export default function DocumentCard(props: Props) {
 
   return (
     <a
-      href={props.href || '#'}
-      target="_blank"
+      href='/pdf'
+      // href={props.href || '#'}
       class="p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-150 hover:scale-105 active:scale-100 overflow-hidden group w-full max-w-[280px] h-[360px]"
     >
       <div class="relative rounded-lg overflow-hidden bg-background-light-3 w-full h-full transition-shadow duration-300 group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)]">
@@ -52,9 +55,36 @@ export default function DocumentCard(props: Props) {
           <h3 class="text-lg font-bold text-accent line-clamp-2 group-hover:text-white transition-colors">
             {props.title}
           </h3>
-          <p class="text-sm text-gray-300 line-clamp-3 group-hover:text-gray-200">
+          <p class="text-sm text-gray-300 line-clamp-2 group-hover:text-gray-200">
             {props.description}
           </p>
+          
+          {/* Tags */}
+          {props.tags && props.tags.length > 0 && (
+            <div class="flex flex-wrap gap-1 mt-1">
+              <For each={props.tags.slice(0, 3)}>
+                {(tag) => (
+                  <span class="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
+                    {tag}
+                  </span>
+                )}
+              </For>
+              {props.tags.length > 3 && (
+                <span class="px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full">
+                  +{props.tags.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+          
+          {/* Field indicator */}
+          {props.field && (
+            <div class="mt-1">
+              <span class="text-xs text-accent-light-1 font-medium">
+                {props.field}
+              </span>
+            </div>
+          )}
         </div>
 
       </div>

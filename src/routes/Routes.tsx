@@ -43,6 +43,8 @@ export const routes = [
 
       // 06 - Misc
       { path: "/settings", component: lazy(() => import("@/routes/06 - Misc/Settings")) },
+      { path: "/webview", component: lazy(() => import("@/routes/06 - Misc/Webview")) },
+      { path: "/pdf", component: lazy(() => import("@/routes/06 - Misc/PDF")) },
 
       // Catch-all
       { path: "*", component: lazy(() => import("@/routes/06 - Misc/NotFound")) },

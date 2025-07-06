@@ -23,6 +23,7 @@
     "sql:default",
     "sql:allow-load",
     "sql:allow-execute",
-    "sql:default"
+    "sql:default",
+    "shell:default"
   ]
 }

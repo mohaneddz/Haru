@@ -58,8 +58,6 @@ export default function ConceptTooltip(props: Props) {
             
             <div class="text-gray-300 text-xs mb-3">
                 {props.isPinned ? 'Click to unpin this tooltip.' : 'Click to pin this tooltip.'} 
-                This is detailed information about the {props.node.text} phase.
-                You can add more content here like progress, tasks, or descriptions.
             </div>
 
             {props.node.learned && props.node.learnedDate && (

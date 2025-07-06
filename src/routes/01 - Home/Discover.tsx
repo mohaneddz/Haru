@@ -14,38 +14,158 @@ import NaturalLanguageProcessingImage from '@/data/ai/natural-language-processin
 import ReinforcementLearningImage from '@/data/ai/reinforcement-learning.jpg';
 import SignalProcessingImage from '@/data/ai/signal-processing.jpg';
 
+import { createSignal, createMemo } from "solid-js";
 import CourseCard from "@/components/01 - Home/Cards/CourseCard";
 import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
+import ComposableFilter, { FilterState } from "@/components/01 - Home/Filters/ComposableFilter";
+import { Tag, BookOpen, GraduationCap } from "lucide-solid";
 
 export default function Discover() {
+  const [filters, setFilters] = createSignal<FilterState>({
+    searchQuery: "",
+    selectedTags: [],
+    selectedFields: [],
+    selectedTypes: []
+  });
+
+  // Define all courses data with tags and fields
+  const coursesData = [
+    // AI Courses
+    { title: 'Machine Learning', icon: 'Brain', img: MachineLearningImage, description: "Algorithms that learn from data and make predictions", tags: ["machine-learning", "beginner", "fundamentals", "course"], field: "Artificial Intelligence", difficulty: "Beginner" as const },
+    { title: 'Deep Learning', icon: 'Network', img: DeepLearningImage, description: "Neural networks and artificial intelligence fundamentals", tags: ["deep-learning", "intermediate", "neural-networks", "course"], field: "Artificial Intelligence", difficulty: "Intermediate" as const },
+    { title: 'Computer Vision', icon: 'Eye', img: ComputerVisionImage, description: "Teaching machines to see and interpret visual data", tags: ["computer-vision", "advanced", "image-processing", "course"], field: "Artificial Intelligence", difficulty: "Advanced" as const },
+    { title: 'Natural Language Processing', icon: 'MessageSquare', img: NaturalLanguageProcessingImage, description: "Understanding and processing human language", tags: ["nlp", "intermediate", "text-processing", "course"], field: "Artificial Intelligence", difficulty: "Intermediate" as const },
+    { title: 'Reinforcement Learning', icon: 'Target', img: ReinforcementLearningImage, description: "AI agents learning through trial and reward", tags: ["reinforcement-learning", "advanced", "algorithms", "course"], field: "Artificial Intelligence", difficulty: "Advanced" as const },
+    { title: 'Signal Processing', icon: 'Cpu', img: SignalProcessingImage, description: "Building blocks of artificial intelligence systems", tags: ["signal-processing", "intermediate", "fundamentals", "course"], field: "Signal Processing", difficulty: "Intermediate" as const },
+    
+    // Math Courses
+    { title: 'Calculus', icon: 'TrendingUp', img: calculusImage, description: "Master derivatives, integrals, and limits", tags: ["calculus", "beginner", "fundamentals", "course"], field: "Mathematics", difficulty: "Beginner" as const },
+    { title: 'Chaos Theory', icon: 'Zap', img: chaosTheoryImage, description: "Explore complex systems and nonlinear dynamics", tags: ["chaos-theory", "advanced", "theory", "course"], field: "Mathematics", difficulty: "Advanced" as const },
+    { title: 'Game Theory', icon: 'Users', img: gameTheoryImage, description: "Strategic decision making and mathematical modeling", tags: ["game-theory", "intermediate", "strategy", "course"], field: "Mathematics", difficulty: "Intermediate" as const },
+    { title: 'Linear Algebra', icon: 'Grid3X3', img: linearAlgebraImage, description: "Vectors, matrices, and linear transformations", tags: ["linear-algebra", "beginner", "fundamentals", "course"], field: "Mathematics", difficulty: "Beginner" as const },
+    { title: 'Probability', icon: 'Dice6', img: probabilityImage, description: "Statistical analysis and random processes", tags: ["probability", "intermediate", "statistics", "course"], field: "Mathematics", difficulty: "Intermediate" as const },
+    { title: 'Time Series', icon: 'Clock', img: timeSeriesImage, description: "How we turn Time data into insights", tags: ["time-series", "intermediate", "data-analysis", "course"], field: "Data Science", difficulty: "Intermediate" as const }
+  ];
+
+  // Define available filter options
+  const availableTags = [
+    "machine-learning", "deep-learning", "computer-vision", "nlp", "reinforcement-learning",
+    "signal-processing", "calculus", "chaos-theory", "game-theory", "linear-algebra",
+    "probability", "time-series", "beginner", "intermediate", "advanced", "fundamentals",
+    "theory", "practical", "course", "neural-networks", "algorithms", "statistics",
+    "data-analysis", "image-processing", "text-processing", "strategy"
+  ];
+
+  const availableFields = [
+    "Artificial Intelligence", "Mathematics", "Signal Processing", "Data Science"
+  ];
+
+  const availableDifficulties = [
+    "Beginner", "Intermediate", "Advanced"
+  ];
+
+  // Filter function
+  const matchesFilter = (course: any, filters: FilterState) => {
+    const query = filters.searchQuery.toLowerCase();
+    const matchesSearch = !query || 
+      course.title.toLowerCase().includes(query) || 
+      course.description.toLowerCase().includes(query) ||
+      (course.tags && course.tags.some((tag: string) => tag.toLowerCase().includes(query)));
+
+    const matchesTags = filters.selectedTags.length === 0 || 
+      (course.tags && filters.selectedTags.some(tag => course.tags.includes(tag)));
+
+    const matchesFields = filters.selectedFields.length === 0 || 
+      (course.field && filters.selectedFields.includes(course.field));
+
+    const matchesTypes = filters.selectedTypes.length === 0 || 
+      (course.difficulty && filters.selectedTypes.includes(course.difficulty));
+
+    return matchesSearch && matchesTags && matchesFields && matchesTypes;
+  };
+
+  const filteredCourses = createMemo(() => coursesData.filter(course => matchesFilter(course, filters())));
+  const aiCourses = createMemo(() => filteredCourses().filter(course => course.field === "Artificial Intelligence"));
+  const mathCourses = createMemo(() => filteredCourses().filter(course => course.field === "Mathematics"));
+  const otherCourses = createMemo(() => filteredCourses().filter(course => !["Artificial Intelligence", "Mathematics"].includes(course.field)));
+
   return (
-    <div class="flex flex-col items-center justify-start h-screen w-full overflow-y-scroll pt-[15vh]">
+    <div class="flex flex-col items-center justify-start h-screen w-full overflow-y-scroll ">
 
-      <MainSeperator title='Artificial Intelligence' description='Explore our courses' />      
-      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4  my-8">
+      {/* Composable Filter Component */}
+      <ComposableFilter 
+        onFilterChange={setFilters}
+        pageType="discover"
+        placeholder="Search courses by title, description, or tags..."
+        class="max-w-[80%] mt-20"
+        tagsConfig={{
+          enabled: true,
+          options: availableTags,
+          title: "Tags",
+          icon: Tag
+        }}
+        fieldsConfig={{
+          enabled: true,
+          options: availableFields,
+          title: "Subject Fields",
+          icon: BookOpen
+        }}
+        typesConfig={{
+          enabled: true,
+          options: availableDifficulties,
+          title: "Difficulty Level",
+          icon: GraduationCap
+        }}
+      />
 
-        <CourseCard title='Machine Learning' icon='Brain' img={MachineLearningImage} description="Algorithms that learn from data and make predictions" />
-        <CourseCard title='Deep Learning' icon='Network' img={DeepLearningImage} description="Neural networks and artificial intelligence fundamentals" />
-        <CourseCard title='Computer Vision' icon='Eye' img={ComputerVisionImage} description="Teaching machines to see and interpret visual data" />
-
-        <CourseCard title='Natural Language Processing' icon='MessageSquare' img={NaturalLanguageProcessingImage} description="Understanding and processing human language" />
-        <CourseCard title='Reinforcement Learning' icon='Target' img={ReinforcementLearningImage} description="AI agents learning through trial and reward" />
-        <CourseCard title='Signal Processing' icon='Cpu' img={SignalProcessingImage} description="Building blocks of artificial intelligence systems" />
-
-      </div>
-
-      <MainSeperator title='Mathematics' description='Explore our courses' />
-
+      <MainSeperator title={`Artificial Intelligence (${aiCourses().length})`} description='Explore our AI courses' />      
       <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
-        <CourseCard title='Calculus' icon='TrendingUp' img={calculusImage} description="Master derivatives, integrals, and limits" />
-        <CourseCard title='Chaos Theory' icon='Zap' img={chaosTheoryImage} description="Explore complex systems and nonlinear dynamics" />
-        <CourseCard title='Game Theory' icon='Users' img={gameTheoryImage} description="Strategic decision making and mathematical modeling" />
-
-        <CourseCard title='Linear Algebra' icon='Grid3X3' img={linearAlgebraImage} description="Vectors, matrices, and linear transformations" />
-        <CourseCard title='Probability' icon='Dice6' img={probabilityImage} description="Statistical analysis and random processes" />
-        <CourseCard title='Time Series' icon='Clock' img={timeSeriesImage} description="How we turn Time data into insights" />
-
+        {aiCourses().map((course) => (
+          <CourseCard 
+            title={course.title} 
+            icon={course.icon} 
+            img={course.img} 
+            description={course.description}
+            tags={course.tags}
+            field={course.field}
+            difficulty={course.difficulty}
+          />
+        ))}
       </div>
+
+      <MainSeperator title={`Mathematics (${mathCourses().length})`} description='Explore our math courses' />
+      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
+        {mathCourses().map((course) => (
+          <CourseCard 
+            title={course.title} 
+            icon={course.icon} 
+            img={course.img} 
+            description={course.description}
+            tags={course.tags}
+            field={course.field}
+            difficulty={course.difficulty}
+          />
+        ))}
+      </div>
+
+      {otherCourses().length > 0 && (
+        <>
+          <MainSeperator title={`Other Courses (${otherCourses().length})`} description='Additional courses' />
+          <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
+            {otherCourses().map((course) => (
+              <CourseCard 
+                title={course.title} 
+                icon={course.icon} 
+                img={course.img} 
+                description={course.description}
+                tags={course.tags}
+                field={course.field}
+                difficulty={course.difficulty}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
     </div>
   );

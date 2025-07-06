@@ -8,10 +8,10 @@ const Courses = lazy(() => import("@/routes/01 - Home/library/Courses"));
 // @ts-ignore
 const Videos = lazy(() => import("@/routes/01 - Home/library/Videos"));
 const Documents = lazy(() => import("@/routes/01 - Home/library/Documents"));
-const Books = lazy(() => import("@/routes/01 - Home/library/Books"));
+const Tools = lazy(() => import("@/routes/01 - Home/library/Tools"));
 
 
-const tabs = ["Courses", "Videos", "Documents", "Links"];
+const tabs = ["Courses", "Videos", "Documents", "Tools"];
 
 export default function Library() {
 
@@ -25,7 +25,7 @@ export default function Library() {
         {activeTab() === "Courses" ? <Courses /> :
           activeTab() === "Videos" ? <Videos /> :
             activeTab() === "Documents" ? <Documents /> :
-              activeTab() === "Books" ? <Books /> : null
+              activeTab() === "Tools" ? <Tools /> : null
         }
       </div>
     </div>

@@ -4,10 +4,10 @@ import UpperNavigation from "@/layout/UpperNavigation";
 // lazy load tabs
 import { lazy } from "solid-js";
 
-const Featured = lazy(() => import("@/routes/01 - Home/resources/Featured"));
-const Videos = lazy(() => import("@/routes/01 - Home/resources/Videos"));
-const Documents = lazy(() => import("@/routes/01 - Home/resources/Documents"));
-const Tools = lazy(() => import("@/routes/01 - Home/resources/Tools"));
+const Featured = lazy(() => import("@/routes/01 - Home/Resources/Featured"));
+const Videos = lazy(() => import("@/routes/01 - Home/Resources/Videos"));
+const Documents = lazy(() => import("@/routes/01 - Home/Resources/Documents"));
+const Tools = lazy(() => import("@/routes/01 - Home/Resources/Tools"));
 
 
 const tabs = ["Featured", "Videos", "Documents", "Tools"];

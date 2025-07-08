@@ -18,7 +18,7 @@ export default function TopSection(props: Props) {
       {props.isOpen && <span class='text-primary font-black text-lg'>Haru</span>}
 
       <ChevronsLeft
-        class={`text-primary w-min h-min ml-auto transition-transform duration-300 ease-in-out z-1001 ${!props.isOpen ? 'rotate-180 mr-1 mb-2' : 'mr-8'}`}
+        class={`text-primary w-min h-min ml-auto transition-transform duration-300 ease-in-out z-50 ${!props.isOpen ? 'rotate-180 mr-1 mb-2' : 'mr-8'}`}
         onClick={() => props.setIsOpen(!props.isOpen)}
       />
 

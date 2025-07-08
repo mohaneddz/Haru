@@ -23,6 +23,9 @@ export const routes = [
       { path: "/practice/training", component: lazy(() => import("@/routes/02 - Practice/Training")) },
       { path: "/practice/tutor", component: lazy(() => import("@/routes/02 - Practice/Tutor")) },
 
+      { path: "/practice/training/flashcards", component: lazy(() => import("@/routes/02 - Practice/Training/Flashcards")) },
+      { path: "/practice/training/flashcards/:id", component: lazy(() => import("@/routes/02 - Practice/Training/Flashcards/FlashCardsDeck")) },
+
       // 03 - Track
       // { path: "/track/", component: lazy(() => import("@/routes/03 - Track/Track")) },
       { path: "/track/achievements", component: lazy(() => import("@/routes/03 - Track/Achivements")) },

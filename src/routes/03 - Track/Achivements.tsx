@@ -1,4 +1,4 @@
-import Ranking from '@/components/02 - Practice/challenges/Ranking';
+import Ranking from '@/components/02 - Practice/Challenges/Ranking';
 import AchivementCard from '@/components/03 - Track/achivements/AchivementCard';
 import Input from '@/components/core/Input';
 

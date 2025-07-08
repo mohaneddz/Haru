@@ -1,4 +1,4 @@
-import Files from "@/routes/01 - Home/sidebar/Files";
+import Files from "@/routes/01 - Home/Sidebar/Files";
 
 import TextDisplayArea from "@/components/01 - Home/Notes/NoteArea";
 import NoteTopBar from "@/components/01 - Home/Notes/NoteTopBar";

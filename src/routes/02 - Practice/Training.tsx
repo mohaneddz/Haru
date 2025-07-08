@@ -3,20 +3,12 @@ import LayoutCard from '@/components/02 - Practice/training/LayoutCard';
 import ProgressBar from '@/components/core/ProgressBar';
 import CheckEntry from '@/components/02 - Practice/CheckEntry';
 
-function Flair() {
-  return (
-    <div class="flex flex-col items-center justify-center w-full p-4 bg-gradient-to-b from-gray-800/15 to-gray-900/15 text-white/40 rounded">
-      <p>Keep your skills sharp!</p>
-    </div>
-  );
-}
 
 export default function Training() {
 
   return (
 
     <div class="w-full h-full flex flex-col items-center overflow-y-auto z-50">
-      <Flair />
 
       <div class="grid grid-rows-3 grid-cols-3 gap-4 flex-1 my-16 w-[80%] p-4">
 
@@ -73,7 +65,7 @@ export default function Training() {
           </div>
         </LayoutCard>
 
-        <LayoutCard variation="tall">
+        <LayoutCard variation="tall" href='training/flashcards' >
           <div class="flex flex-col items-center justify-center text-center gap-2">
             <h2>Flashcards</h2>
             <p class="text-sm text-gray-400 mb-8">Auto-generated decks from your notes. Built-in spaced repetition.</p>

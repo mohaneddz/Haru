@@ -19,7 +19,8 @@ interface Props {
   onFilterChange: (filters: FilterState) => void;
   placeholder?: string;
   class?: string;
-  pageType: 'resources' | 'discover' | 'courses';
+  title: string;
+  icon: any;
   
   // Composable filter configurations
   tagsConfig?: FilterConfig;
@@ -27,6 +28,7 @@ interface Props {
   typesConfig?: FilterConfig;
   
   // Legacy props for backward compatibility
+  pageType?: string;
   availableTags?: string[];
   availableFields?: string[];
   availableTypes?: string[];
@@ -103,20 +105,13 @@ export default function UniversalFilter(props: Props) {
 
   const getPlaceholder = () => {
     if (props.placeholder) return props.placeholder;
+    // Fallback to pageType if provided for backward compatibility
     switch (props.pageType) {
       case 'resources': return 'Search documents, videos, and tools...';
       case 'discover': return 'Search courses and content...';
       case 'courses': return 'Search course library...';
+      case 'flashcards': return 'Search flashcards...';
       default: return 'Search...';
-    }
-  };
-
-  const getPageIcon = () => {
-    switch (props.pageType) {
-      case 'resources': return BookOpen;
-      case 'discover': return Compass;
-      case 'courses': return GraduationCap;
-      default: return Search;
     }
   };
 
@@ -151,7 +146,7 @@ export default function UniversalFilter(props: Props) {
     };
   };
 
-  const PageIcon = getPageIcon();
+  const PageIcon = props.icon;
   const tagsConfig = getTagsConfig();
   const fieldsConfig = getFieldsConfig();
   const typesConfig = getTypesConfig();
@@ -164,7 +159,7 @@ export default function UniversalFilter(props: Props) {
 
         <div class="flex items-center gap-3">
           <PageIcon class="w-6 h-6 text-accent" />
-          <p class="text-lg font-semibold text-accent capitalize">{props.pageType} Filters</p>
+          <p class="text-lg font-semibold text-accent">{props.title}</p>
         </div>
         
         <Show when={hasActiveFilters()}>

@@ -36,7 +36,7 @@ export default function MiddleSection(props: Props) {
             <div class="w-full bg-sidebar m-0">
 
               <div
-                class={`text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 hover:cursor-pointer w-full py-4 ${props.isOpen? ` px-6 ` : `pl-4`}`}
+                class={`text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 cursor-pointer w-full py-4 ${props.isOpen? ` px-6 ` : `pl-4`}`}
                 onClick={() => setActiveSection(activeSection() === section.title ? null : section.title)}
               >
                 {SectionIcon && <SectionIcon class={`inline-block text-accent ${props.isOpen ? ` mr-2 ` : ``}`} />}

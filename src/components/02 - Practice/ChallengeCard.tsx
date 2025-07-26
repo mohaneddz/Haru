@@ -25,7 +25,7 @@ export default function ChallengeCard(props: Props) {
   };
 
   return (
-    <a class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 hover:cursor-pointer active:scale-100 overflow-hidden"
+    <a class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden"
       href={`/practice/challenge/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
       >
       <div class="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-300 aspect-[2] w-full flex flex-col justify-between">

@@ -63,7 +63,7 @@ export default function UpperNavigation(props: Props) {
                 <For each={props.tabs || []}>
                     {(tab) => (
                         <li
-                            class={`hover:cursor-pointer w-full text-center px-4 py-2 text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-white' : 'hover:text-accent-dark-1'}`}
+                            class={`cursor-pointer w-full text-center px-4 py-2 text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-white' : 'hover:text-accent-dark-1'}`}
                             onClick={() => handleTabClick(tab)}
                         >
                             {tab}

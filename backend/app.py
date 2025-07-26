@@ -20,17 +20,31 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'gemma-3-4b-it-q4
 # Global model instance
 llm = None
 
+def check_gpu_support():
+    try:
+        import torch
+        cuda_available = torch.cuda.is_available()
+        gpu_count = torch.cuda.device_count()
+        logging.info(f"CUDA available: {cuda_available}, GPU count: {gpu_count}")
+        if cuda_available:
+            logging.info(f"GPU: {torch.cuda.get_device_name(0)}")
+        return cuda_available
+    except ImportError:
+        logging.warning("PyTorch not available for GPU check")
+        return False
+
 def load_gemma_model():
     global llm
     if not os.path.exists(MODEL_PATH):
         logging.error(f"Model file not found at: {MODEL_PATH}")
+        check_gpu_support()
         return False
     
     try:
         logging.info(f"Loading Gemma model from: {MODEL_PATH}")
         llm = Llama(
             model_path=MODEL_PATH,
-            n_gpu_layers=-1,
+            n_gpu_layers=32,
             n_ctx=2048,
             verbose=True
         )

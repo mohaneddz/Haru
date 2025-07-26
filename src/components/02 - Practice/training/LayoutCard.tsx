@@ -22,7 +22,7 @@ export default function LayoutCard(props: TrainingCardProps) {
   };
 
   const hoverClasses = (props.hoverable ?? true)
-    ? 'hover:scale-95 active:scale-90 hover:from-gray-700 hover:to-gray-800 hover:cursor-pointer'
+    ? 'hover:scale-95 active:scale-90 hover:from-gray-700 hover:to-gray-800 cursor-pointer'
     : '';
 
   const borderHoverClasses = (props.hoverable ?? true)

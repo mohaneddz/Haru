@@ -10,7 +10,7 @@ const Syllabus = lazy(() => import("@/routes/01 - Home/Course/Syllabus"));
 const Resources = lazy(() => import("@/routes/01 - Home/Course/Resources"));
 const Progress = lazy(() => import("@/routes/01 - Home/Course/Progress"));
 
-export default function Course(props: any) {
+export default function Course() {
     
     const [activeTab, setActiveTab] = createSignal(tabs[0]);
     

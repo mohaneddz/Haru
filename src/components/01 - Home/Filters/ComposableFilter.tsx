@@ -1,5 +1,5 @@
 import { createSignal, For, Show } from "solid-js";
-import { Search, X, Tag, BookOpen, Compass, Wrench, GraduationCap, ChevronDown } from "lucide-solid";
+import { Search, X, Tag, BookOpen, Wrench, ChevronDown } from "lucide-solid";
 
 export interface FilterState {
   searchQuery: string;
@@ -97,8 +97,7 @@ export default function UniversalFilter(props: Props) {
   };
 
   const hasActiveFilters = () => {
-    return searchQuery().length > 0 || 
-           selectedTags().length > 0 || 
+    return selectedTags().length > 0 || 
            selectedFields().length > 0 || 
            selectedTypes().length > 0;
   };

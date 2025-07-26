@@ -20,7 +20,7 @@ export default function VideoCard(props: Props) {
 
   return (
     <a
-      class="p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 hover:cursor-pointer active:scale-100 overflow-hidden group"
+      class="p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
       href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
     >
       <div class="relative bg-background-light-3 rounded-lg shadow-md overflow-hidden aspect-[5/3] w-full group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)] transition-shadow duration-300">

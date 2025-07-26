@@ -94,6 +94,8 @@ export default function Discover() {
 
       {/* Composable Filter Component */}
       <ComposableFilter 
+        title="Discover Courses"
+        icon={Tag}
         onFilterChange={setFilters}
         pageType="discover"
         placeholder="Search courses by title, description, or tags..."

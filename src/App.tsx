@@ -7,10 +7,23 @@ import Statebar from "@/layout/Statebar";
 import { routes } from "@/routes/Routes";
 
 import '@/App.css'
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
-
+async function toggleFullscreen() {
+  const appWindow = await getCurrentWindow();
+  const isFullscreen = await appWindow.isFullscreen();
+  appWindow.setFullscreen(!isFullscreen);
+}
 
 function App() {
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "F11") {
+      e.preventDefault();
+      toggleFullscreen(); // custom function
+    }
+  });
+
   return (
     <Router
       root={(props) => (
@@ -22,12 +35,12 @@ function App() {
             {/* Upper Fade */}
             <div class="absolute bg-background w-full h-4 pointer-events-none" />
             <div class="absolute top-0 left-0 w-full h-min bg-gradient-to-b from-background via-90% to-background/20 z-40 pointer-events-none" />
-            
+
             {props.children}
-            
+
             {/* Lower Fade */}
             <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40 pointer-events-none" />
-            
+
             <Statebar />
           </div>
         </section>

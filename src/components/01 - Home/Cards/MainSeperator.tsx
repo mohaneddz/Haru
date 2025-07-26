@@ -19,7 +19,7 @@ export default function MainSeperator(props: Props) {
 
     return (
         <div 
-            class={`flex items-center justify-between w-full px-4 py-2 text-accent-dark-1 max-w-[80%] hover:cursor-pointer` + (props.class || "")}
+            class={`flex items-center justify-between w-full px-4 py-2 text-accent-dark-1 max-w-[80%] cursor-pointer` + (props.class || "")}
             onClick={handleToggle}
         >
             {props.title ? (

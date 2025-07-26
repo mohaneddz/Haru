@@ -35,19 +35,20 @@ def check_gpu_support():
 
 def load_gemma_model():
     global llm
+    check_gpu_support()
     if not os.path.exists(MODEL_PATH):
         logging.error(f"Model file not found at: {MODEL_PATH}")
-        check_gpu_support()
         return False
     
     try:
         logging.info(f"Loading Gemma model from: {MODEL_PATH}")
         llm = Llama(
             model_path=MODEL_PATH,
-            n_gpu_layers=32,
+            n_gpu_layers=8,
             n_ctx=2048,
             verbose=True
         )
+        print(llm.get_gpu_layer_count())  
         logging.info("Gemma model loaded successfully!")
         return True
     except Exception as e:

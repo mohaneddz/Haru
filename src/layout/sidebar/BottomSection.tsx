@@ -22,7 +22,7 @@ export default function BottomSection(props : Props) {
       </a>
 
       <a href="/settings">
-        < Settings class="w-6 h-6 text-primary-dark-1 hover:text-text hover:scale-105 hover:cursor-pointer transition duration-75" />
+        < Settings class="w-6 h-6 text-primary-dark-1 hover:text-text hover:scale-105 cursor-pointer transition duration-75" />
       </a>
 
     </div>

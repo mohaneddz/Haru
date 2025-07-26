@@ -229,7 +229,7 @@ export default function BrainCanvas(props: Props) {
                 
                 <button
                     onClick={resetCamera}
-                    class="px-3 py-2 hover:cursor-pointer bg-accent hover:bg-accent-dark-1 text-white rounded-lg shadow-lg transition-colors duration-200 text-sm font-medium"
+                    class="px-3 py-2 cursor-pointer bg-accent hover:bg-accent-dark-1 text-white rounded-lg shadow-lg transition-colors duration-200 text-sm font-medium"
                     title="Reset camera position"
                 >
                     Reset View
@@ -237,7 +237,7 @@ export default function BrainCanvas(props: Props) {
 
                 <button
                     onClick={toggleControls}
-                    class={`px-3 py-2 hover:cursor-pointer rounded-lg shadow-lg transition-colors duration-200 text-sm font-medium ${controlsEnabled()
+                    class={`px-3 py-2 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 text-sm font-medium ${controlsEnabled()
                             ? 'bg-sidebar-light-3 hover:bg-sidebar-light-1 text-white'
                             : 'bg-sidebar-dark-1 hover:bg-sidebar-dark-3 outline text-text/70'
                         }`}

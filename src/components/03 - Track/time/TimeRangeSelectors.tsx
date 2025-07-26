@@ -12,17 +12,17 @@ export default function TimeRangeSelectors() {
         </h1>
         <div class="flex gap-2">
             <button
-                class={`px-4 py-2 rounded-lg transition hover:scale-105 hover:cursor-pointer active:scale-95 ${timeRange() === 'week' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${timeRange() === 'week' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                 onClick={() => setTimeRange('week')}>
                 Week
             </button>
             <button
-                class={`px-4 py-2 rounded-lg transition hover:scale-105 hover:cursor-pointer active:scale-95 ${timeRange() === 'month' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${timeRange() === 'month' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                 onClick={() => setTimeRange('month')}>
                 Month
             </button>
             <button
-                class={`px-4 py-2 rounded-lg transition hover:scale-105 hover:cursor-pointer active:scale-95 ${timeRange() === 'quarter' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${timeRange() === 'quarter' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                 onClick={() => setTimeRange('quarter')}>
                 Quarter
             </button>

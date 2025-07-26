@@ -1,8 +1,8 @@
 export const entries = [
   { title: 'Discover', icon: 'Compass', section: 'home', slug: 'discover' },
-  { title: 'Resources', icon: 'BookOpen', section: 'home', slug: 'resources' },
   { title: 'Library', icon: 'Library', section: 'home', slug: 'library' },
   { title: 'Notes', icon: 'FileText', section: 'home', slug: 'notes' },
+  { title: 'Dictionary', icon: 'Book', section: 'home', slug: 'dictionary' },
 
   { title: 'Tutor', icon: 'GraduationCap', section: 'practice', slug: 'tutor' },
   { title: 'Training', icon: 'PenLine', section: 'practice', slug: 'training' },

@@ -408,3 +408,49 @@ Your question, “How are you?” in English, is perfectly fine to ask! I
 2025-07-26 21:13:39,268 - INFO - 127.0.0.1 - - [26/Jul/2025 21:13:39] "OPTIONS /chat HTTP/1.1" 200 -
 2025-07-26 21:13:39,510 - INFO - Processing message: 'hello...' (history: 0 messages)
 2025-07-26 21:13:41,284 - INFO - 127.0.0.1 - - [26/Jul/2025 21:13:41] "POST /chat HTTP/1.1" 200 -
+2025-07-26 22:17:32,475 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-26 22:17:42,090 - INFO - Gemma model loaded successfully!
+2025-07-26 22:17:42,093 - INFO - Starting server on port 5000
+2025-07-26 22:17:42,164 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.49:5000
+2025-07-26 22:17:42,165 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-26 22:17:55,711 - INFO - 127.0.0.1 - - [26/Jul/2025 22:17:55] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-26 22:17:55,950 - INFO - Processing message: 'hello there...' (history: 0 messages)
+2025-07-26 22:17:58,765 - INFO - 127.0.0.1 - - [26/Jul/2025 22:17:58] "POST /chat HTTP/1.1" 200 -
+2025-07-26 22:19:04,528 - INFO - CUDA available: True, GPU count: 1
+2025-07-26 22:19:04,532 - INFO - GPU: NVIDIA GeForce RTX 4070 Laptop GPU
+2025-07-26 22:19:04,532 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-26 22:19:13,337 - INFO - Gemma model loaded successfully!
+2025-07-26 22:19:13,337 - INFO - Starting server on port 5000
+2025-07-26 22:19:13,402 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.49:5000
+2025-07-26 22:19:13,402 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-26 22:22:30,956 - INFO - CUDA available: True, GPU count: 1
+2025-07-26 22:22:30,971 - INFO - GPU: NVIDIA GeForce RTX 4070 Laptop GPU
+2025-07-26 22:22:30,971 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-26 22:22:40,094 - INFO - Gemma model loaded successfully!
+2025-07-26 22:22:40,095 - INFO - Starting server on port 5000
+2025-07-26 22:22:40,134 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.49:5000
+2025-07-26 22:22:40,134 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-26 22:30:55,838 - INFO - CUDA available: True, GPU count: 1
+2025-07-26 22:30:55,853 - INFO - GPU: NVIDIA GeForce RTX 4070 Laptop GPU
+2025-07-26 22:30:55,853 - INFO - Loading Gemma model from: D:\Programming\Projects\Tauri\haru\backend\models\gemma-3-4b-it-q4_0.gguf
+2025-07-26 22:31:04,983 - ERROR - Failed to load Gemma model: 'Llama' object has no attribute 'get_gpu_layer_count'
+Traceback (most recent call last):
+  File "D:\Programming\Projects\Tauri\haru\backend\app.py", line 51, in load_gemma_model
+    print(llm.get_gpu_layer_count())
+AttributeError: 'Llama' object has no attribute 'get_gpu_layer_count'
+2025-07-26 22:31:05,447 - ERROR - Failed to initialize model - some endpoints will be unavailable
+2025-07-26 22:31:05,447 - INFO - Starting server on port 5000
+2025-07-26 22:31:05,490 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.49:5000
+2025-07-26 22:31:05,490 - INFO - [33mPress CTRL+C to quit[0m

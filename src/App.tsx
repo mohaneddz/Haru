@@ -12,7 +12,14 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 async function toggleFullscreen() {
   const appWindow = await getCurrentWindow();
   const isFullscreen = await appWindow.isFullscreen();
-  appWindow.setFullscreen(!isFullscreen);
+  const isMaximized = await appWindow.isMaximized();
+
+  if (!isFullscreen && isMaximized) {
+    await appWindow.unmaximize();
+    setTimeout(() => {appWindow.setFullscreen(true)}, 50);
+  } else {
+    appWindow.setFullscreen(!isFullscreen);
+  }
 }
 
 function App() {

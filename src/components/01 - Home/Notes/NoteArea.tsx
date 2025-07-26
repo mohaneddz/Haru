@@ -39,7 +39,7 @@ export default function TextDisplayArea(props: Props) {
 
   return (
     <div
-      class={`p-4 prose prose-sm max-w-full dark:prose-invert select-all whitespace-pre-wrap ${props.class || ""}`}
+      class={`p-4 max-w-full select-all whitespace-pre-wrap ${props.class || ""}`}
       id="text"
       ref={textContainerRef}
       contentEditable={false}

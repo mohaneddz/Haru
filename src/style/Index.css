@@ -142,3 +142,30 @@
   --color-shadow-dark-2: rgba(0, 0, 0, 0.4);
   --color-shadow-dark-3: rgba(0, 0, 0, 0.5);
 }
+html{
+  font-size: 8px;
+}
+
+@media screen and (min-width: 640px) {
+  html{
+    font-size: 10px;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  html{
+    font-size: 12px;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  html{
+    font-size: 14px;
+  }
+}
+
+@media screen and (min-width: 1800px) {
+  html{
+    font-size: 16px;
+  }
+}

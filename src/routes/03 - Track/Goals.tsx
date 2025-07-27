@@ -9,7 +9,7 @@ export default function Goals() {
 
       <GoalsFlair progress={80} name={"SolidJS Crash course"}  />
 
-      <div class="h-full w-full grid grid-cols-5 gap-6">
+      <div class="h-full w-full grid grid-cols-5 gap-6 mb-12">
 
         <LeftMenu />
         <RightMenu />

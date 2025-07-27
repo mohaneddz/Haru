@@ -1,7 +1,14 @@
-export default function NotFound() {
+import { onMount } from "solid-js";
+import { useNavigate } from "@solidjs/router";
+export default function Redirect() {
+    const navigate = useNavigate();
+
+    onMount(() => {
+        navigate("/home");
+    });
+
     return (
-        <div class="flex items-center justify-center h-full w-full text-2xl text-gray-500">
-            Template
+        <div>
         </div>
     );
 };

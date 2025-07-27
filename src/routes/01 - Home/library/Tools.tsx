@@ -1,4 +1,4 @@
-import courseImage from '@/data/math/time-series.jpg';
+import courseImage from '/data/math/time-series.jpg';
 
 import ToolCard from "@/components/01 - Home/Cards/ToolCard";
 import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';

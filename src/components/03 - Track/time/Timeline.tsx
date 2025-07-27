@@ -13,13 +13,13 @@ import {
     parseTime,
     formatTime,
     formatDate,
-} from '@/data/time/timedata';
+} from '@/data/timedata';
 
 export default function Timeline() {
     
     const [selectedDate, setSelectedDate] = createSignal(new Date('2025-06-21'));
     const [hoveredBlock, setHoveredBlock] = createSignal<TimeBlock | null>(null);
-    const [tooltipPosition, setTooltipPosition] = createSignal({ x: 0, y: 0 });    // Get current day's timeline
+    const [tooltipPosition, setTooltipPosition] = createSignal({ x: 0, y: 0 });  
     const currentTimeline = createMemo(() => {
         const dateKey = selectedDate().toISOString().split('T')[0];
         const data = timelineData[dateKey];

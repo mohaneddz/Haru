@@ -2,19 +2,19 @@ import MainSeperator from "@/components/01 - Home/Cards/MainSeperator";
 import GameCard from "@/components/02 - Practice/GameCard";
 
 // ✅ Your chosen images
-import chess from '@/data/games/chess.jpg';
-import sudoku from '@/data/games/sudoku.png';
-import cards from '@/data/games/cards.jpg';
-import words from '@/data/games/words.jpg';
-import sevenDiff from '@/data/games/7diff.jpg';
-import build from '@/data/games/build.jpg';
-import connect from '@/data/games/connect.png';
-import connect4 from '@/data/games/connect4.jpg';
-import pattern from '@/data/games/pattern.jpg';
-import puzzle from '@/data/games/puzzle.jpg';
-import rts from '@/data/games/rts.png';
-import sort from '@/data/games/sort.jpg';
-import ttt from '@/data/games/tic-tac-toe.jpg';
+import chess from '/data/games/chess.jpg';
+import sudoku from '/data/games/sudoku.png';
+import cards from '/data/games/cards.jpg';
+import words from '/data/games/words.jpg';
+import sevenDiff from '/data/games/7diff.jpg';
+import build from '/data/games/build.jpg';
+import connect from '/data/games/connect.png';
+import connect4 from '/data/games/connect4.jpg';
+import pattern from '/data/games/pattern.jpg';
+import puzzle from '/data/games/puzzle.jpg';
+import rts from '/data/games/rts.png';
+import sort from '/data/games/sort.jpg';
+import ttt from '/data/games/tic-tac-toe.jpg';
 
 export const gameSections = [
   {

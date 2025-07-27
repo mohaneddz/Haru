@@ -1,6 +1,6 @@
 interface Props {
     onClick?: () => void;
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | '';
     class?: string;
     children?: any;
 }
@@ -18,7 +18,7 @@ export default function Button(props: Props) {
             case 'ghost':
                 return 'bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-300';
             default:
-                return 'bg-gray-300 text-black hover:bg-gray-400';
+                return ' ';
 
         }
     }

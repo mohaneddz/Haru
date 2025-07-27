@@ -1,18 +1,18 @@
 // Math pics (example data)
-import timeSeriesImage from '@/data/math/time-series.jpg';
-import calculusImage from '@/data/math/calculus.jpg';
-import chaosTheoryImage from '@/data/math/chaos-theory.jpg';
-import gameTheoryImage from '@/data/math/game-theory.jpg';
-import linearAlgebraImage from '@/data/math/linear-algebra.jpg';
-import probabilityImage from '@/data/math/probability.jpg';
+import timeSeriesImage from '/data/math/time-series.jpg';
+import calculusImage from '/data/math/calculus.jpg';
+import chaosTheoryImage from '/data/math/chaos-theory.jpg';
+import gameTheoryImage from '/data/math/game-theory.jpg';
+import linearAlgebraImage from '/data/math/linear-algebra.jpg';
+import probabilityImage from '/data/math/probability.jpg';
 
 // AI pics (example data)
-import MachineLearningImage from '@/data/ai/machine-learning.jpg';
-import DeepLearningImage from '@/data/ai/deep-learning.jpg';
-import ComputerVisionImage from '@/data/ai/computer-vision.jpg';
-import NaturalLanguageProcessingImage from '@/data/ai/natural-language-processing.jpg';
-import ReinforcementLearningImage from '@/data/ai/reinforcement-learning.jpg';
-import SignalProcessingImage from '@/data/ai/signal-processing.jpg';
+import MachineLearningImage from '/data/ai/machine-learning.jpg';
+import DeepLearningImage from '/data/ai/deep-learning.jpg';
+import ComputerVisionImage from '/data/ai/computer-vision.jpg';
+import NaturalLanguageProcessingImage from '/data/ai/natural-language-processing.jpg';
+import ReinforcementLearningImage from '/data/ai/reinforcement-learning.jpg';
+import SignalProcessingImage from '/data/ai/signal-processing.jpg';
 
 import { createSignal, createMemo } from "solid-js";
 import CourseCard from "@/components/01 - Home/Cards/CourseCard";

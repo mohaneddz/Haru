@@ -15,16 +15,17 @@ export default function AchivementCard(props: Props) {
     const LockIcon = (LucideIcons as any)['Lock'] || LucideIcons['Lock'];
 
     return (
-        <LayoutCard border class="relative h-full w-full bg-sidebar-light-1/40 rounded-lg p-4 flex flex-col items-center justify-center aspect-[4/3]">
+        <LayoutCard border class="relative h-full w-full bg-sidebar-light-1/40 rounded-lg p-4 flex flex-col items-center justify-center ">
             {props.unlocked ? (
                 <>
                     <div class="bg-sidebar-light-3 p-4 rounded-full mb-2 flex justify-center items-center">
                         {IconComponent && <IconComponent class="text-accent w-8 h-8" />}
                     </div>
 
-                    <h3 class="text-white text-lg font-semibold mb-1">{props.title}</h3>
+                    <h3 class="text-white text-lg font-semibold mb-1 text-nowrap">{props.title}</h3>
 
-                    <p class="text-gray-400 text-sm">{props.description}</p>
+                    {/* replace with dots */}
+                    <p class="text-gray-400 text-sm hyphens-auto">{props.description}</p>
 
                     <div class="">
 

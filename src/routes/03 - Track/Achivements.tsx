@@ -69,13 +69,13 @@ export default function Achivements() {
         <Ranking />
       </div>
 
-      <div class="bg-sidebar gap-4 w-full h-full p-4 border border-white/40 overflow-y-auto">
+      <div class="bg-sidebar gap-4 w-full h-full p-4 border border-white/40 overflow-y-auto rounded-lg mb-4">
 
         <div class="my-8 mx-auto">
           <Input searchTerm={searchTerm()} setSearchTerm={setSearchTerm} />
         </div>
 
-        <div class="grid grid-cols-4 auto-rows-max gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 auto-rows-max gap-4">
           <For each={filteredAchievements()}>
             {(achievement) => (
               <AchivementCard

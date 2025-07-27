@@ -214,3 +214,8 @@ code {
   color: black !important;
   white-space: pre;
 }
+
+::selection{
+  background-color: var(--color-accent-dark-2);
+  color: var(--color-text-white);
+}

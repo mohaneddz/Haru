@@ -8,9 +8,9 @@ import CourseInfoTopCard from '@/components/01 - Home/Cards/CourseInfoTopCard';
 
 import GameCard from '@/components/02 - Practice/GameCard';
 
-import rts from '@/data/games/rts.png';
-import sort from '@/data/games/sort.jpg';
-import ttt from '@/data/games/tic-tac-toe.jpg';
+import rts from '/data/games/rts.png';
+import sort from '/data/games/sort.jpg';
+import ttt from '/data/games/tic-tac-toe.jpg';
 
 export default function Game() {
   const location = useLocation();

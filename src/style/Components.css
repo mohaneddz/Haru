@@ -1,0 +1,7 @@
+.clickable {
+  @apply cursor-pointer hover:brightness-105 active:brightness-95 hover:scale-105 active:scale-95 transition-all;
+}
+
+.center {
+  @apply flex items-center justify-center;
+}

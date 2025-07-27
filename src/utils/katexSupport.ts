@@ -12,135 +12,104 @@ export function useKatex() {
       const rendered = katex.renderToString(mathText, {
         displayMode,
         throwOnError: false,
-        strict: false, // `false` is often better for user-generated content
-        trust: true, // Allow \url, \href, etc. Be cautious if mathText is from untrusted sources
+        strict: false,
+        trust: true,
       });
-      const span = document.createElement('span');
-      span.className = displayMode ? 'katex-display' : 'katex-inline';
-      span.innerHTML = rendered;
-      fragment.appendChild(span);
+
+      const wrapper = document.createElement(displayMode ? 'div' : 'span');
+      wrapper.className = displayMode ? 'katex-display' : 'katex-inline';
+      wrapper.innerHTML = rendered;
+      fragment.appendChild(wrapper);
     } catch (error) {
-      console.warn('KaTeX rendering error:', error, 'Math:', mathText);
-      // Keep original text on error
+      console.warn('KaTeX render error:', error);
       const errorSpan = document.createElement('span');
       errorSpan.className = 'katex-error';
       errorSpan.style.color = 'red';
-      errorSpan.textContent = originalText; // Use originalText for the error display
+      errorSpan.textContent = originalText;
       fragment.appendChild(errorSpan);
     }
   };
 
   const getTextNodes = (element: HTMLElement): Text[] => {
-    const textNodes: Text[] = [];
-    const walker = document.createTreeWalker(
-      element,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode: (node) => {
-          // Skip text nodes that are already inside KaTeX spans or script tags
-          if (
-            node.parentElement?.classList.contains('katex') ||
-            node.parentElement?.classList.contains('katex-display') ||
-            node.parentElement?.classList.contains('katex-inline') ||
-            node.parentElement?.nodeName === 'SCRIPT'
-          ) {
-            return NodeFilter.FILTER_REJECT;
-          }
-          return NodeFilter.FILTER_ACCEPT;
-        },
-      }
-    );
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        if (
+          parent.closest('.katex') ||
+          parent.closest('script[type^="math/tex"]')
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
 
-    let node;
-    while ((node = walker.nextNode())) {
-      textNodes.push(node as Text);
-    }
-
-    return textNodes;
+    const nodes: Text[] = [];
+    let current;
+    while ((current = walker.nextNode())) nodes.push(current as Text);
+    return nodes;
   };
 
   const processTextNode = (node: Text) => {
     const text = node.nodeValue || '';
-    // Regex to find:
-    // 1. $$...$$ (display math)
-    // 2. $...$ (inline math, not starting with $$ and not ending with $$)
-    // 3. \[...\] (display math)
-    // 4. \(...\) (inline math)
-    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$(?:[^$\\]|\\.)*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/);
+    const parts = text.split(
+      /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\))/
+    );
 
-    if (parts.length === 1) return; // No math found
+    if (parts.length <= 1) return;
 
-    const fragment = document.createDocumentFragment();
+    const frag = document.createDocumentFragment();
 
     parts.forEach((part) => {
-      if (part.startsWith('$$') && part.endsWith('$$')) {
-        const mathText = part.slice(2, -2);
-        renderMathToFragment(mathText, true, fragment, part);
-      } else if (part.startsWith('$') && part.endsWith('$') && part.length > 1) { // Ensure not just '$'
-        const mathText = part.slice(1, -1);
-        renderMathToFragment(mathText, false, fragment, part);
-      } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
-        const mathText = part.slice(2, -2);
-        renderMathToFragment(mathText, true, fragment, part);
-      } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
-        const mathText = part.slice(2, -2);
-        renderMathToFragment(mathText, false, fragment, part);
+      if (/^\$\$[\s\S]+?\$\$$/.test(part)) {
+        renderMathToFragment(part.slice(2, -2), true, frag, part);
+      } else if (/^\$[^$\n]+\$/.test(part)) {
+        renderMathToFragment(part.slice(1, -1), false, frag, part);
+      } else if (/^\\\[[\s\S]+?\\\]$/.test(part)) {
+        renderMathToFragment(part.slice(2, -2), true, frag, part);
+      } else if (/^\\\([\s\S]+?\\\)$/.test(part)) {
+        renderMathToFragment(part.slice(2, -2), false, frag, part);
       } else {
-        fragment.appendChild(document.createTextNode(part));
+        frag.appendChild(document.createTextNode(part));
       }
     });
 
-    if (fragment.childNodes.length > 0 && node.parentNode) {
-      node.parentNode.replaceChild(fragment, node);
+    if (node.parentNode) {
+      node.parentNode.replaceChild(frag, node);
     }
   };
 
   const renderInElement = (element: HTMLElement) => {
     if (!element) return;
 
-    // Phase 1: Process script tags generated by some markdown processors
-    const mathScriptElements = element.querySelectorAll(
-      'script[type="math/tex"], script[type="math/tex; mode=display"]'
-    );
-
-    mathScriptElements.forEach((mathEl) => {
-      const isDisplay = mathEl.getAttribute('type') === 'math/tex; mode=display';
-      const mathText = mathEl.textContent || '';
-
+    // 1. Handle <script type="math/tex"> elements
+    element.querySelectorAll('script[type^="math/tex"]').forEach((scriptEl) => {
+      const math = scriptEl.textContent || '';
+      const display = (scriptEl as HTMLScriptElement).type.includes('mode=display');
       try {
-        const rendered = katex.renderToString(mathText, {
-          displayMode: isDisplay,
+        const html = katex.renderToString(math, {
+          displayMode: display,
           throwOnError: false,
           strict: false,
           trust: true,
         });
-
-        const span = document.createElement('span');
-        span.className = isDisplay ? 'katex-display' : 'katex-inline'; // Use specific classes
-        span.innerHTML = rendered;
-        mathEl.parentNode?.replaceChild(span, mathEl);
-      } catch (error) {
-        console.warn('KaTeX rendering error (script tag):', error, 'Math:', mathText);
+        const span = document.createElement(display ? 'div' : 'span');
+        span.className = display ? 'katex-display' : 'katex-inline';
+        span.innerHTML = html;
+        scriptEl.replaceWith(span);
+      } catch (err) {
         const errorSpan = document.createElement('span');
         errorSpan.className = 'katex-error';
         errorSpan.style.color = 'red';
-        errorSpan.textContent = mathText; // Show original math text on error
-        mathEl.parentNode?.replaceChild(errorSpan, mathEl);
+        errorSpan.textContent = math;
+        scriptEl.replaceWith(errorSpan);
       }
     });
 
-    // Phase 2: Process text nodes for $...$, $$...$$, \(...\), and \[...\]
-    const textNodes = getTextNodes(element);
-    textNodes.forEach(node => {
-      // Check if the node still exists and has a parent, as previous processing might have removed it
-      if (node.parentNode && node.nodeValue &&
-          (node.nodeValue.includes('$') || node.nodeValue.includes('\\(') || node.nodeValue.includes('\\['))) {
-        processTextNode(node);
-      }
-    });
+    // 2. Process inline math in text
+    getTextNodes(element).forEach(processTextNode);
   };
 
-  return {
-    renderInElement,
-  };
+  return { renderInElement };
 }

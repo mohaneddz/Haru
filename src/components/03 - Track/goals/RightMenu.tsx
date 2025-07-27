@@ -13,21 +13,21 @@ export default function RightMenu() {
                     <div class="aspect-square">
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-accent/10 transition-colors" >
                             <Target class="text-accent w-10 h-10" />
-                            <p class='text-text/70 text-sm font-medium'>New Goal</p>
+                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>New Goal</p>
                         </LayoutCard>
                     </div>
 
                     <div class="aspect-square">
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-accent/10 transition-colors" >
                             <BookOpen class="text-accent w-10 h-10" />
-                            <p class='text-text/70 text-sm font-medium'>Study Plan</p>
+                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>Study Plan</p>
                         </LayoutCard>
                     </div>
 
                     <div class="aspect-square">
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-good/10 transition-colors" >
                             <Briefcase class="text-accent w-10 h-10" />
-                            <p class='text-text/70 text-sm font-medium'>Project</p>
+                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>Project</p>
                         </LayoutCard>
                     </div>
 

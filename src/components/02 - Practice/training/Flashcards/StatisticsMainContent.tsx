@@ -5,7 +5,7 @@ import LayoutCard from '@/components/02 - Practice/training/LayoutCard';
 import {
   getWeeklyTrendData,
   weeklyLayout,
-} from '@/data/time/timedata';
+} from @/data/timedata;
 
 import { Activity, BookOpenCheck } from "lucide-solid";
 

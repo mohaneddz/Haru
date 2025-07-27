@@ -6,17 +6,17 @@ import ToolCard from "@/components/01 - Home/Cards/ToolCard";
 import ComposableFilter, { FilterState } from "@/components/01 - Home/Filters/ComposableFilter";
 import { Tag, BookOpen, FileText } from "lucide-solid";
 
-import rl from '@/data/videos/rl.jpg';
-import dl from '@/data/videos/dl.jpg';
-import cv from '@/data/videos/cv.jpg';
-import nlp from '@/data/videos/nlp.jpg';
-import genai from '@/data/videos/genai.jpg';
-import tools from '@/data/videos/tools.jpg';
+import rl from '/data/videos/rl.jpg';
+import dl from '/data/videos/dl.jpg';
+import cv from '/data/videos/cv.jpg';
+import nlp from '/data/videos/nlp.jpg';
+import genai from '/data/videos/genai.jpg';
+import tools from '/data/videos/tools.jpg';
 
-import doc1 from '@/data/documents/doc1.png';
-import doc2 from '@/data/documents/doc2.png';
-import doc3 from '@/data/documents/doc3.png';
-import doc4 from '@/data/documents/doc4.png';
+import doc1 from '/data/documents/doc1.png';
+import doc2 from '/data/documents/doc2.png';
+import doc3 from '/data/documents/doc3.png';
+import doc4 from '/data/documents/doc4.png';
 
 export default function Resources() {
   const [showDocuments, setShowDocuments] = createSignal(true);

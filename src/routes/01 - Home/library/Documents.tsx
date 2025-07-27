@@ -1,7 +1,7 @@
-import doc1 from '@/data/documents/doc1.png';
-import doc2 from '@/data/documents/doc2.png';
-import doc3 from '@/data/documents/doc3.png';
-import doc4 from '@/data/documents/doc4.png';
+import doc1 from '/data/documents/doc1.png';
+import doc2 from '/data/documents/doc2.png';
+import doc3 from '/data/documents/doc3.png';
+import doc4 from '/data/documents/doc4.png';
 
 // @ts-ignore
 import DocumentCard from "@/components/01 - Home/Cards/DocumentCard";

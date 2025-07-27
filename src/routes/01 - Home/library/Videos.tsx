@@ -1,18 +1,18 @@
 import VideoCard from "@/components/01 - Home/Cards/VideoCard";
 import MainSeperator from "@/components/01 - Home/Cards/MainSeperator";
 
-import rl from '@/data/videos/rl.jpg';
-import dl from '@/data/videos/dl.jpg';
-import cv from '@/data/videos/cv.jpg';
-import nlp from '@/data/videos/nlp.jpg';
-import genai from '@/data/videos/genai.jpg';
-import tools from '@/data/videos/tools.jpg';
-import agents from '@/data/videos/agents.jpg';
-import transformers from '@/data/videos/transformers.jpg';
-import data from '@/data/videos/data.jpg';
-import ethics from '@/data/videos/ethics.jpg';
-import math from '@/data/videos/math.jpg';
-import projects from '@/data/videos/projects.jpg';
+import rl from '/data/videos/rl.jpg';
+import dl from '/data/videos/dl.jpg';
+import cv from '/data/videos/cv.jpg';
+import nlp from '/data/videos/nlp.jpg';
+import genai from '/data/videos/genai.jpg';
+import tools from '/data/videos/tools.jpg';
+import agents from '/data/videos/agents.jpg';
+import transformers from '/data/videos/transformers.jpg';
+import data from '/data/videos/data.jpg';
+import ethics from '/data/videos/ethics.jpg';
+import math from '/data/videos/math.jpg';
+import projects from '/data/videos/projects.jpg';
 
 export default function Videos() {
   return (

@@ -4,9 +4,9 @@ import overlay from '@/assets/overlay.png';
 import { loadCourseData, CourseInfo } from '@/utils/courses/loadCourse';
 import CourseInfoTopCard from '@/components/01 - Home/Cards/CourseInfoTopCard';
 
-import NaturalLanguageProcessingImage from '@/data/ai/natural-language-processing.jpg';
-import ReinforcementLearningImage from '@/data/ai/reinforcement-learning.jpg';
-import SignalProcessingImage from '@/data/ai/signal-processing.jpg'
+import NaturalLanguageProcessingImage from '/data/ai/natural-language-processing.jpg';
+import ReinforcementLearningImage from '/data/ai/reinforcement-learning.jpg';
+import SignalProcessingImage from '/data/ai/signal-processing.jpg'
 
 import CourseCard from "@/components/01 - Home/Cards/CourseCard";
 

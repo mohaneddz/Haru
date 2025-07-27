@@ -14,6 +14,11 @@ export default function Statebar() {
     }, 60000); 
   })();
 
+  // Hide status bar when ingame
+  const isInGame = location.pathname.includes('/play');
+
+  if (isInGame) return null;
+
   return (
 
     <div class="relative bottom-0 w-full flex justify-between items-center px-6 opacity-75 text-white overflow-hidden z-50">

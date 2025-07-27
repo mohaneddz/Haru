@@ -5,8 +5,6 @@ import Sidebar from "@/layout/Sidebar";
 import Statebar from "@/layout/Statebar";
 
 import { routes } from "@/routes/Routes";
-
-import '@/App.css'
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 async function toggleFullscreen() {

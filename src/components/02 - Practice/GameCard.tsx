@@ -13,7 +13,7 @@ export default function GameCard(props: Props) {
 
   return (
     <a
-      href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
+      href={`/practice/games/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
       class="p-0.5 bg-gradient-to-br h-full w-full from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-150 hover:scale-105 active:scale-100 overflow-hidden group"
     >
       <div class="relative rounded-lg overflow-hidden bg-background-light-3 aspect-[5/3] w-full transition-shadow duration-300 group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)]">

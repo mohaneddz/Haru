@@ -12,12 +12,6 @@ body {
   font-family: 'Zen Dots', sans-serif;
 }
 
-* {
-  user-select: none;
-  scrollbar-width: thin;
-  scrollbar-color: #13b0d2 #0b0e17;
-}
-
 @theme {
 
   --color-primary: #22D3EE;

@@ -5,29 +5,9 @@ import Sidebar from "@/layout/Sidebar";
 import Statebar from "@/layout/Statebar";
 
 import { routes } from "@/routes/Routes";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-
-async function toggleFullscreen() {
-  const appWindow = await getCurrentWindow();
-  const isFullscreen = await appWindow.isFullscreen();
-  const isMaximized = await appWindow.isMaximized();
-
-  if (!isFullscreen && isMaximized) {
-    await appWindow.unmaximize();
-    setTimeout(() => {appWindow.setFullscreen(true)}, 50);
-  } else {
-    appWindow.setFullscreen(!isFullscreen);
-  }
-}
 
 function App() {
 
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "F11") {
-      e.preventDefault();
-      toggleFullscreen(); // custom function
-    }
-  });
 
   return (
     <Router

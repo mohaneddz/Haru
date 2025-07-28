@@ -9,6 +9,7 @@ import '@/style/components/FileTree.css';
 import '@/style/core/App.css';
 import '@/style/core/Basic.css';
 import '@/style/core/Index.css';
+import '@/style/core/Base.css';
 
 import '@/style/typography/Headings.css';
 import '@/style/typography/Text.css';

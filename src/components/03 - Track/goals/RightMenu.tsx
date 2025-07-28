@@ -4,7 +4,7 @@ import LayoutCard from "@/components/02 - Practice/training/LayoutCard";
 
 export default function RightMenu() {
     return (
-        <div class="w-full h-full rounded-md col-span-2 flex flex-col gap-4 ">
+        <div class="w-full h-full rounded-md col-span-2 flex flex-col gap-4 overflow-hidden">
 
             {/* Upper part */}
             <div class="w-full gap-4 p-8 rounded-md bg-sidebar" >
@@ -37,7 +37,7 @@ export default function RightMenu() {
 
             {/* Lower part */}
             
-            <div class="w-full gap-4 p-8 rounded-md bg-sidebar h-full flex flex-col " >
+            <div class="w-full gap-4 p-8 rounded-md bg-sidebar h-full flex flex-col overflow-y-auto" >
 
                 <div class="flex items-center justify-between mb-4">
                     <h2 class='text-lg font-semibold text-text/70'>Achievement Streak</h2>

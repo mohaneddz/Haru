@@ -23,6 +23,7 @@
     "shell:allow-spawn",
     "sql:default",
     "sql:allow-load",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    "stronghold:default"
   ]
 }

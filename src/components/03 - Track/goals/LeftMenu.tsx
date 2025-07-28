@@ -1,7 +1,7 @@
 import { createSignal, createMemo, For } from 'solid-js';
 import { Filter, ArrowUpDown, Search, ChevronDown } from 'lucide-solid'
 import GoalCard from '@/components/03 - Track/GoalCard';
-import Input from '@/components/core/Input';
+import Input from '@/components/core/Input/Input';
 
 interface GoalData {
     id: number;
@@ -24,6 +24,9 @@ export default function LeftMenu() {
         { id: 3, name: 'Build Portfolio Website', progress: 25, category: 'project', priority: 'high', deadline: '2025-08-01' },
         { id: 4, name: 'Learn TypeScript Advanced Patterns', progress: 60, category: 'learning', priority: 'medium', deadline: '2025-07-30' },
         { id: 5, name: 'Finish Classical RL Course', progress: 80, category: 'learning', priority: 'low', deadline: '2025-06-30' },
+        { id: 6, name: 'Personal Fitness Goal', progress: 70, category: 'personal', priority: 'low', deadline: '2025-09-01' },
+        { id: 7, name: 'Read 10 Books This Year', progress: 30, category: 'personal', priority: 'medium', deadline: '2025-12-31' },
+        { id: 8, name: 'Contribute to Open Source', progress: 20, category: 'project', priority: 'high', deadline: '2025-10-15' },
     ];
 
     const [showSortMenu, setShowSortMenu] = createSignal(false);
@@ -92,105 +95,108 @@ export default function LeftMenu() {
     };
 
     return (
-        <div class="bg-sidebar text-text/70 h-full py-4 rounded-md p-8 flex flex-col col-span-3 gap-4 overflow-y-auto pb-40" >          <div class="flex items-center justify-between mb-4">
-            <p class='text-lg font-semibold'>Goals In Progress</p>
-            <div class="flex gap-2 relative">
-                <div class="relative">
-                    <button
-                        class="flex items-center gap-2 px-3 py-1 bg-sidebar-light-2 rounded-md hover:bg-sidebar-light-3 transition-colors"
-                        onClick={() => setShowFilterMenu(!showFilterMenu())}
-                    >
-                        <Filter size={14} />
-                        <span class="text-sm">{getFilterLabel()}</span>
-                        <ChevronDown size={12} class={`transition-transform ${showFilterMenu() ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showFilterMenu() && (
-                        <div class="absolute top-full left-0 mt-1 bg-sidebar-light-2 border border-border-light-2 rounded-md shadow-lg z-10 min-w-32">
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setFilterBy('all'); setShowFilterMenu(false); }}
-                            >
-                                All Categories
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setFilterBy('learning'); setShowFilterMenu(false); }}
-                            >
-                                Learning
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setFilterBy('project'); setShowFilterMenu(false); }}
-                            >
-                                Project
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setFilterBy('personal'); setShowFilterMenu(false); }}
-                            >
-                                Personal
-                            </button>
-                        </div>
-                    )}
-                </div>
+        <div class="bg-sidebar text-text/70 h-full py-4 pb-20 rounded-md p-8 flex flex-col col-span-3 gap-4 overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <p class='text-lg font-semibold'>Goals In Progress</p>
+                <div class="flex gap-2 relative">
+                    <div class="relative">
+                        <button
+                            class="flex items-center gap-2 px-3 py-1 bg-sidebar-light-2 rounded-md hover:bg-sidebar-light-3 transition-colors"
+                            onClick={() => setShowFilterMenu(!showFilterMenu())}
+                        >
+                            <Filter size={14} />
+                            <span class="text-sm">{getFilterLabel()}</span>
+                            <ChevronDown size={12} class={`transition-transform ${showFilterMenu() ? 'rotate-180' : ''}`} />
+                        </button>
+                        {showFilterMenu() && (
+                            <div class="absolute top-full left-0 mt-1 bg-sidebar-light-2 border border-border-light-2 rounded-md shadow-lg z-10 min-w-32">
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setFilterBy('all'); setShowFilterMenu(false); }}
+                                >
+                                    All Categories
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setFilterBy('learning'); setShowFilterMenu(false); }}
+                                >
+                                    Learning
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setFilterBy('project'); setShowFilterMenu(false); }}
+                                >
+                                    Project
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setFilterBy('personal'); setShowFilterMenu(false); }}
+                                >
+                                    Personal
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
-                <div class="relative">
-                    <button
-                        class="flex items-center gap-2 px-3 py-1 bg-sidebar-light-2 rounded-md hover:bg-sidebar-light-3 transition-colors"
-                        onClick={() => setShowSortMenu(!showSortMenu())}
-                    >
-                        <ArrowUpDown size={14} />
-                        <span class="text-sm">{getSortLabel()}</span>
-                        <ChevronDown size={12} class={`transition-transform ${showSortMenu() ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showSortMenu() && (
-                        <div class="absolute top-full right-0 mt-1 bg-sidebar-light-2 border border-border-light-2 rounded-md shadow-lg z-10 min-w-32">
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setSortBy('progress'); setShowSortMenu(false); }}
-                            >
-                                Progress
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setSortBy('name'); setShowSortMenu(false); }}
-                            >
-                                Name
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setSortBy('deadline'); setShowSortMenu(false); }}
-                            >
-                                Deadline
-                            </button>
-                            <button
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
-                                onClick={() => { setSortBy('priority'); setShowSortMenu(false); }}
-                            >
-                                Priority
-                            </button>
-                        </div>
-                    )}
+                    <div class="relative">
+                        <button
+                            class="flex items-center gap-2 px-3 py-1 bg-sidebar-light-2 rounded-md hover:bg-sidebar-light-3 transition-colors"
+                            onClick={() => setShowSortMenu(!showSortMenu())}
+                        >
+                            <ArrowUpDown size={14} />
+                            <span class="text-sm">{getSortLabel()}</span>
+                            <ChevronDown size={12} class={`transition-transform ${showSortMenu() ? 'rotate-180' : ''}`} />
+                        </button>
+                        {showSortMenu() && (
+                            <div class="absolute top-full right-0 mt-1 bg-sidebar-light-2 border border-border-light-2 rounded-md shadow-lg z-10 min-w-32">
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setSortBy('progress'); setShowSortMenu(false); }}
+                                >
+                                    Progress
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setSortBy('name'); setShowSortMenu(false); }}
+                                >
+                                    Name
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setSortBy('deadline'); setShowSortMenu(false); }}
+                                >
+                                    Deadline
+                                </button>
+                                <button
+                                    class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light-3 transition-colors"
+                                    onClick={() => { setSortBy('priority'); setShowSortMenu(false); }}
+                                >
+                                    Priority
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
 
             <div class="relative mb-4">
                 <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-text/50 w-4 h-4" />
                 <Input searchTerm={searchTerm()} setSearchTerm={setSearchTerm} />
-            
-            </div>          <For each={filtebadAndSortedGoals()}>
-                {(goal) => (
-                    <GoalCard
-                        name={goal.name}
-                        progress={goal.progress}
-                        category={goal.category}
-                        priority={goal.priority}
-                        deadline={goal.deadline}
-                    />
-                )}
-            </For>
 
+            </div>
+            <div class="flex flex-col gap-4">
+                <For each={filtebadAndSortedGoals()}>
+                    {(goal) => (
+                        <GoalCard
+                            name={goal.name}
+                            progress={goal.progress}
+                            category={goal.category}
+                            priority={goal.priority}
+                            deadline={goal.deadline}
+                        />
+                    )}
+                </For>
+            </div>
         </div>
     );
 };

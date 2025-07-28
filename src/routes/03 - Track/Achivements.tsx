@@ -1,6 +1,6 @@
 import Ranking from '@/components/02 - Practice/Challenges/Ranking';
-import AchivementCard from '@/components/03 - Track/achivements/AchivementCard';
-import Input from '@/components/core/Input';
+import AchivementCard from '@/components/03 - Track/Achivements/AchivementCard';
+import Input from '@/components/core/Input/Input';
 
 import { createSignal, createMemo, For } from 'solid-js';
 

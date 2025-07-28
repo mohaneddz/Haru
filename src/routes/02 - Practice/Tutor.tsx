@@ -1,14 +1,20 @@
-import { Paperclip, Send } from "lucide-solid"; 
-import { For } from "solid-js"; 
+import { Paperclip, Send } from "lucide-solid";
+import { For } from "solid-js";
 import Message from "@/components/02 - Practice/Tutor/Messasge";
 import useTutor from "@/hooks/training/useTutor";
+import {  RotateCcw } from "lucide-solid";
 
 export default function Tutor() {
 
-  const { messages, currText, setCurrText, isLoading, handleSend, messageContainerRef } = useTutor();
+  const { messages, currText, setCurrText, isLoading, newChat, handleSend, messageContainerRef } = useTutor();
 
   return (
     <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-12 mx-auto">
+
+      <div class="absolute top-8 left-8 p-2 aspect-square flex items-center justify-center mb-4 border border-grey-400/40 rounded-full clickable" onclick={newChat}>
+        <RotateCcw class="text-grey-400/40" />
+      </div>
+
       <div
         id="message-container"
         ref={messageContainerRef}

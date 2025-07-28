@@ -57,13 +57,13 @@ export default function UpperNavigation(props: Props) {
     };
 
     return (
-        <div id="navigation" class="absolute h-12 bg-background-light-3 w-full z-50">
+        <div id="navigation" class="absolute h-12 bg-background-light-3 w-full z-50 m-0 p-0">
 
-            <ul class="absolute bottom-0 flex w-full justify-around h-min z-50 text-accent-dark-3">
+            <ul class="upper absolute bottom-0 flex w-full justify-around h-min z-50 text-accent-dark-3 p-0 m-0">
                 <For each={props.tabs || []}>
                     {(tab) => (
                         <li
-                            class={`cursor-pointer w-full text-center px-4 py-2 text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-white' : 'hover:text-accent-dark-1'}`}
+                            class={`upper cursor-pointer w-full text-center px-4 py-2 m-0 p text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-white' : 'hover:text-accent-dark-1'}`}
                             onClick={() => handleTabClick(tab)}
                         >
                             {tab}

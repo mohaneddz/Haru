@@ -1,8 +1,8 @@
 import { For, onMount, onCleanup } from 'solid-js';
-import { Pause, Play, RotateCcw, Lightbulb, Settings, X, RotateCw } from 'lucide-solid';
+import { Pause, Play, RotateCcw, Lightbulb, X, RotateCw } from 'lucide-solid';
 import useSudoku from '@/hooks/training/games/useSudoku';
 import Modal from '@/components/core/Modal';
-import Button from '@/components/core/Button';
+import Button from '@/components/core/Input/Button';
 
 interface Props {
   setSudokuPage: (page: 'menu' | 'play' | 'settings') => void;

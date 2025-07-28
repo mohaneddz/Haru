@@ -1,267 +1,278 @@
-import subprocess
-import requests
-from flask import Flask, request, jsonify
-import atexit
-import time
-from ddgs import DDGS  # Updated package name
-from bs4 import BeautifulSoup
+from ddgs import DDGS
 import asyncio
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CacheMode, CrawlerRunConfig
-from crawl4ai.content_filter_strategy import BM25ContentFilter
-from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
-from crawl4ai.models import CrawlResult
-import logging
-import concurrent.futures # Import for ThreadPoolExecutor
+# from crawl4ai import AsyncWebCrawler, BrowserConfig, CacheMode, CrawlerRunConfig
+import re
+import aiohttp
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+import html
+import trafilatura
+from readability import Document
+from datetime import datetime
+from constants import * 
+from classes import *
 
-app = Flask(__name__)
-
-LLAMA_SERVER_PATH = r"lib\llama-server.exe"
-MODEL_PATH = r"models\gemma-3-4b-it-q4_0.gguf"
-LLAMA_SERVER_URL = "http://localhost:8080/completion"
-
-# Configure logging for debugging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Start llama-server with optimized settings
-llama_process = subprocess.Popen([
-    LLAMA_SERVER_PATH,
-    "-m", MODEL_PATH,
-    "-t", "16",
-    "-ngl", "999",
-    "-c", "16000"
-])
-print("llama-server.exe started.")
-
-# Kill llama-server when app exits
-atexit.register(llama_process.kill)
-
-# Optional: wait for llama-server to be ready
-time.sleep(5)
-
-def get_allowed_urls(query, num_results=5):
-    discard_urls = ["youtube.com", "vimeo.com", "reddit.com", "twitter.com", "instagram.com"]
-    for url in discard_urls:
-        query += f" -site:{url}"
-
-    with DDGS() as ddgs:
-        results = ddgs.text(query, max_results=num_results)
-        urls = [r["href"] for r in results]
-    return urls
-
-async def crawl_and_filter(urls: list[str], query: str) -> list[dict]:
-    logging.info(f"Starting crawl for URLs: {urls}")
+async def fetch_wikipedia_api_data(title: str) -> dict:
+    """Fetch structured data from Wikipedia API as fallback."""
+    try:
+        # Clean title for API call
+        clean_title = re.sub(r'[^\w\s]', '', title).replace(' ', '_')
+        url = f"{WIKIPEDIA_API_URL}{clean_title}"
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=5) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return {
+                        'title': data.get('title'),
+                        'description': data.get('extract'),
+                        'published_date': data.get('timestamp'),
+                        'canonical_url': data.get('content_urls', {}).get('desktop', {}).get('page')
+                    }
+    except Exception as e:
+        logging.debug(f"Wikipedia API fallback failed: {e}")
     
-    # Simplified content filter
-    bm25_filter = BM25ContentFilter(user_query=query, bm25_threshold=0.3)
-    markdown_gen = DefaultMarkdownGenerator(content_filter=bm25_filter)
+    return {}
 
-    # Faster, more aggressive crawler configuration
-    run_config = CrawlerRunConfig(
-        markdown_generator=markdown_gen,
-        excluded_tags=["nav", "footer", "header", "form", "script", "style", "noscript", "iframe", "video", "audio"],
-        only_text=True,
-        exclude_social_media_links=True,
-        keep_data_attributes=False,
-        cache_mode=CacheMode.BYPASS,
-        remove_overlay_elements=True,
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        page_timeout=12000,  # Increased to 12 seconds per page
-        word_count_threshold=30,
-        wait_for="body",  # Wait for body element instead of domcontentloaded
-        delay_before_return_html=300  # Further reduced delay
-    )
-    
-    # Minimal browser configuration for speed
-    browser_config = BrowserConfig(
-        headless=True, 
-        text_mode=True, 
-        light_mode=True,
-        extra_args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--disable-images",
-            "--disable-javascript",
-            "--disable-plugins",
-            "--disable-extensions",
-            "--no-first-run",
-            "--disable-default-apps",
-            "--disable-sync",
-            "--disable-translate",
-            "--hide-scrollbars",
-            "--mute-audio",
-            "--no-default-browser-check",
-            "--disable-background-networking",
-            "--disable-backgrounding-occluded-windows",
-            "--disable-background-timer-throttling",
-            "--disable-renderer-backgrounding"
-        ]
-    )
-
-    successful_results = []
+async def fetch_omdb_api_data(title: str, year: str = None) -> dict:
+    """Fetch movie data from OMDb API as fallback."""
+    if not OMDB_API_KEY or OMDB_API_KEY == "your_omdb_key":
+        return {}
     
     try:
-        async with AsyncWebCrawler(config=browser_config) as crawler:
-            # Process URLs one by one with reduced timeout
-            for i, url in enumerate(urls):
-                try:
-                    logging.info(f"Crawling URL {i+1}/{len(urls)}: {url}")
-                    result = await asyncio.wait_for(
-                        crawler.arun(url, config=run_config), 
-                        timeout=15 
-                    )
-                    
-                    if result and result.markdown and len(result.markdown.strip()) > 30:
-                        successful_results.append({
-                            'url': url,
-                            'content': result.markdown[:1500],
-                            'title': getattr(result, 'title', 'No title')
-                        })
-                        logging.info(f"✓ Successfully crawled: {url} - Content length: {len(result.markdown)}")
-                    else:
-                        logging.warning(f"✗ Empty or insufficient content from: {url}")
-                        
-                except asyncio.TimeoutError:
-                    logging.warning(f"⏱ Timeout crawling URL: {url}")
-                    continue
-                except Exception as e:
-                    logging.error(f"✗ Error crawling URL {url}: {str(e)}")
-                    continue
-                    
-                # Stop if we have enough results or processed enough URLs
-                if len(successful_results) >= 2 or i >= 3:
-                    break
-                    
+        params = {'apikey': OMDB_API_KEY, 't': title}
+        if year:
+            params['y'] = year
+            
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://www.omdbapi.com/', params=params, timeout=5) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('Response') == 'True':
+                        return {
+                            'title': data.get('Title'),
+                            'release_date': data.get('Released'),
+                            'genre': data.get('Genre'),
+                            'director': data.get('Director'),
+                            'actors': data.get('Actors', '').split(', '),
+                            'awards': data.get('Awards'),
+                            'rating': data.get('imdbRating'),
+                            'plot': data.get('Plot')
+                        }
     except Exception as e:
-        logging.error(f"Error during crawling setup: {str(e)}", exc_info=True)
+        logging.debug(f"OMDb API fallback failed: {e}")
+    
+    return {}
 
-    logging.info(f"Crawl completed. Successfully processed {len(successful_results)} URLs out of {len(urls)} attempted.")
-    return successful_results
+# ==============================================================================
+# WEB SEARCH FUNCTIONS
+# ==============================================================================
 
-def search_web(query, max_results=5):
-    logging.info(f"Performing web search for query: {query}")
-    urls = get_allowed_urls(query, num_results=max_results)
-    if not urls:
-        logging.warning("No URLs found during web search.")
-        return []
+def get_domain_priority(url: str) -> float:
+    """Return domain priority with trusted domain whitelist."""
+    domain = urlparse(url).netloc.lower()
+    
+    # Check trusted domains first
+    for trusted_domain, priority in TRUSTED_DOMAINS.items():
+        if trusted_domain in domain:
+            return priority
+    return 0.2
+
+def extract_tables_from_html(html_content: str) -> list:
+    """Extract tables from HTML and return as Markdown strings."""
+    soup = BeautifulSoup(html_content, "html.parser")
+    tables = []
+    for table in soup.find_all("table"):
+        rows = []
+        for tr in table.find_all("tr"):
+            cells = tr.find_all(["th", "td"])
+            row = [cell.get_text(strip=True) for cell in cells]
+            rows.append(row)
+        # Convert to Markdown table if possible
+        if rows:
+            header = rows[0]
+            md = "| " + " | ".join(header) + " |\n"
+            md += "| " + " | ".join("---" for _ in header) + " |\n"
+            for row in rows[1:]:
+                md += "| " + " | ".join(row) + " |\n"
+            tables.append(md.strip())
+    return tables
+
+async def fetch_with_http_enhanced(session: aiohttp.ClientSession, url: str) -> tuple[str, str, str, list]:
+    """Enhanced fetch with HTML content preservation for structured data extraction and table extraction."""
+    try:
+        async with session.get(url, timeout=8, allow_redirects=True) as response:
+            if response.status == 200:
+                html_content = await response.text()
+                
+                # Primary: Use trafilatura for main content extraction
+                content = trafilatura.extract(
+                    html_content, 
+                    include_comments=False, 
+                    include_tables=True, 
+                    no_fallback=False,
+                    favor_precision=True
+                )
+                
+                # Fallback: Use readability if trafilatura fails
+                if not content or len(content) < 100:
+                    try:
+                        doc = Document(html_content)
+                        soup = BeautifulSoup(doc.summary(), "html.parser")
+                        content = soup.get_text(separator=" ")
+                    except:
+                        # Final fallback: BeautifulSoup only
+                        soup = BeautifulSoup(html_content, "html.parser")
+                        content = soup.get_text(separator=" ")
+                
+                # Extract title
+                soup = BeautifulSoup(html_content, "html.parser")
+                title = soup.title.string if soup.title else "No Title"
+                
+                # Clean up content
+                content = html.unescape(content)
+                content = re.sub(r'\s+', ' ', content).strip()
+
+                # Extract tables as Markdown
+                tables = extract_tables_from_html(html_content)
+                
+                return content, title, html_content, tables  # Return HTML and tables for structured extraction
+    except Exception as e:
+        logging.warning(f"HTTP fetch failed for {url}: {e}")
+    return None, None, None, []
+
+async def crawl_webpages_hybrid(urls: list[str]) -> list[dict]:
+    """Enhanced crawler with trusted domain prioritization and structured data extraction."""
+    # Sort by domain priority first, then by trusted status
+    def sort_key(url):
+        domain_priority = get_domain_priority(url)
+        is_trusted = any(trusted in urlparse(url).netloc.lower() for trusted in TRUSTED_DOMAINS.keys())
+        return (is_trusted, domain_priority)
+    
+    prioritized_urls = sorted(urls, key=sort_key, reverse=True)
+    skip_domains = ['pinterest.com', 'slideshare.net', 'youtube.com', 'vimeo.com', 'twitter.com', 'facebook.com']
+    filtered_urls = [u for u in prioritized_urls if urlparse(u).netloc.lower() not in skip_domains][:12]  # Increased from 10
+    logging.info(f"Crawling top {len(filtered_urls)} prioritized URLs...")
 
     results = []
-    try:
-        # Try to get the current event loop
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # If loop is running, use ThreadPoolExecutor
-                
-                def run_crawl():
-                    new_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(new_loop)
-                    try:
-                        return new_loop.run_until_complete(crawl_and_filter(urls, query))
-                    finally:
-                        new_loop.close()
-                
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(run_crawl)
-                    results = future.result(timeout=70)  # Increased overall timeout to 70 seconds
-            else:
-                results = loop.run_until_complete(crawl_and_filter(urls, query))
-        except RuntimeError:
-            # No event loop exists, create a new one
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                results = loop.run_until_complete(crawl_and_filter(urls, query))
-            finally:
-                loop.close()
-                
-    except concurrent.futures.TimeoutError:
-        logging.error("Overall crawling operation timed out")
-        results = []
-    except Exception as e:
-        logging.error(f"Error during search_web: {str(e)}", exc_info=True)
-        results = []
+    connector = aiohttp.TCPConnector(limit_per_host=5, limit=50, ssl=False)
+    async with aiohttp.ClientSession(connector=connector, headers={'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}) as session:
+        tasks = [fetch_with_http_enhanced(session, url) for url in filtered_urls]
+        crawl_results = await asyncio.gather(*tasks)
 
-    logging.info(f"Web search and crawling completed. Found {len(results)} results.")
+    for i, res in enumerate(crawl_results):
+        content, title, html_content, tables = res
+        if content and len(content) > 200:
+            results.append({
+                'url': filtered_urls[i], 
+                'title': title, 
+                'content': content,
+                'html_content': html_content,  # Preserve for structured extraction
+                'tables': tables               # Add extracted tables as a separate field
+            })
+
+    logging.info(f"Crawling complete. Got {len(results)} potential results.")
     return results
 
-@app.route("/ask", methods=["POST"])
-def ask_model():
-    data = request.get_json()
-    if not data or "prompt" not in data:
-        return jsonify({"error": "Missing 'prompt'"}), 400
-
-    payload = {
-        "prompt": data["prompt"],
-        "n_predict": data.get("n_predict", 100),
-        "temperature": 0.7,
-        "stop": ["</s>"]
-    }
-
+def get_web_urls(search_term: str, num_results: int = 18) -> list[str]:  # Increased from 15
+    """Enhanced search with Wikipedia language specification."""
     try:
-        response = requests.post(LLAMA_SERVER_URL, json=payload, timeout=60)
-        response.raise_for_status()
-        content = response.json().get("content", "")
-        return jsonify({"content": content})
+        with DDGS() as ddgs:
+            # Configure for English Wikipedia and higher result count
+            results = ddgs.text(search_term, region='wt-wt', safesearch='moderate', max_results=num_results)
+            urls = [r["href"] for r in results] if results else []
+            
+            # Boost Wikipedia URLs by ensuring en.wikipedia.org is included
+            wiki_search = f"{search_term} site:en.wikipedia.org"
+            wiki_results = ddgs.text(wiki_search, region='wt-wt', max_results=3)
+            if wiki_results:
+                wiki_urls = [r["href"] for r in wiki_results]
+                # Prepend Wikipedia URLs to prioritize them
+                urls = wiki_urls + [url for url in urls if url not in wiki_urls]
+            
+            return urls
     except Exception as e:
-        print("Request failed:", e)
-        return jsonify({"error": "llama-server communication failed"}), 500
+        logging.error(f"DDGS search failed: {e}")
+        return []
 
-@app.route("/ask_search", methods=["POST"])
-def ask_with_search():
-    data = request.get_json()
-    if not data or "prompt" not in data or "query" not in data:
-        return jsonify({"error": "Missing 'prompt' or 'query'"}), 400
+def clean_html(raw_html: str) -> str:
+    """
+    DEPRECATED: This function is now replaced by the enhanced cleaning in fetch_with_http_enhanced.
+    Kept for compatibility but should not be called.
+    """
+    logging.warning("clean_html function is deprecated, use fetch_with_http_enhanced instead")
+    return trafilatura.extract(raw_html, include_comments=False, include_tables=True, no_fallback=True) or ""
 
-    query = data["query"]
-    prompt = data["prompt"]
+def detect_dynamic_stop_tokens(query: str) -> list[str]:
+    """Detect user's question patterns and generate appropriate stop tokens."""
+    base_stops = ["</s>", "\n\n"]
     
-    # Add fallback for when search fails
-    search_results = search_web(query)
-    logging.info(f"Search results: {len(search_results)} results found")
+    # Detect question patterns
+    if re.search(r'\b(?:Q:|Question:|Ask:)\s*', query, re.IGNORECASE):
+        base_stops.extend(["Q:", "Question:", "\nQ:", "\nQuestion:"])
+    
+    if "?" in query:
+        base_stops.append("\n?")
+    
+    # Always add answer pattern stops
+    base_stops.extend(["Answer:", "\nAnswer:", "\n\nAnswer:"])
+    
+    return base_stops
 
-    if search_results:
-        # Use search results
-        search_context = "\n".join(
-            f"Source: {r['url']}\nTitle: {r.get('title', 'No title')}\nContent: {r['content'][:800]}...\n"
-            for r in search_results[:3]  # Limit to top 3 results
-        )
-        combined_prompt = (
-            f"Based on the following web search results, answer the question accurately:\n\n"
-            f"{search_context}\n\n"
-            f"Question: {prompt}\nAnswer:"
-        )
-    else:
-        # Fallback when search fails
-        logging.warning("No search results found, using direct prompt")
-        combined_prompt = f"Question: {prompt}\nAnswer based on your knowledge:"
-
-    payload = {
-        "prompt": combined_prompt,
-        "n_predict": data.get("n_predict", 150),
-        "temperature": 0.7,
-        "stop": ["</s>", "\n\n"]
-    }
-
+def recency_score_multiplier(structured_fields: dict) -> float:
+    """Calculate recency score based on publish date from structured fields."""
     try:
-        response = requests.post(LLAMA_SERVER_URL, json=payload, timeout=60)
-        response.raise_for_status()
-        content = response.json().get("content", "")
-        logging.info(f"LLM response: {content[:100]}...")
+        # Try to extract date from various field names
+        date_str = (structured_fields.get('release_date') or 
+                   structured_fields.get('published_date') or 
+                   structured_fields.get('date'))
         
-        return jsonify({
-            "content": content.strip(),
-            "search_results": search_results,
-            "sources_used": len(search_results)
-        })
+        if not date_str:
+            return 1.0  # neutral score if no date found
+        
+        # Parse various date formats
+        publish_date = None
+        date_formats = [
+            '%Y-%m-%d',  # 2023-12-01
+            '%Y-%m-%dT%H:%M:%SZ',  # 2023-12-01T10:30:00Z (ISO format)
+            '%Y-%m-%dT%H:%M:%S',   # 2023-12-01T10:30:00
+            '%B %d, %Y',  # December 1, 2023
+            '%b %d, %Y',  # Dec 1, 2023
+            '%m/%d/%Y',  # 12/01/2023
+            '%d/%m/%Y',  # 01/12/2023
+            '%Y'  # 2023 (year only)
+        ]
+        
+        date_str = str(date_str).strip()
+        
+        for fmt in date_formats:
+            try:
+                publish_date = datetime.strptime(date_str, fmt)
+                break
+            except ValueError:
+                continue
+        
+        # If standard formats fail, try extracting just the year
+        if not publish_date:
+            year_match = re.search(r'\b(19|20)\d{2}\b', date_str)
+            if year_match:
+                publish_date = datetime(int(year_match.group()), 1, 1)
+        
+        if publish_date:
+            days_old = (datetime.now() - publish_date).days
+            print('THIS DOCUMENT IS : ', days_old, 'Days Old')
+            if days_old <= 7:
+                return 1.5  # very fresh
+            elif days_old <= 30:
+                return 1.2  # recent
+            elif days_old <= 180:
+                return 1.0  # acceptable
+            elif days_old <= 365:
+                return 0.9  # getting old
+            else:
+                return 0.8  # stale, penalize
+        
     except Exception as e:
-        logging.error(f"Web+LLM request failed: {str(e)}", exc_info=True)
-        return jsonify({"error": "Web search + llama-server failed"}), 500
-
-@app.route("/shutdown", methods=["POST"])
-def shutdown_server():
-    llama_process.kill()
-    return jsonify({"status": "llama-server killed"})
-
-if __name__ == "__main__":
-    app.run(port=5000, debug=False)  # Disable debug mode for better performance
+        logging.debug(f"Error calculating recency score for date '{date_str}': {e}")
+    
+    return 1.0  # neutral score if parsing fails

@@ -60,19 +60,10 @@ export default function Tutor() {
   // };
 
 const handleSend = async () => {
-  // --- FIX START ---
-  // If a response is already being generated, abort that request so we can start a new one.
-  // We no longer return from the function here.
-  // if (isLoading()) {
-  //   console.log("Interrupting previous bot response to send a new message.");
-  //   abortController.abort();
-  // }
-  // --- FIX END ---
 
   const messageText = currText().trim();
   if (!messageText) return;
 
-  // Prevent sending new message while loading (normal behavior)
   if (isLoading()) return;
 
   setIsLoading(true);
@@ -123,6 +114,7 @@ const handleSend = async () => {
       body: JSON.stringify({
         message: messageText,
         history: historyForBackend,
+        stream: true, 
       }),
       signal,
     });
@@ -161,6 +153,8 @@ const handleSend = async () => {
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
+      // --- REPLACEMENT START ---
+      // Handle SSE-style streaming (data: ...)
       const lines = chunk.split("\n");
       for (const line of lines) {
         if (line.startsWith("data: ")) {
@@ -175,6 +169,7 @@ const handleSend = async () => {
           );
         }
       }
+      // --- REPLACEMENT END ---
     }
   } catch (error: any) {
     if (error.name === "AbortError") {

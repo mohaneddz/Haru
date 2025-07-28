@@ -51,7 +51,7 @@ export default function Files(props: Props) {
                 </div>
             </div>
 
-            <ul id="files-list" class="tree flex-1 overflow-hidden"> {/* Apply "tree" class, removed conflicting Tailwind classes */}
+            <ul id="files-list" class="pl-4 tree flex-1 overflow-hidden"> 
                 <For each={fileData}>
                     {(node) => <TreeNode node={node} level={0} />}
                 </For>

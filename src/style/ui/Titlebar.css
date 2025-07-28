@@ -1,7 +1,5 @@
 .titlebar {
   height: 30px;
-  /* background: #314057; */
-  /* width: min-content; */
   user-select: none;
   display: flex;
   justify-content: flex-end;

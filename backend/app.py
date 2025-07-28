@@ -228,6 +228,7 @@ def chat():
 
         logging.info(f"Processing message: '{user_message[:50]}...' (history: {len(chat_history)} messages)")
 
+        # Compose prompt for LLM
         prompt = ""
         for turn in chat_history:
             role = turn.get("role", "user")
@@ -241,62 +242,52 @@ def chat():
             "prompt": prompt,
             "n_predict": 512,
             "temperature": 0.7,
-            "stop": ["<end_of_turn>", "<|eot_id|>"],
+            "stop": ["\nUser:", "User:", "<end_of_turn>", "<|eot_id|>"],  # <-- Add these stop sequences
             "stream": stream
         }
 
         LLAMA_URL = LLAMA_SERVER_URL if LLAMA_SERVER_URL.startswith("http") else "http://localhost:8080/completion"
 
         if stream:
-            def generate_sse():
-                buffer = ""
+            # This nested function will be our clean, reliable stream proxy.
+            # We pass the payload and URL as arguments to avoid any scope issues.
+            def generate_sse_proxy(payload_to_send, url_to_use):
+                """
+                Acts as a simple, robust proxy for the SSE stream from the LLM server.
+                It forwards valid data lines directly to the client without parsing them.
+                """
                 try:
-                    with requests.post(LLAMA_URL, json=llama_payload, timeout=90, stream=True) as response:
+                    # Open a streaming connection to the LLM server
+                    with requests.post(url_to_use, json=payload_to_send, stream=True, timeout=90) as response:
+                        # Immediately check for HTTP errors (e.g., 404, 500, 502)
                         response.raise_for_status()
-                        for chunk in response.iter_content(chunk_size=None):
-                            if chunk:
-                                buffer += chunk.decode("utf-8")
-                                # Process each complete line from the buffer
-                                while "\n" in buffer:
-                                    line, buffer = buffer.split("\n", 1)
-                                    line = line.strip() # Remove leading/trailing whitespace
 
-                                    # IMPORTANT: The Llama.cpp output for streaming is often pure JSON,
-                                    # sometimes with `data: ` prefix if it's already an SSE stream.
-                                    # Your frontend expects `data: ` prefix.
-                                    # The error `Expecting value: line 1 column 1 (char 0) - Line: 'data: {...}'`
-                                    # means you are trying to parse "data: {...}" as JSON.
-                                    # You need to remove the "data: " prefix *before* json.loads()
-                                    # if it's present in the line from Llama.cpp.
+                        # Use `iter_lines` to process the stream line by line.
+                        # This automatically handles buffering and is much safer than iter_content.
+                        for line_bytes in response.iter_lines():
+                            if line_bytes:
+                                line_str = line_bytes.decode('utf-8')
+                                
+                                # The Llama.cpp server sends lines like "data: {...}".
+                                # We only need to forward these valid data lines.
+                                if line_str.startswith("data:"):
+                                    # Yield the original line plus the required SSE terminator.
+                                    # This forwards the JSON object perfectly.
+                                    yield f"{line_str}\n\n"
 
-                                    if line.startswith("data: "):
-                                        json_str = line.removeprefix("data: ") # Remove the SSE prefix
-                                    else:
-                                        json_str = line # Assume it's pure JSON
-
-                                    if json_str: # Only attempt to parse if there's content after stripping
-                                        try:
-                                            obj = json.loads(json_str)
-                                            content = obj.get("content", "")
-                                            # If Llama.cpp sends a final JSON with "stop": true and empty content,
-                                            # we don't want to yield an empty data line.
-                                            if content: 
-                                                yield f"data: {content}\n\n"
-                                        except json.JSONDecodeError as e:
-                                            # This is the error you were seeing.
-                                            # It should be less frequent with the `removeprefix` change.
-                                            logging.warning(f"Failed to decode JSON from Llama.cpp stream: {e} - Line: '{json_str}'")
-                                        except Exception as e:
-                                            logging.error(f"Error processing Llama.cpp stream chunk: {e}")
                 except requests.exceptions.RequestException as e:
-                    logging.error(f"Streaming error to Llama.cpp: {str(e)}")
-                    # Yield an SSE-formatted error if the request fails
-                    yield f"data: {json.dumps({'error': 'Backend connection failed'})}\n\n"
+                    logging.error(f"Failed to connect to LLM server during stream: {e}")
+                    # Create and send a properly formatted SSE error message
+                    error_payload = json.dumps({"error": "The connection to the language model failed."})
+                    yield f"data: {error_payload}\n\n"
                 except Exception as e:
-                    logging.error(f"Unexpected error in streaming: {str(e)}")
-                    yield f"data: {json.dumps({'error': 'Internal server error during streaming'})}\n\n"
+                    logging.error(f"An unexpected error occurred in the streaming proxy: {e}")
+                    error_payload = json.dumps({"error": "An internal server error occurred during the stream."})
+                    yield f"data: {error_payload}\n\n"
 
-            return Response(stream_with_context(generate_sse()), mimetype='text/event-stream')
+            # Call the proxy function and return its response
+            return Response(stream_with_context(generate_sse_proxy(llama_payload, LLAMA_SERVER_URL)), mimetype='text/event-stream')
+
         else:
             try:
                 response = requests.post(LLAMA_URL, json=llama_payload, timeout=90)

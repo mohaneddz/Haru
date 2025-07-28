@@ -4,7 +4,7 @@ import TranslationRow from '@/components/01 - Home/Dictionary/TranslationRow';
 import Modal from '@/components/core/Modal';
 import { Trash, Pen, ChevronDown, ChevronUp } from 'lucide-solid';
 import UniversalFilter from '@/components/01 - Home/Filters/ComposableFilter';
-import Checkbox from '@/components/core/Checkbox';
+import Checkbox from '@/components/core/Input/Checkbox';
 
 export default function Translation() {
 

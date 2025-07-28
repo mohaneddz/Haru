@@ -1,9 +1,9 @@
 
 
-import TimeTopCards from '@/components/03 - Track/time/TimeTopCards';
-import ChartsGrid from '@/components/03 - Track/time/ChartsGrid';
-import Timeline from '@/components/03 - Track/time/Timeline';
-import TimeRangeSelectors from '@/components/03 - Track/time/TimeRangeSelectors';
+import TimeTopCards from '@/components/03 - Track/Time/TimeTopCards';
+import ChartsGrid from '@/components/03 - Track/Time/ChartsGrid';
+import Timeline from '@/components/03 - Track/Time/Timeline';
+import TimeRangeSelectors from '@/components/03 - Track/Time/TimeRangeSelectors';
 
 export default function Time() {
 

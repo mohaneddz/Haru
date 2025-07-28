@@ -1,5 +1,5 @@
 import { Clock, TrendingUp, Activity, Timer } from 'lucide-solid';
-import ScoreCard from '@/components/core/ScoreCard.tsx';
+import ScoreCard from '@/components/core/Input/ScoreCard';
 
 export default function TimeTopCards () {
   return (

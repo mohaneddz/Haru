@@ -1,6 +1,6 @@
 // TODO: Implement actual settings functionality
 
-import Button from "@/components/core/Button";
+import Button from "@/components/core/Input/Button";
 import { ArrowLeft, Save } from "lucide-solid";
 
 interface Props {

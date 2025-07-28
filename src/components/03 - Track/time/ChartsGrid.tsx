@@ -10,7 +10,7 @@ import {
     productivityLayout,
     categoryLayout,
     weeklyLayout,
-} from @/data/timedata;
+} from '@/data/timedata';
 
 export default function ChartsGrid() {
     return (

@@ -1,5 +1,5 @@
 import { Flame, TrendingUp, Activity, WalletCards } from "lucide-solid";
-import ScoreCard from "@/components/core/ScoreCard";
+import ScoreCard from "@/components/core/Input/ScoreCard";
 
 interface Props{
     data?: any;

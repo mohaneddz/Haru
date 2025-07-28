@@ -1,7 +1,7 @@
 import * as LucideIcons from 'lucide-solid';
 import { createSignal } from 'solid-js';
 
-import Toggle from '@/components/core/Toggle';
+import Toggle from '@/components/core/Input/Toggle';
 
 interface Props {
   title?: string;

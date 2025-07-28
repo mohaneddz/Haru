@@ -1,4 +1,4 @@
-import Button from "@/components/core/Button";
+import Button from "@/components/core/Input/Button";
 import { ArrowLeft, Star, Cog } from "lucide-solid";
 import { useNavigate } from "@solidjs/router";
 

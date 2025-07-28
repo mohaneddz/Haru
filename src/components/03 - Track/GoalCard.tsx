@@ -36,7 +36,7 @@ export default function GoalCard(props: GoalProps) {
   };
 
   return (
-    <LayoutCard class="w-full">
+    <LayoutCard class="w-full" border>
       <div class="grid grid-cols-6 w-full items-center gap-4">
         
         {/* Goal Icon and Name */}

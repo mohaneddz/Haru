@@ -1,29 +1,46 @@
-import Button from "@/components/core/Button"
-import { ArrowLeft, Octagon, Pause, Play } from "lucide-solid";
+import Button from "@/components/core/Input/Button"
+import { Octagon, Pause, Play, RotateCcw } from "lucide-solid";
 import usePomodoro from "@/hooks/plugins/usePomodoro";
 import { Show } from "solid-js";
 
 interface Props {
     setPage: (page: 'main' | 'settings') => void;
+    settings: () => PomodoroSettings;
 }
 
 export default function PomodoroMain(props: Props) {
 
-    const { handleBackClick, isActive, formatTimeLeft , handlePlay,handleStop} = usePomodoro();
+    const { isActive, formatTimeLeft, handlePlay, handleStop, handleReset, turn, handleSkip, pomodorosCompleted } = usePomodoro();
+
+    const getPhaseText = () => {
+        switch (turn()) {
+            case 0: return "Focus on your task";
+            case 1: return "Take a short break";
+            case 2: return "Take a long break";
+            default: return "Focus on your task";
+        }
+    };
+
+    const getPhaseColor = () => {
+        switch (turn()) {
+            case 0: return "text-text";
+            case 1: return "text-text-light-3";
+            case 2: return "text-accent";
+            default: return "text-text";
+        }
+    };
 
     return (
         <div class="center flex-col h-full w-full relative">
 
-
-            <div class="absolute top-8 left-8 p-2 aspect-square flex items-center justify-center mb-4 border border-grey-400/40 rounded-full clickable" onclick={handleBackClick}>
-                <ArrowLeft class="text-grey-400/40" />
+            <div class="center flex-col gap-4 mb-8 relative">
+                <p class={`absolute -right-8 -top-4 ${getPhaseColor()}`}>{pomodorosCompleted() % props.settings().numberOfRounds}/{props.settings().numberOfRounds}</p>
+                <p class={`text-9xl select-none clickable ${getPhaseColor()}`} onclick={handleSkip}>{formatTimeLeft()}</p>
+                <p class={`text-xl select-none ${getPhaseColor()}`}>{getPhaseText()}</p>
             </div>
 
-            <p class="text-9xl text-white select-none">{formatTimeLeft()}</p>
-            <p class="text-xl text-gray-400/40 select-none">Focus on your task</p>
-
             <div class="absolute bottom-20 center flex-col gap-4">
-                <div class="grid grid-cols-2 mt-4 gap-4">
+                <div class="grid grid-cols-3 mt-4 gap-4">
 
                     <Button variant="secondary" class="center w-stretch h-4 p-1 text-[0.5rem]" onClick={handleStop}>
                         <Octagon class="mr-2 text-[0.5rem]" size={12} /> STOP
@@ -36,6 +53,10 @@ export default function PomodoroMain(props: Props) {
                         <Show when={isActive()}>
                             <Pause class="mr-2 text-[0.5rem]" size={12} /> PAUSE
                         </Show>
+                    </Button>
+
+                    <Button variant="secondary" class="center w-stretch h-4 p-1 text-[0.5rem]" onClick={handleReset}>
+                        <RotateCcw class="mr-2 text-[0.5rem]" size={12} /> RESET
                     </Button>
 
                 </div>

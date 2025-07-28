@@ -114,6 +114,16 @@ export default function useSudoku() {
 	};
 
 	const generatePerfectBoard = (hiddenPercentage: number) => {
+		
+		// First, reset the game state, and stop the timer if it's running
+		setIsPaused(false);
+		setTimeElapsed(0);
+		setHintsUsed(0);
+		setSelectedCell(null);
+		setIsWon(false);
+		setFinalTime(0);
+		
+
 		// Create a complete valid Sudoku board
 		const completeBoard = Array(9).fill(0).map(() => Array(9).fill(0));
 		

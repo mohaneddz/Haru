@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import Checkbox from "@/components/core/Checkbox";
+import Checkbox from "@/components/core/Input/Checkbox";
 
 export default function DefinitionRow(props: Definition & { onEdit?: (field: 'term' | 'definition', value: string) => void }) {
     const [term, setTerm] = createSignal(props.term);

@@ -2,26 +2,28 @@ import { defineConfig } from 'vite';
 import solid from 'vite-plugin-solid';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { viteCommonjs } from '@originjs/vite-plugin-commonjs'; 
 
 const host = process.env.TAURI_DEV_HOST;
 
-// https://vitejs.dev/config/
 export default defineConfig(async () => ({
-	plugins: [tailwindcss(), solid()],
+	plugins: [viteCommonjs(), tailwindcss(), solid()],
 
-	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-	//
-	// 1. prevent vite from obscuring rust errors
 	clearScreen: false,
-	// 2. tauri expects a fixed port, fail if that port is not available
 
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
-			'b': path.resolve(__dirname, './backend'),
+			b: path.resolve(__dirname, './backend'),
+			debug: 'debug/src/browser.js',
 		},
 	},
 
+	// We can now simplify this. The plugin is more reliable.
+	optimizeDeps: {
+		include: ['solid-markdown', 'remark-math', 'rehype-katex'],
+	},
+	
 	server: {
 		port: 1234,
 		strictPort: true,
@@ -34,7 +36,6 @@ export default defineConfig(async () => ({
 			  }
 			: undefined,
 		watch: {
-			// 3. tell vite to ignore watching `src-tauri`
 			ignored: ['**/src-tauri/**'],
 		},
 	},

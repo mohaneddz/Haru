@@ -1,14 +1,21 @@
 @import "tailwindcss";
 
-* {
-  user-select: none;
+html{
+  font-size: 8px;
 }
 
-@font-face {
-  font-family: 'Zen Dots';
-  font-style: normal;
-  src: url('/fonts/ZenDots-Regular.ttf') format('truetype');
-  font-weight: 400;
+body {
+  font-size: 16px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: sans-serif;
+  font-family: 'Zen Dots', sans-serif;
+}
+
+* {
+  user-select: none;
+  scrollbar-width: thin;
+  scrollbar-color: #13b0d2 #0b0e17;
 }
 
 @theme {
@@ -141,9 +148,6 @@
   --color-shadow-dark-1: #111420;
   --color-shadow-dark-2: rgba(0, 0, 0, 0.4);
   --color-shadow-dark-3: rgba(0, 0, 0, 0.5);
-}
-html{
-  font-size: 8px;
 }
 
 @media screen and (min-width: 640px) {

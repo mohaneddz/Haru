@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+::selection{
+  background-color: var(--color-accent-dark-2);
+  /* invert the color */
+  color: var(--color-text);
+}

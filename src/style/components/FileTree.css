@@ -1,0 +1,31 @@
+.tree {
+  list-style: none;
+  white-space: nowrap;
+  overflow: auto;
+  font-size: 14px;
+}
+
+.tree ul {
+  padding-left: 0.7rem;
+  border-left: 1px solid #555;
+  margin-top: 0;
+}
+
+.tree li {
+  position: relative;
+  margin: 0.25rem 0;
+  list-style: none;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding-left: 0.1rem;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tree .icon {
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}

@@ -1,0 +1,7 @@
+* .excalidraw {
+  --color-primary: red;
+}
+
+* .excalidraw.theme--dark {
+  --color-primary: pink;
+}

@@ -21,3 +21,7 @@ p {
     user-select: text;
   }
 }
+
+.non-selectable {
+  user-select: none;
+}

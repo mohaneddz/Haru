@@ -2,18 +2,27 @@ import { Paperclip, Send } from "lucide-solid";
 import { For } from "solid-js";
 import Message from "@/components/02 - Practice/Tutor/Messasge";
 import useTutor from "@/hooks/training/useTutor";
-import {  RotateCcw } from "lucide-solid";
+import { Globe } from "lucide-solid";
 
 export default function Tutor() {
 
-  const { messages, currText, setCurrText, isLoading, newChat, handleSend, messageContainerRef } = useTutor();
+  const { messages, currText, setCurrText, isLoading, handleSend, messageContainerRef, web, toggleWeb, rag, toggleRag, mode, setMode } = useTutor();
 
   return (
     <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-12 mx-auto">
 
-      <div class="absolute top-8 left-8 p-2 aspect-square flex items-center justify-center mb-4 border border-grey-400/40 rounded-full clickable" onclick={newChat}>
-        <RotateCcw class="text-grey-400/40" />
+      <div class="absolute top-8 left-4 flex flex-col justify-center z-50">
+
+        <select class="mb-4 backdrop:blur-lg focus:outline-none focus:ring-0" onChange={(e) => setMode(e.currentTarget.value)} value={mode()}>
+          <option value="tutor" class="bg-background-light-1">General</option>
+          <option value="explorer" class="bg-background-light-1">Explorer</option>
+          <option value="objective" class="bg-background-light-1">Objective</option>
+        </select>
+
+        <p class="text-text-light-2 text-sm cursor-pointer w-min text-nowrap">New Chat</p>
+
       </div>
+
 
       <div
         id="message-container"
@@ -24,7 +33,6 @@ export default function Tutor() {
           {(message) => <Message text={message.text} user={message.user} id={message.id} />}
         </For>
 
-        {/* {isLoading() && <TypingIndicator />} */}
       </div>
 
       <div class="bg-background-light-3/25 h-max w-[80%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4">
@@ -42,11 +50,6 @@ export default function Tutor() {
             }
             if (e.key === "Enter") {
               e.preventDefault();
-              // if (isLoading()) {
-              //   handleStop();
-              // } else {
-              //   handleSend();
-              // }
               if (!isLoading()) {
                 handleSend();
               }
@@ -55,22 +58,25 @@ export default function Tutor() {
           }}
         />
 
-        <div class="flex items-center justify-between w-full mt-4">
-          <div class="bg-gray-700 p-2 rounded-md mx-4">
-            <Paperclip class="text-text-light-2" size={20} />
+        <div class="flex items-center justify-between w-full mt-4 z-50">
+
+          <div class="flex gap-4 w-min mx-4">
+
+            <button class={` p-2 rounded-md clickable ${rag() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleRag} >
+              <Paperclip size={20} />
+            </button>
+
+            <button class={` p-2 rounded-md clickable ${web() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleWeb}>
+              <Globe size={20} />
+            </button>
+
           </div>
 
-          <button
-            class={`bg-gray-700 p-2 rounded-md mx-4 cursor-pointer ${isLoading() ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+          <button class={`bg-gray-700 p-2 rounded-md mx-4 ${isLoading() ? "cursor-not-allowed" : "clickable"}`}
             onClick={handleSend}
             disabled={currText().trim() === "" || isLoading()}
           >
-            {/* {isLoading() ? (
-              <XCircle class="text-white" size={20} /> 
-            ) : ( */}
-            <Send class="text-text-light-2" size={20} />
-            {/* )} */}
+            <Send size={20} />
           </button>
         </div>
       </div>

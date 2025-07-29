@@ -1,46 +1,17 @@
 import { For } from 'solid-js';
 import TreeNode from '@/components/01 - Home/Notes/TreeNode';
-
-interface FileNode {
-    id: string;
-    name: string;
-    type: 'folder' | 'file';
-    children?: FileNode[];
-}
+import { useFiles } from '@/hooks/home/useFiles';
 
 interface Props {
     class?: string;
+    currFile?: (file: string) => void; 
+    setCurrFile: (file: string) => void;
 }
 
-// Sample data structure
-const fileData: FileNode[] = [
-    {
-        id: '1',
-        name: 'AI',
-        type: 'folder',
-        children: [
-            {
-                id: '2',
-                name: 'Machine Learning',
-                type: 'folder',
-                children: [
-                    {
-                        id: '3',
-                        name: 'Stanford',
-                        type: 'folder',
-                        children: Array.from({ length: 7 }, (_, i) => ({
-                            id: `lecture-${i + 1}`,
-                            name: `Lecture ${i + 1}`,
-                            type: 'file' as const,
-                        }))
-                    }
-                ]
-            }
-        ]
-    }
-];
-
 export default function Files(props: Props) {
+
+    const { fileTree , loadFiles  } = useFiles();
+
     return (
         <div
             class={`relative h-full w-80 resize-x flex flex-col bg-cyan-dark-2 border-r border-border text-white overflow-x-auto ${props?.class || ""}`}
@@ -52,10 +23,14 @@ export default function Files(props: Props) {
             </div>
 
             <ul id="files-list" class="pl-4 tree flex-1 overflow-hidden"> 
-                <For each={fileData}>
-                    {(node) => <TreeNode node={node} level={0} />}
+                <For each={fileTree()}>
+                    {(node) => <TreeNode path={node.path} node={node} level={0} setCurrFile={props.setCurrFile} />}
                 </For>
             </ul>
+
+            <div onClick={loadFiles} class="absolute bottom-4 w-full text-white px-4 py-2 cursor-pointer text-center border-t-1 bg-background hover:brightness-120 border-border-light-1">
+                Select Folder
+            </div>
 
         </div>
     );

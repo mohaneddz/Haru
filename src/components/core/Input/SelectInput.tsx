@@ -6,14 +6,16 @@ interface Props {
     selected?: string;
     onChange?: (value: string) => void;
     id?: string;
+    background?: string;
 }
 
 export default function SelectInput(props: Props) {
+    const background = props.background ?? "bg-background-light-3";
     return (
-        <select id={props.id} class={`justify-self-end p-2 rounded bg-background-light-3 ${props.class}`} onChange={(e) => props.onChange?.(e.currentTarget.value)}>
+        <select id={props.id} class={`justify-self-end p-2 rounded ${background} ${props.class}`} onChange={(e) => props.onChange?.(e.currentTarget.value)}>
             <For each={props.options}>
                 {(option) => (
-                    <option value={option.value} selected={option.value === props.selected}>
+                    <option value={option.value} selected={option.value === props.selected} class="text-text-light-2 bg-background-light-3">
                         {option.label}
                     </option>
                 )}

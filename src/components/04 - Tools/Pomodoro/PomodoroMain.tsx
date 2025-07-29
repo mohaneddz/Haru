@@ -30,13 +30,21 @@ export default function PomodoroMain(props: Props) {
         }
     };
 
+    const getPhase = () => {
+        const number = pomodorosCompleted() % props.settings().numberOfRounds;
+        if (number === 0 && pomodorosCompleted() > 0) {
+            return props.settings().numberOfRounds; 
+        }
+        return number;
+    };
+
     return (
         <div class="center flex-col h-full w-full relative">
 
             <div class="center flex-col gap-4 mb-8 relative">
-                <p class={`absolute -right-8 -top-4 ${getPhaseColor()}`}>{pomodorosCompleted() % props.settings().numberOfRounds}/{props.settings().numberOfRounds}</p>
-                <p class={`text-9xl select-none clickable ${getPhaseColor()}`} onclick={handleSkip}>{formatTimeLeft()}</p>
-                <p class={`text-xl select-none ${getPhaseColor()}`}>{getPhaseText()}</p>
+                <p class={`absolute -right-8 -top-4 non-selectable ${getPhaseColor()}`}>{getPhase()}/{props.settings().numberOfRounds}</p>
+                <p class={`text-9xl non-selectable clickable ${getPhaseColor()}`} onclick={handleSkip}>{formatTimeLeft()}</p>
+                <p class={`text-xl non-selectable ${getPhaseColor()}`}>{getPhaseText()}</p>
             </div>
 
             <div class="absolute bottom-20 center flex-col gap-4">

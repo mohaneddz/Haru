@@ -14,6 +14,12 @@ strong {
   user-select: text;
 }
 
+i, em{
+  font-style: italic;
+  color: #67728e;
+  user-select: text;
+}
+
 p {
   user-select: text;
 

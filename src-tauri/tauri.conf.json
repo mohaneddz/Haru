@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "haru",
-        "width": 800,
-        "height": 600,
+        "width": 1024,
+        "height": 800,
         "transparent": true,
         "resizable": true,
         "decorations": false
@@ -34,5 +34,10 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  }
+  },
+  	"plugins": {
+		"fs": {
+			"requireLiteralLeadingDot": false
+		}
+	}
 }

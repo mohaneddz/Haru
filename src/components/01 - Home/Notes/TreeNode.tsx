@@ -1,15 +1,15 @@
 import { createSignal, For } from 'solid-js';
-import { FolderOpen, Folder, File, ChevronRight, ChevronDown } from 'lucide-solid';
+import { FolderOpen, Folder, File } from 'lucide-solid';
 
-interface FileNode {
-    id: string;
-    name: string;
-    type: 'folder' | 'file';
-    children?: FileNode[];
+interface Props {
+    node: FileNode;
+    path: string;
+    level: number;
+    setCurrFile: (file: string) => void;
 }
 
-export default function TreeNode(props: { node: FileNode; level: number }) {
-    const [isOpen, setIsOpen] = createSignal(true); // Start with folders open
+export default function TreeNode(props: Props) {
+    const [isOpen, setIsOpen] = createSignal(true);
 
     const toggleOpen = () => {
         if (props.node.type === 'folder') {
@@ -20,11 +20,10 @@ export default function TreeNode(props: { node: FileNode; level: number }) {
     const hasChildren = props.node.children && props.node.children.length > 0;
 
     return (
-        <li class='ml-2'> 
+        <li class='ml-2'>
             <div
                 class="tree-item cursor-pointer hover:bg-white/5 transition-colors duration-150"
                 onClick={toggleOpen}
-                // Removed inline padding-left style
             >
                 {props.node.type === 'folder' ? (
                     <>
@@ -35,15 +34,15 @@ export default function TreeNode(props: { node: FileNode; level: number }) {
                         )}
                     </>
                 ) : (
-                    <File size={18} class="icon text-gray-300" /> 
+                    <File size={18} class="icon text-gray-300" onClick={() => { console.log(`Selected file: ${props.path}`); props.setCurrFile(props.path); }} />
                 )}
                 <span class="select-none">{props.node.name}</span>
             </div>
 
             {props.node.type === 'folder' && hasChildren && isOpen() && (
-                <ul> 
+                <ul>
                     <For each={props.node.children}>
-                        {(child) => <TreeNode node={child} level={props.level + 1} />}
+                        {(child) => <TreeNode node={child} level={props.level + 1} path={child.path} setCurrFile={props.setCurrFile} />}
                     </For>
                 </ul>
             )}

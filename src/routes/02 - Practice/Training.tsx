@@ -1,108 +1,37 @@
-import LayoutCard from '@/components/02 - Practice/training/LayoutCard';
+import { For } from 'solid-js'
 
-import ProgressBar from '@/components/core/ProgressBar';
-import CheckEntry from '@/components/02 - Practice/CheckEntry';
+import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
+import SelectedExercise, { exampleSelectedExercises } from '@/components/02 - Practice/training/SelectedExercise';
+import ChallengeCard from '@/components/02 - Practice/ChallengeCard';
 
-
-export default function Training() {
-
+export default function Challenges() {
   return (
+    <div class='w-full h-full flex flex-col items-center overflow-y-auto z-50 pt-8'>
 
-    <div class="w-full h-full flex flex-col items-center overflow-y-auto z-50">
+      <h1 class='underline mt-4'>Today's Challenges</h1>
+      <div class="grid grid-cols-3 gap-4 justify-center w-[80%] py-4 my-16">
+        <For each={exampleSelectedExercises}>
+          {(exercise) => (
+            <SelectedExercise
+              icon={exercise.icon}
+              id={exercise.id}
+              name={exercise.name}
+              description={exercise.description}
+              difficulty={exercise.difficulty}
+            />
+          )}
+        </For>
+      </div>
 
-      <div class="grid grid-rows-3 grid-cols-3 gap-4 flex-1 my-16 w-[80%] p-4">
+      <MainSeperator title='Challenges' description='Explore our challenges' />
 
-        <LayoutCard variation="tall">
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Worksheets</h2>
-            <p class="text-sm text-gray-400 mb-8">Downloadable or interactive PDF practice sets for logic, math, and science.</p>
-
-            <h5 class='mb-4 text-text/90'>Latest Progress</h5>
-
-            <ul class='w-full px-6'>
-              {/* example complettion bar for past worksheets (fill bar) */}
-              <li class='w-full'><ProgressBar text="Complex Numbers" progress={50} /></li>
-              <li class='w-full'><ProgressBar text="Hypothesis Testing" progress={70} /></li>
-              <li class='w-full'><ProgressBar text="DB Normalization" progress={30} /></li>
-              <li class='w-full text-text/30'>...</li>
-            </ul>
-
-          </div>
-        </LayoutCard>
-
-        <LayoutCard>
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Coding Challenges</h2>
-            <p class="text-sm text-gray-400 mb-4">Timed code drills with auto-grading—debug, write, or optimize fast.</p>
-            <div class="flex">
-              <p class='text-text/40'>Total Solved :&nbsp;</p>
-              <p class='text-text'> 40</p>
-            </div>
-          </div>
-        </LayoutCard>
-
-        <LayoutCard>
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Quizzes</h2>
-            <p class="text-sm text-gray-400 mb-4">AI-adaptive questions across theory, logic, and memory to sharpen recall.</p>
-
-            <div class="flex">
-              <p class='text-text/40'>Last Visisted :&nbsp;</p>
-              <p class='text-text'>3 Days Ago</p>
-            </div>
-
-          </div>
-        </LayoutCard>
-
-        <LayoutCard>
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Socratic Coach</h2>
-            <p class="text-sm text-gray-400 mb-4">An AI tutor that questions your logic until it finds a gap—and trains it.</p>
-            <div class="flex">
-              <p class='text-text/40'>Suggested Topic :&nbsp;</p>
-              <p class='text-text'>Time Series</p>
-            </div>
-          </div>
-        </LayoutCard>
-
-        <LayoutCard variation="tall" href='training/flashcards' >
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Flashcards</h2>
-            <p class="text-sm text-gray-400 mb-8">Auto-generated decks from your notes. Built-in spaced repetition.</p>
-
-            <h5 class='mb-4 text-text/90'>Latest Progress</h5>
-
-            <ul class='w-full px-6'>
-              {/* example complettion bar for past worksheets (fill bar) */}
-              <li class='w-full'><ProgressBar text="Complex Numbers" progress={50} /></li>
-              <li class='w-full'><ProgressBar text="Hypothesis Testing" progress={70} /></li>
-              <li class='w-full'><ProgressBar text="DB Normalization" progress={30} /></li>
-              <li class='w-full text-text/30'>...</li>
-            </ul>
-
-          </div>
-        </LayoutCard>
-
-        <LayoutCard variation="wide" hoverable={false}>
-
-          <div class="flex flex-col items-center justify-center text-center gap-2">
-            <h2>Daily Drills</h2>
-            <p class="text-sm text-gray-400">Stay consistent with essential brain & skill reps.</p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 w-full mt-4 px-16">
-            <div>
-              <CheckEntry title="Math" done={true} />
-              <CheckEntry title="Logic" done={false} />
-              <CheckEntry title="Science" done={false} />
-            </div>
-            <div>
-              <CheckEntry title="Flashcards" done={false} />
-              <CheckEntry title="Coding" done={true} />
-              <CheckEntry title="Quiz" done={false} />
-            </div>
-          </div>
-        </LayoutCard>
+      <div class="grid grid-cols-3 gap-8 justify-center w-[80%] py-4 my-16">
+        <ChallengeCard title="Math Challenge" description="Solve complex equations and puzzles to sharpen your math skills." icon="Pi" difficulty="Easy" />
+        <ChallengeCard title="Chess Challenge" description="Test your strategic thinking with our chess puzzles. Be ready!" icon="Gamepad2" difficulty="Medium" />
+        <ChallengeCard title="Logic Challenge" description="Enhance your reasoning abilities with challenging logic puzzles." icon="Puzzle" difficulty="Hard" />
+        <ChallengeCard title="Physics Challenge" description="Tackle real-world physics problems to apply your knowledge." icon="Atom" difficulty="Medium" />
+        <ChallengeCard title="Programming Challenge" description="Write efficient code to solve algorithmic problems." icon="Code" difficulty="Hard" />
+        <ChallengeCard title="AI Challenge" description="Build and train AI models to solve complex tasks." icon="Bot" difficulty="Medium" />
 
       </div>
 

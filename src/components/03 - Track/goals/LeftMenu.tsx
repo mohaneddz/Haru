@@ -95,7 +95,7 @@ export default function LeftMenu() {
     };
 
     return (
-        <div class="bg-sidebar text-text/70 h-full py-4 pb-20 rounded-md p-8 flex flex-col col-span-3 gap-4 overflow-y-auto">
+        <div class="bg-sidebar text-text/70 h-full pt-8 pb-20 rounded-md p-8 flex flex-col col-span-3 gap-4 overflow-y-auto">
             <div class="flex items-center justify-between mb-4">
                 <p class='text-lg font-semibold'>Goals In Progress</p>
                 <div class="flex gap-2 relative">

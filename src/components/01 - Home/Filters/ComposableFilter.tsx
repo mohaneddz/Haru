@@ -151,7 +151,7 @@ export default function UniversalFilter(props: Props) {
   const typesConfig = getTypesConfig();
 
   return (
-    <div class={`w-full max-w-6xl mx-auto mb-8 p-4 bg-background-light-1/50 backdrop-blur-sm rounded-lg border border-border-light-1 ${props.class || ''}`}>
+    <div class={`w-full mx-auto mb-8 p-4 bg-background-light-1/50 backdrop-blur-sm rounded-lg border border-border-light-1 ${props.class || ''}`}>
       
       {/* Header with Page Icon and Title */}
       <div class="flex items-center justify-between mb-6">

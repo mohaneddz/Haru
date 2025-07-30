@@ -7,11 +7,8 @@ export const useFilesContext = (filesInstance: ReturnType<typeof import('@/hooks
         dir,
         createFileNode,
         createFolderNode,
-        renamingNode,
-        newName,
-        submitRename,
+        setRenamingNode,
         findNodeByPath,
-        startRename,
         deleteNode,
         restoreFiles,
     } = filesInstance;
@@ -53,12 +50,7 @@ export const useFilesContext = (filesInstance: ReturnType<typeof import('@/hooks
 		console.log(`Action: ${action}, Node:`, node);
 		if (action === 'rename') {
 			if (node) {
-				// If already in rename mode, apply rename
-				if (renamingNode() === node.path) {
-					await submitRename(node, newName());
-				} else {
-					startRename(node);
-				}
+				setRenamingNode(node.path);
 			}
 		} else if (action === 'delete') {
 			if (node) {

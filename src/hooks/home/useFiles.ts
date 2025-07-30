@@ -10,7 +10,6 @@ export function useFiles() {
 	const [dir, setDir] = createSignal('');
 
 	const [renamingNode, setRenamingNode] = createSignal<string | null>(null);
-	const [newName, setNewName] = createSignal('');
 	const [lastTouched, setLastTouched] = createSignal<string | null>(null);
 	const [openNodes, setOpenNodes] = createSignal<Record<string, boolean>>({});
 
@@ -60,13 +59,17 @@ export function useFiles() {
 	};
 
 	const renameNode = async (node: FileNode, newName: string) => {
-		await renameApi(node.path, newName);
+		await renameApi(node.path, node.path.replace(/[^\\/]+$/, newName));
 		restoreFiles(dir());
 	};
 
 	const deleteNode = async (node: FileNode) => {
 		await deleteApi(node.path);
 		await restoreFiles(dir());
+	};
+
+	const saveNode = async (node: FileNode, content: string) => {
+		await saveApi(node.path, content);
 	};
 
 	// LOAD FILES ------------------------------------------
@@ -162,19 +165,10 @@ export function useFiles() {
 
 	function startRename(node: FileNode) {
 		setRenamingNode(node.path);
-		setNewName(node.name);
-	}
-
-	async function submitRename(node: FileNode, name?: string) {
-		const newNodeName = name ?? newName();
-		await renameNode(node, newNodeName);
-		setRenamingNode(null);
-		setNewName('');
 	}
 
 	function cancelRename() {
 		setRenamingNode(null);
-		setNewName('');
 	}
 
 	function findNodeByPath(nodes: FileNode[], path: string): FileNode | null {
@@ -208,10 +202,7 @@ export function useFiles() {
 		deleteNode,
 		renamingNode,
 		setRenamingNode,
-		newName,
-		setNewName,
 		startRename,
-		submitRename,
 		cancelRename,
 		saveApi,
 		findNodeByPath,
@@ -221,5 +212,6 @@ export function useFiles() {
 		deleteLastTouched,
 		openNodes,
 		setOpenNodes,
+		saveNode
 	};
 }

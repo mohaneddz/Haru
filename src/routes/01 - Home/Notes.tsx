@@ -6,6 +6,7 @@ import { Link } from "lucide-solid";
 import NoteTopBar from "@/components/01 - Home/Notes/NoteTopBar";
 import NotesToolBar from "@/components/01 - Home/Notes/NotesToolBar";
 import { useNotes } from "@/hooks/home/useNotes";
+import { saveApi } from "@/utils/filesManip";
 
 export default function Notes() {
   // @ts-ignore
@@ -32,7 +33,10 @@ export default function Notes() {
 
           <CodeMirrorEditor
             content={content()}
-            onChange={(v) => setContent(v)}
+            onChange={(v) => {
+              setContent(v);
+              saveApi(currFile(), v);
+            }}
           />
         </div>
       </div>

@@ -26,7 +26,9 @@ export default function Files(props: Props) {
         restoreFiles,
         dir,
         deleteNode,
-        startRename,
+        renameNode,
+        renamingNode,
+        setRenamingNode,
         lastTouched,
         setLastTouched,
         deleteLastTouched,
@@ -81,11 +83,13 @@ export default function Files(props: Props) {
                             node={node}
                             level={0}
                             setCurrFile={props.setCurrFile}
-                            onRename={startRename}
+                            onRename={renameNode}
                             onDelete={() => deleteNode(node)}
                             onContextMenu={handleContextMenu}
                             lastTouched={lastTouched}
                             setLastTouched={setLastTouched}
+                            renamingNode={renamingNode()}
+                            setRenamingNode={setRenamingNode}
                         />
                     )}
                 </For>

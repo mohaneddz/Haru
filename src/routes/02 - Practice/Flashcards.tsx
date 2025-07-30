@@ -5,8 +5,8 @@ const tabs = ['Dashboard', 'Statistics'];
 
 import { lazy } from "solid-js";
 
-const Dashboard = lazy(() => import("@/routes/02 - Practice/Training/Flashcards/FlashCardsDashboard"));
-const Statistics = lazy(() => import("@/routes/02 - Practice/Training/Flashcards/FlashCardsStatistics"));
+const Dashboard = lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsDashboard"));
+const Statistics = lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsStatistics"));
 
 
 export default function Flashcards() {
@@ -18,7 +18,7 @@ export default function Flashcards() {
 
       <UpperNavigation tabs={tabs} onTabChange={setActiveTab} />
 
-      <div class="flex flex-col items-center justify-start h-full w-full bg-background-dark-2 pt-16">
+      <div class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll mt-20" >
         {activeTab() === "Dashboard" ? <Dashboard /> :
           activeTab() === "Statistics" ? <Statistics /> : null
         }

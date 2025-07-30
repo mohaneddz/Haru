@@ -18,15 +18,14 @@ export const routes = [
       
       // 02 - Practice
       // { path: "/practice/", component: lazy(() => import("@/routes/02 - Practice/Practice")) },
-      { path: "/practice/challenges", component: lazy(() => import("@/routes/02 - Practice/Challenges")) },
-      { path: "/practice/games", component: lazy(() => import("@/routes/02 - Practice/Games")) },
       { path: "/practice/training", component: lazy(() => import("@/routes/02 - Practice/Training")) },
+      { path: "/practice/games", component: lazy(() => import("@/routes/02 - Practice/Games")) },
+      { path: "/practice/flashcards", component: lazy(() => import("@/routes/02 - Practice/Flashcards")) },
       { path: "/practice/tutor", component: lazy(() => import("@/routes/02 - Practice/Tutor")) },
       
       { path: "/practice/games/*", component: lazy(() => import("@/routes/02 - Practice/Game")) },
       { path: "/practice/games/play/*", component: lazy(() => import("@/routes/02 - Practice/Play")) },
-      { path: "/practice/training/flashcards", component: lazy(() => import("@/routes/02 - Practice/Training/Flashcards")) },
-      { path: "/practice/training/flashcards/:id", component: lazy(() => import("@/routes/02 - Practice/Training/Flashcards/FlashCardsDeck")) },
+      { path: "/practice/flashcards/*", component: lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsDeck")) },
 
       // 03 - Track
       // { path: "/track/", component: lazy(() => import("@/routes/03 - Track/Track")) },

@@ -1,6 +1,6 @@
 import UniversalFilter from "@/components/01 - Home/Filters/ComposableFilter";
 import FlashcCardListItem from "@/components/02 - Practice/training/Flashcards/FlashcCardListItem";
-import { Flame, Trash2 } from 'lucide-solid';
+import { Flame } from 'lucide-solid';
 import { For, Show } from "solid-js";
 import Modal from "@/components/core/Modal";
 
@@ -74,7 +74,7 @@ export default function FlashCardsDeck() {
 
                     {/* Flashcards list */}
                     <div class="bg-background-light-1/50 p-4 rounded-lg shadow-lg flex-1 overflow-y-auto border-gray-600 border-1 w-full">
-                        <ul class="space-y-3">
+                        <ul class="space-y-3 pl-0">
                             <For each={flashcards()} fallback={<p class="text-gray-400">No flashcards available.</p>}>
                                 {(item) => (
                                     <FlashcCardListItem

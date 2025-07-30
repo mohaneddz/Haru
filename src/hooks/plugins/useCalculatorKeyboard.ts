@@ -266,54 +266,18 @@ export function useCalculatorKeyboard(handlers: CalculatorKeyboardHandlers) {
     }
   };
 
-  // Numpad support
-  const handleNumpadKeys = (event: KeyboardEvent) => {
-    switch (event.code) {
-      case 'Numpad0':
-      case 'Numpad1':
-      case 'Numpad2':
-      case 'Numpad3':
-      case 'Numpad4':
-      case 'Numpad5':
-      case 'Numpad6':
-      case 'Numpad7':
-      case 'Numpad8':
-      case 'Numpad9':
-        event.preventDefault();
-        handlers.handleNumberClick(event.key);
-        break;
-      case 'NumpadAdd':
-        event.preventDefault();
-        handlers.handleOperationClick('add');
-        break;
-      case 'NumpadSubtract':
-        event.preventDefault();
-        handlers.handleOperationClick('subtract');
-        break;
-      case 'NumpadMultiply':
-        event.preventDefault();
-        handlers.handleOperationClick('multiply');
-        break;
-      case 'NumpadDivide':
-        event.preventDefault();
-        handlers.handleOperationClick('divide');
-        break;
-      case 'NumpadDecimal':
-        event.preventDefault();
-        handlers.handleDecimalClick();
-        break;
-      case 'NumpadEnter':
-        event.preventDefault();
-        handlers.handleEquals();
-        break;
-    }
-  };
-
   // Combined event handler
   const keydownHandler = (event: KeyboardEvent) => {
     handleKeyPress(event);
-    handleFunctionKeys(event);
-    handleNumpadKeys(event);  };
+    handleFunctionKeys(event);}
+
+  const cleanup = () => {
+    if (globalListenerAttached) {
+      document.removeEventListener('keydown', keydownHandler);
+      globalListenerAttached = false;
+      currentHandlers = null;
+    }
+  };
 
   // Set up event listeners - prevent duplicates
   onMount(() => {
@@ -321,17 +285,11 @@ export function useCalculatorKeyboard(handlers: CalculatorKeyboardHandlers) {
       document.addEventListener('keydown', keydownHandler);
       globalListenerAttached = true;
     }
-    
-    onCleanup(() => {
-      if (globalListenerAttached) {
-        document.removeEventListener('keydown', keydownHandler);
-        globalListenerAttached = false;
-        currentHandlers = null;
-      }
-    });
   });
 
-  // Return keyboard mapping info for help/documentation
+  onCleanup(cleanup);
+
+  // Return keyboard mapping info for help/documentation and cleanup function
   return {
     getKeyboardShortcuts: () => ({
       numbers: {
@@ -417,6 +375,7 @@ export function useCalculatorKeyboard(handlers: CalculatorKeyboardHandlers) {
         'F11': 'Memory recall',
         'F12': 'Memory store'
       }
-    })
+    }),
+    cleanup
   };
 }

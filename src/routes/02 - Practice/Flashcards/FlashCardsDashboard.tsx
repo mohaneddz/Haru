@@ -6,7 +6,7 @@ import { createSignal, For } from "solid-js";
 
 export default function FlashCardsDashboard() {
 
-  const [filters, setFilters] = createSignal({});
+  const [_, setFilters] = createSignal({});
   const decks = [
     {
       title: "React Native",
@@ -50,7 +50,7 @@ export default function FlashCardsDashboard() {
   ]
 
   return (
-    <div class="w-full flex flex-col items-center justify-start bg-background-dark-2 overflow-y-auto">
+    <div class="w-full flex flex-col items-center justify-start overflow-y-auto">
 
       <div class="max-w-[80%] h-full">
 

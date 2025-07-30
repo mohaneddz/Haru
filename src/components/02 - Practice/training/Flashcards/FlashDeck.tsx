@@ -19,8 +19,8 @@ export default function FlashDeck(props: Props) {
             <p class="text-xs opacity-80 truncate text-left w-[80%]">{props.description}</p>
 
             <div class="flex gap-2 w-full">
-                <a href={`/practice/training/flashcards/${props.id}`} class="text-center bg-accent w-full hover:scale-103 hover:bg-accent-dark-1 transition-all duration-75 cursor-pointer p-1 rounded">Start</a>
-                <a href={`/practice/training/flashcards/${props.id}`} class="text-center bg-sidebar-light-3 w-full hover:scale-103 hover:bg-sidebar-light-1 transition-all duration-75 cursor-pointer p-1 rounded">Edit</a>
+                <a href={`/practice/flashcards/${props.id}`} class="text-center bg-accent w-full hover:scale-103 hover:bg-accent-dark-1 transition-all duration-75 cursor-pointer p-1 rounded">Start</a>
+                <a href={`/practice/flashcards/${props.id}`} class="text-center bg-sidebar-light-3 w-full hover:scale-103 hover:bg-sidebar-light-1 transition-all duration-75 cursor-pointer p-1 rounded">Edit</a>
             </div>
 
         </LayoutCard>

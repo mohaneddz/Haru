@@ -286,7 +286,7 @@ export function useCalculator() {
     memory,
     angleMode,
     history,
-    setDisplay, // Exposed for history click
+    setDisplay,
     setAngleMode,
     handleNumberClick,
     handleDecimalClick,
@@ -301,8 +301,8 @@ export function useCalculator() {
     handleMemorySubtract,
     handleMemoryClear,
     handleInsertConstant,
-    addToHistory, // Exposed for history click
+    addToHistory,
     clearHistory,
-    getOperationSymbol, // Exposed for Display and history
+    getOperationSymbol, 
   };
 }

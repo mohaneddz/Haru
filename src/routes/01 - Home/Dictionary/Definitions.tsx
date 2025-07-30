@@ -139,17 +139,19 @@ export default function Definitions() {
       </Modal>
 
       {/* Search Bar */}
-      <UniversalFilter
-        onFilterChange={(filters) => { searchForTerm(filters.searchQuery) }}
-        title="Filter Definitions"
-        icon={Trash}
-        placeholder="Search definitions..."
-        pageType="dictionary"
-        availableFields={[]}
-        availableTypes={[]}
-      />
+      <div class="w-full max-w-[80%]">
+        <UniversalFilter
+          onFilterChange={(filters) => { searchForTerm(filters.searchQuery) }}
+          title="Filter Definitions"
+          icon={Trash}
+          placeholder="Search definitions..."
+          pageType="dictionary"
+          availableFields={[]}
+          availableTypes={[]}
+        />
+      </div>
 
-      <div class="w-full flex flex-col items-center justify-start bg-background-light-1/50 p-4 rounded-lg shadow-md max-w-6xl border border-border-light-1 mb-24">
+      <div class="w-full flex flex-col items-center justify-start bg-background-light-1/50 p-4 rounded-lg shadow-md max-w-[80%] border border-border-light-1 mb-24">
 
         <table class="min-w-full divide-y divide-border">
           <thead>

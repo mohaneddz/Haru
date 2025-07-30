@@ -121,7 +121,7 @@ export default function Discover() {
       />
 
       <MainSeperator title={`Artificial Intelligence (${aiCourses().length})`} description='Explore our AI courses' />      
-      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
+      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] my-8">
         {aiCourses().map((course) => (
           <CourseCard 
             title={course.title} 
@@ -136,7 +136,7 @@ export default function Discover() {
       </div>
 
       <MainSeperator title={`Mathematics (${mathCourses().length})`} description='Explore our math courses' />
-      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
+      <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] my-8">
         {mathCourses().map((course) => (
           <CourseCard 
             title={course.title} 
@@ -153,7 +153,7 @@ export default function Discover() {
       {otherCourses().length > 0 && (
         <>
           <MainSeperator title={`Other Courses (${otherCourses().length})`} description='Additional courses' />
-          <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] p-4 my-8">
+          <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] my-8">
             {otherCourses().map((course) => (
               <CourseCard 
                 title={course.title} 

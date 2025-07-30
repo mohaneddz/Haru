@@ -12,7 +12,7 @@ export default function Translation() {
   const [selectedIndices, setSelectedIndices] = createSignal<number[]>([]);
   const [showDeleteModal, setShowDeleteModal] = createSignal(false);
   const [showAddModal, setShowAddModal] = createSignal(false);
-  
+
   const [filtered, setFiltered] = createSignal<Translation[]>([]);
   const [sortField, setSortField] = createSignal('dateAdded');
 
@@ -140,17 +140,19 @@ export default function Translation() {
       </Modal>
 
       {/* Search Bar */}
-      <UniversalFilter
-        onFilterChange={(filters) => { searchForTerm(filters.searchQuery) }}
-        title="Filter Translations"
-        icon={Trash}
-        placeholder="Search translations..."
-        pageType="dictionary"
-        availableFields={[]}
-        availableTypes={[]}
-      />
+      <div class="w-full max-w-[80%]">
+        <UniversalFilter
+          onFilterChange={(filters) => { searchForTerm(filters.searchQuery) }}
+          title="Filter Translations"
+          icon={Trash}
+          placeholder="Search translations..."
+          pageType="dictionary"
+          availableFields={[]}
+          availableTypes={[]}
+        />
+      </div>
 
-      <div class="w-full flex flex-col items-center justify-start bg-background-light-1/50 p-4 rounded-lg shadow-md max-w-6xl border border-border-light-1">
+      <div class="w-full flex flex-col items-center justify-start bg-background-light-1/50 p-4 rounded-lg shadow-md max-w-[80%] border border-border-light-1">
 
         <table class="min-w-full divide-y divide-border">
           <thead>

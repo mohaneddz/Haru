@@ -5,8 +5,8 @@ export const entries = [
   { title: 'Dictionary', icon: 'Book', section: 'home', slug: 'dictionary' },
 
   { title: 'Tutor', icon: 'GraduationCap', section: 'practice', slug: 'tutor' },
-  { title: 'Training', icon: 'PenLine', section: 'practice', slug: 'training' },
-  { title: 'Challenges', icon: 'Swords', section: 'practice', slug: 'challenges' },
+  { title: 'Flashcards', icon: 'WalletCards', section: 'practice', slug: 'flashcards' },
+  { title: 'Training', icon: 'Swords', section: 'practice', slug: 'training' },
   { title: 'Games', icon: 'Gamepad2', section: 'practice', slug: 'games' },
 
   // { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },

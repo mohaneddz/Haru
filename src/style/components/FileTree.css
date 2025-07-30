@@ -3,6 +3,7 @@
   white-space: nowrap;
   overflow: auto;
   font-size: 14px;
+  margin-top: 0;
 }
 
 .tree ul {

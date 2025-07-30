@@ -1,46 +1,22 @@
 import { createSignal, createEffect } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
+import { onCleanup } from "solid-js";
 
 export function useNotes() {
-	const [currLine, setCurrLine] = createSignal(0);
-	const [lineText, setLineText] = createSignal(Array(20).fill(''));
+	const [editing, setEditing] = createSignal(false);
 	const [currFile, setCurrFile] = createSignal('');
+	const [content, setContent] = createSignal('');
 
-	const linesCount = 20;
-	const lineIndices = Array.from({ length: linesCount }, (_, i) => i);
-
-	// handle keyboard events
-
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'ArrowDown' || e.key === 'Enter') {
-			setCurrLine((prev) => Math.min(prev + 1, linesCount - 1));
-		} else if (e.key === 'ArrowUp') {
-			setCurrLine((prev) => Math.max(prev - 1, 0));
-		}
-	});
+	let editorContainerRef: HTMLDivElement | undefined;
 
 	async function loadFileContent(filePath: string) {
 		try {
-			// directly invoke the Rust command and get a string back
 			const content: string = await invoke('read_file', { path: filePath });
-			const lines = content.split('\n');
-
-			setLineText(lines.slice(0, linesCount));
-			setCurrLine(0);
+			setContent(content);
 		} catch (error) {
 			console.error('Error reading file:', error);
-			setLineText(Array(linesCount).fill(''));
 		}
 	}
-
-	createEffect(() => {
-		// selec the id
-		const selectedLine = document.getElementById(`line-${currLine()}`);
-		if (selectedLine) {
-			selectedLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			selectedLine.focus();
-		}
-	});
 
 	createEffect(() => {
 		console.log(currFile());
@@ -49,13 +25,45 @@ export function useNotes() {
 		}
 	});
 
+	// Handle click outside and Escape key
+	function handleClickOutside(e: MouseEvent) {
+		if (editing() && editorContainerRef && !editorContainerRef.contains(e.target as Node)) {
+			setEditing(false);
+		}
+	}
+	function handleEsc(e: KeyboardEvent) {
+		if (editing() && e.key === 'Escape') {
+			setEditing(false);
+		}
+	}
+
+	// Setup event listeners
+	if (typeof window !== 'undefined') {
+		window.addEventListener('mousedown', handleClickOutside);
+		window.addEventListener('keydown', handleEsc);
+		onCleanup(() => {
+			window.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('keydown', handleEsc);
+		});
+	}
+
+	const openObsidian = () => {
+		if (currFile()) {
+			// use obsidian's url :
+			// obsidian://open?path=FULL_FILE_PATH
+			const obsidianUrl = `obsidian://open?path=${encodeURIComponent(currFile())}`;
+			window.open(obsidianUrl, '_blank');
+		}
+	};
+
 	return {
-		currLine,
-		lineText,
-		setCurrLine,
-		setLineText,
-		lineIndices,
+		content,
 		currFile,
 		setCurrFile,
+		editing,
+		setEditing,
+		setContent,
+        editorContainerRef,
+		openObsidian
 	};
 }

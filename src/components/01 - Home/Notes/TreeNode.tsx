@@ -1,29 +1,48 @@
-import { createSignal, For } from 'solid-js';
+import { For } from 'solid-js';
 import { FolderOpen, Folder, File } from 'lucide-solid';
+import { useTreeNode } from '@/hooks/home/useTreeNode';
 
-interface Props {
-    node: FileNode;
-    path: string;
-    level: number;
-    setCurrFile: (file: string) => void;
-}
+export default function TreeNode(props: TreeNodeProps) {
 
-export default function TreeNode(props: Props) {
-    const [isOpen, setIsOpen] = createSignal(true);
-
-    const toggleOpen = () => {
-        if (props.node.type === 'folder') {
-            setIsOpen(!isOpen());
-        }
-    };
-
-    const hasChildren = props.node.children && props.node.children.length > 0;
+    const {
+        isOpen,
+        isDragOver,
+        editValue,
+        setEditValue,
+        isRenaming,
+        handleClick,
+        handleDoubleClick,
+        handleDragStart,
+        handleDragOver,
+        handleDragLeave,
+        handleDrop,
+        handleDragEnd,
+        hasChildren,
+        inputRef,
+    } = useTreeNode(props);
 
     return (
-        <li class='ml-2'>
+        <li class="ml-2">
             <div
-                class="tree-item cursor-pointer hover:bg-white/5 transition-colors duration-150"
-                onClick={toggleOpen}
+                class={`tree-item cursor-pointer hover:bg-white/5 transition-colors duration-150 ${props.node.type === 'file' ? 'tree-node-file' : 'tree-node-folder'}
+                 ${isDragOver() ? 'bg-blue-500/20 border border-blue-500' : ''} ${(props.lastTouched?.() === props.node.path) ? 'brightness-110 text-accent' : ''}`}
+                data-path={props.node.path}
+                draggable
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                onClick={handleClick}
+                onDblClick={handleDoubleClick}
+                onContextMenu={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    props.onContextMenu?.(e, props.node);
+                }}
+                style={{
+                    cursor: 'grab'
+                }}
             >
                 {props.node.type === 'folder' ? (
                     <>
@@ -34,15 +53,46 @@ export default function TreeNode(props: Props) {
                         )}
                     </>
                 ) : (
-                    <File size={18} class="icon text-gray-300" onClick={() => { console.log(`Selected file: ${props.path}`); props.setCurrFile(props.path); }} />
+                    <File size={18} class="icon text-gray-300" />
                 )}
-                <span class="select-none">{props.node.name}</span>
+                {isRenaming() ? (
+                    <input
+                        ref={inputRef}
+                        value={editValue()}
+                        class="bg-background text-white px-1 rounded outline-accent w-32"
+                        onInput={e => setEditValue(e.currentTarget.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                props.onRename?.({ ...props.node, name: editValue() });
+                                props.setRenamingNode?.(null);
+                            }
+                        }}
+                    />
+                ) : (
+                    <span class="select-none w-full">{props.node.name}</span>
+                )}
             </div>
-
             {props.node.type === 'folder' && hasChildren && isOpen() && (
                 <ul>
                     <For each={props.node.children}>
-                        {(child) => <TreeNode node={child} level={props.level + 1} path={child.path} setCurrFile={props.setCurrFile} />}
+                        {(child) => <TreeNode
+                            node={child}
+                            level={props.level + 1}
+                            path={child.path}
+                            setCurrFile={props.setCurrFile}
+                            onRename={props.onRename}
+                            onDelete={props.onDelete}
+                            onContextMenu={props.onContextMenu}
+                            onDragStart={props.onDragStart}
+                            onDragOver={props.onDragOver}
+                            onDragEnd={props.onDragEnd}
+                            onDrop={props.onDrop}
+                            lastTouched={props.lastTouched}
+                            setLastTouched={props.setLastTouched}
+                            handleClickNode={props.handleClickNode}
+                            renamingNode={props.renamingNode}
+                            setRenamingNode={props.setRenamingNode}
+                        />}
                     </For>
                 </ul>
             )}

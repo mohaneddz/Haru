@@ -29,6 +29,16 @@
   color: var(--color-accent-dark-3) !important;
 }
 
+.cm-line.cm-rendered-h5 {
+  color: var(--color-accent-dark-3) !important;
+  filter: brightness(0.8);
+}
+
+.cm-line.cm-rendered-h6 {
+  color: var(--color-accent-dark-3) !important;
+  filter: brightness(0.6);
+}
+
 /* General line styling for padding */
 .cm-line {
   padding-left: 1rem;

@@ -12,6 +12,7 @@ export function useNotes() {
 	async function loadFileContent(filePath: string) {
 		try {
 			const content: string = await invoke('read_file', { path: filePath });
+			setCurrFile(filePath);
 			setContent(content);
 		} catch (error) {
 			console.error('Error reading file:', error);

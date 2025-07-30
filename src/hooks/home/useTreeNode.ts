@@ -1,17 +1,17 @@
 import { useFiles } from '@/hooks/home/useFiles';
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import { createSignal, onCleanup, createEffect } from 'solid-js';
 import { moveApi } from '@/utils/filesManip';
 
 export const useTreeNode = (props: TreeNodeProps) => {
-
-	const {restoreFiles, dir, setLastTouched} = useFiles();
+	const { restoreFiles, dir, setLastTouched } = useFiles();
 
 	const [isOpen, setIsOpen] = createSignal(false);
 	const [isDragOver, setIsDragOver] = createSignal(false);
 	const [editValue, setEditValue] = createSignal(props.node.name);
-	const [isRenaming, setIsRenaming] = createSignal(false);
 	const [draggedNode, setDraggedNode] = createSignal<FileNode | null>(null);
 	const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>(undefined);
+
+	const isRenaming = () => props.renamingNode === props.node.path;
 
 	const toggleOpen = () => {
 		if (props.node.type === 'folder') {
@@ -30,16 +30,19 @@ export const useTreeNode = (props: TreeNodeProps) => {
 	}
 
 	// Setup effect for click outside when renaming
-	onMount(() => {
-		if (props.renamingNode === props.node.path) {
-			window.addEventListener('mousedown', handleClickOutside);
+	createEffect(() => {
+		if (isRenaming()) {
 			setEditValue(props.node.name);
 			setTimeout(() => {
 				inputRef()?.focus();
 				inputRef()?.select();
 			}, 0);
+			window.addEventListener('mousedown', handleClickOutside);
+		} else {
+			window.removeEventListener('mousedown', handleClickOutside);
 		}
 	});
+
 	onCleanup(() => {
 		window.removeEventListener('mousedown', handleClickOutside);
 	});
@@ -48,7 +51,6 @@ export const useTreeNode = (props: TreeNodeProps) => {
 		e.preventDefault();
 		e.stopPropagation();
 		props.setRenamingNode?.(props.node.path);
-		setIsRenaming(true);
 		setEditValue(props.node.name);
 		setTimeout(() => {
 			inputRef()?.focus();
@@ -69,50 +71,46 @@ export const useTreeNode = (props: TreeNodeProps) => {
 	function handleDragLeave(e: DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		// Only clear drag over if we're actually leaving this element
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const isOutside =
-			e.clientX < rect.left ||
-			e.clientX > rect.right ||
-			e.clientY < rect.top ||
-			e.clientY > rect.bottom;
-		if (isOutside) {
-			setIsDragOver(false);
-		}
+		setIsDragOver(false);
+		console.log('Drag leave on node:', props.node.path);
 	}
 
 	function handleDragStart(e: DragEvent) {
 		setDraggedNode(props.node);
 		document.body.style.cursor = 'grabbing';
 		e.dataTransfer?.setData('text/plain', props.node.path);
+		console.log('Drag started for node:', props.node.path);
 	}
 
 	function handleDragOver(e: DragEvent) {
 		e.preventDefault(); // Allow drop
 		setIsDragOver(true);
 		e.dataTransfer!.dropEffect = 'move';
+		console.log('Drag over node:', props.node.path);
 	}
 
 	function handleDragEnd() {
 		document.body.style.cursor = '';
 		setIsDragOver(false);
+		console.log('Drag ended for node:', props.node.path);
 	}
 
 	async function handleDrop(e: DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
+		console.log('Drop on node:', props.node.path);
 
 		const sourceNode = draggedNode();
 		const targetNode = props.node;
 
 		if (!sourceNode) {
-			console.log('No source node found');
+			console.error('No source node found');
 			return;
 		}
 
 		// Prevent dropping on itself
 		if (targetNode && sourceNode.path === targetNode.path) {
-			console.log('Cannot drop on itself');
+			console.warn('Cannot drop on itself');
 			setDraggedNode(null);
 			return;
 		}
@@ -120,7 +118,7 @@ export const useTreeNode = (props: TreeNodeProps) => {
 		// Prevent dropping a folder into its own child
 		if (targetNode && sourceNode.type === 'folder') {
 			if (targetNode.path.startsWith(sourceNode.path)) {
-				console.log('Cannot drop folder into its own child');
+				console.warn('Cannot drop folder into its own child');
 				setDraggedNode(null);
 				return;
 			}
@@ -139,11 +137,12 @@ export const useTreeNode = (props: TreeNodeProps) => {
 			destinationPath = `${rootPath}${rootPath.includes('\\') ? '\\' : '/'}${fileName}`;
 		}
 
-		console.log(`Moving from ${sourceNode.path} to ${destinationPath}`);
+		console.log(`Attempting to move from ${sourceNode.path} to ${destinationPath}`);
 
 		try {
 			await moveApi(sourceNode.path, destinationPath);
 			await restoreFiles(dir());
+			console.log('Move successful');
 		} catch (error) {
 			console.error('Error moving file or folder:', error);
 		} finally {
@@ -163,19 +162,23 @@ export const useTreeNode = (props: TreeNodeProps) => {
 		editValue,
 		setEditValue,
 		isRenaming,
-		setIsRenaming,
 		inputRef,
 		setInputRef,
 		toggleOpen,
+
 		hasChildren,
 		handleClick,
+
 		handleDoubleClick,
+		handleClickNode,
+
 		handleDragStart,
 		handleDragOver,
 		handleDragLeave,
-		handleDrop,
 		handleDragEnd,
-		handleClickNode,
+
+		handleDrop,
+
 		setIsOpen,
 		setIsDragOver,
 	};

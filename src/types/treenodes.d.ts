@@ -3,7 +3,7 @@ interface TreeNodeProps {
     path: string;
     level: number;
     setCurrFile: (file: string) => void;
-    onRename?: (node: FileNode) => void;
+    onRename?: (node: FileNode, name: string) => void;
     onDelete?: (node: FileNode) => void;
     onContextMenu?: (e: MouseEvent, node: FileNode) => void;
     onDragStart?: (node: FileNode) => void;

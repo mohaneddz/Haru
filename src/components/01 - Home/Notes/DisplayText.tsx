@@ -13,7 +13,7 @@ interface Props {
   onClick?: () => void;
 }
 
-const TextDisplayArea: Component<Props> = (props) => {
+const DisplayText: Component<Props> = (props) => {
   const [displayText, setDisplayText] = createSignal("");
 
   createEffect(() => {
@@ -22,7 +22,7 @@ const TextDisplayArea: Component<Props> = (props) => {
 
   return (
     <div
-      class={`w-full text-text-light rounded-md p-2 focus:outline-none focus:ring-none focus:ring-primary transition-colors duration-200 cursor-text ${props.class || ""}`} onclick={props.onClick}
+      class={`w-full overflow-x-hidden text-text-light rounded-md p-2 focus:outline-none focus:ring-none focus:ring-primary transition-colors duration-200 cursor-text ${props.class || ""}`} onclick={props.onClick}
       id={props.id}
     >
       <SolidMarkdown
@@ -34,4 +34,4 @@ const TextDisplayArea: Component<Props> = (props) => {
   );
 };
 
-export default TextDisplayArea;
+export default DisplayText;

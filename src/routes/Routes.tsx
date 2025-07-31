@@ -26,6 +26,7 @@ export const routes = [
       { path: "/practice/games/*", component: lazy(() => import("@/routes/02 - Practice/Game")) },
       { path: "/practice/games/play/*", component: lazy(() => import("@/routes/02 - Practice/Play")) },
       { path: "/practice/flashcards/*", component: lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsDeck")) },
+      { path: "/practice/flashcards/revision", component: lazy(() => import("@/routes/02 - Practice/Flashcards/Flashcard")) },
 
       // 03 - Track
       // { path: "/track/", component: lazy(() => import("@/routes/03 - Track/Track")) },

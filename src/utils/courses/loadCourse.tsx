@@ -8,6 +8,10 @@ export interface CourseInfo {
   image: string;
 }
 
+export interface GameInfo extends CourseInfo {
+  benefits: string[];
+}
+
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = '';

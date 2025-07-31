@@ -22,7 +22,7 @@ export default function StatisticsMainContent() {
                         <BookOpenCheck class="w-5 h-5 mr-2" /> Deck Performance
                     </h3>
                     <p class="text-sm text-gray-500 mb-2">Accuracy by deck</p>
-                    <ul class="space-y-3 pt-2">
+                    <ul class="space-y-3 pt-2 ml-0 pl-0">
                         <li class="flex items-center justify-between">
                             <span class="text-sm text-gray-300">React Hooks</span>
                             <span class="text-sm font-bold text-green-400">92%</span>

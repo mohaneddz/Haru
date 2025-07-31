@@ -4,7 +4,6 @@ import overlay from '@/assets/overlay.png';
 import { loadCourseData as loadGameData, CourseInfo as GameInfo } from '@/utils/courses/loadCourse';
 
 import { PlayCircle } from 'lucide-solid';
-import CourseInfoTopCard from '@/components/01 - Home/Cards/CourseInfoTopCard';
 
 import GameCard from '@/components/02 - Practice/GameCard';
 
@@ -44,16 +43,20 @@ export default function Game() {
   const getDefaultGame = (): GameInfo => ({
     name: gameName(),
     description: `This game covers the fundamentals of ${displayName()}.`,
+    // actually benefits not topics
     topics: [
-      `Introduction to ${displayName()}`,
-      'Core Concepts and Techniques',
-      'Practical Applications',
-      'Advanced Topics'
+      `Have fun!`,
+      'Spacial Awareness',
+      'Problem Solving',
+      'Patience and Focus',
+      'Critical Thinking',
+      'Strategic Planning',
     ],
     image: '/data/games/sudoku.png',
     difficulty: 'Intermediate',
     duration: '8 weeks',
-    prerequisites: ['Basic Programming']
+    // actually fields of the game and not prerequisites
+    prerequisites: ['Puzzle', 'Solo', 'Logic'],
   });
 
   // Get current game data or fallback
@@ -92,22 +95,28 @@ export default function Game() {
 
           <div class="flex flex-col w-full p-6 flex-1 max-w-6xl">
 
-            {/* Game Info Cards */}
-            <div class="grid grid-cols-3 gap-4 mb-6">
-              <CourseInfoTopCard value={currentGame().difficulty} attribute="Difficulty" />
-              <CourseInfoTopCard value={currentGame().duration} attribute="Duration" />
-              <CourseInfoTopCard value={currentGame().prerequisites.join(', ')} attribute="Prerequisites" />
-            </div>
-
             <p class="text-3xl font-bold text-sidebar-light-3 mb-4 brightness-120">Game Overview</p>
 
             <p class="text-text/70 mb-6 text-lg leading-relaxed">
               {currentGame().description}
             </p>
 
+            
+            {/* Benefits */}
+            <div class="mb-6">
+              <h3 class="text-xl font-semibold text-sidebar-light-3 pb-4">Fields</h3>
+              <div class="flex flex-wrap gap-3">
+                {currentGame().prerequisites.map((prereq: string) => (
+                  <span class="px-4 py-2 bg-accent-dark-2 text-accent-light-1 rounded-full text-sm transition-all duration-300 hover:bg-accent-dark-1 hover:text-white hover:scale-110 hover:shadow-lg cursor-pointer transform">
+                    {prereq}
+                  </span>
+                ))}
+              </div>
+            </div>
+
             {/* Game Topics */}
             <div class="mb-8">
-              <h3 class="text-xl font-semibold text-sidebar-light-3 pb-4">What this game teaches you</h3>
+              <h3 class="text-xl font-semibold text-sidebar-light-3 pb-4">Benefits</h3>
               <div class="grid grid-cols-2 gap-3">
                 {currentGame().topics.map((topic: string, index: number) => (
                   <div class="flex items-start space-x-3 p-3 bg-accent-dark-3/50 rounded-lg transition-all duration-300 hover:bg-accent-dark-2/70 hover:scale-105 hover:shadow-lg cursor-pointer group transform">

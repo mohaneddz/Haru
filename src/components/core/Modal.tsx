@@ -23,7 +23,7 @@ export default function Modal(props: Props) {
   });
 
   return (
-    <div class={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-100 ${props.show ? 'block' : 'hidden'}`}>
+    <div class={`fixed inset-0 flex items-center justify-center bg-black/90 bg-opacity-50 z-100 ${props.show ? 'block' : 'hidden'}`}>
       <div ref={modalRef} class="relative bg-sidebar rounded-lg p-4 shadow-lg border border-gray-600 z-101">
         <button
           onClick={props.onClose}

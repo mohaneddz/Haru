@@ -204,7 +204,7 @@ export default function UniversalFilter(props: Props) {
             >
               <div class="flex items-center gap-2">
                 <tagsConfig.icon class="w-4 h-4 text-accent" />
-                <h3 class="text-sm font-medium text-text-light-1">{tagsConfig.title}</h3>
+                <div class="text-accent text-sm font-medium mb-0">{tagsConfig.title}</div>
                 <Show when={selectedTags().length > 0}>
                   <span class="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
                     {selectedTags().length}
@@ -215,7 +215,7 @@ export default function UniversalFilter(props: Props) {
             </button>
             
             <Show when={showTagsDropdown()}>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div class="space-y-2 max-h-40 overflow-y-auto mt-4">
                 <For each={tagsConfig.options}>
                   {(tag) => (
                     <button
@@ -244,7 +244,7 @@ export default function UniversalFilter(props: Props) {
             >
               <div class="flex items-center gap-2">
                 <fieldsConfig.icon class="w-4 h-4 text-accent" />
-                <h3 class="text-sm font-medium text-text-light-1">{fieldsConfig.title}</h3>
+                <div class="text-accent text-sm font-medium mb-0">{fieldsConfig.title}</div>
                 <Show when={selectedFields().length > 0}>
                   <span class="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
                     {selectedFields().length}
@@ -255,7 +255,7 @@ export default function UniversalFilter(props: Props) {
             </button>
             
             <Show when={showFieldsDropdown()}>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div class="space-y-2 max-h-40 overflow-y-auto mt-4">
                 <For each={fieldsConfig.options}>
                   {(field) => (
                     <button
@@ -284,7 +284,7 @@ export default function UniversalFilter(props: Props) {
             >
               <div class="flex items-center gap-2">
                 <typesConfig.icon class="w-4 h-4 text-accent" />
-                <h3 class="text-sm font-medium text-text-light-1">{typesConfig.title}</h3>
+                <div class="text-accent text-sm font-medium mb-0">{typesConfig.title}</div>
                 <Show when={selectedTypes().length > 0}>
                   <span class="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
                     {selectedTypes().length}
@@ -295,7 +295,7 @@ export default function UniversalFilter(props: Props) {
             </button>
             
             <Show when={showTypesDropdown()}>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div class="space-y-2 max-h-40 overflow-y-auto mt-4">
                 <For each={typesConfig.options}>
                   {(type) => (
                     <button
@@ -322,9 +322,9 @@ export default function UniversalFilter(props: Props) {
         <div class="mt-6 p-2 bg-background-light-2/30 rounded-lg">
           <div class="flex items-center gap-2">
             <Tag class="w-4 h-4 text-accent" />
-            <span class="text-sm font-medium text-text-light-1">Active Filters:</span>
+            <div class="text-accent text-sm font-medium mb-0">Active Filters:</div>
           </div>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 mt-4">
             <For each={selectedTags()}>
               {(tag) => (
                 <span class="px-3 py-1 bg-accent/20 text-accent text-xs rounded-full flex items-center gap-1">

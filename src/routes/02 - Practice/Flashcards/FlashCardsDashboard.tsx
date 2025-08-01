@@ -97,7 +97,7 @@ export default function FlashCardsDashboard() {
         <UniversalFilter icon={Flame} title="Search Decks" onFilterChange={setFilters} />
 
         <div class="bg-sidebar w-full flex-1 overflow-hidden rounded-md border-1 border-gray-500 shadow-inner">
-          <div class="grid grid-cols-4 gap-4 p-4 overflow-y-auto h-full">
+          <div class="grid grid-cols-4 gap-4 p-4 overflow-y-auto ">
             <For each={decks()}>
               {(deck) => (
                 <FlashDeck

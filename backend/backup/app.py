@@ -1,93 +1,71 @@
-# TODO : handle interruptions and disconnections gracefully
-
-import os
-import logging
-import time
+import requests
 from flask import Flask, request, jsonify, Response, stream_with_context
+import asyncio
+import logging
+from urllib.parse import urlparse
+import json # Import json for parsing
+from constants import *
+from classes import *
+from web import *
+from utils import (
+    process_crawled_results,
+    build_search_context,
+    build_llm_payload,
+    handle_llm_response
+)
 from flask_cors import CORS
-from llama_cpp import Llama
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, 
-                   format='%(asctime)s - %(levelname)s - %(message)s',
-                   handlers=[
-                       logging.FileHandler('app.log'),
-                       logging.StreamHandler()
-                   ])
-
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'gemma-3-4b-it-q4_0.gguf')
-
-# Global model instance
-llm = None
-
-def check_gpu_support():
-    try:
-        import torch
-        cuda_available = torch.cuda.is_available()
-        gpu_count = torch.cuda.device_count()
-        logging.info(f"CUDA available: {cuda_available}, GPU count: {gpu_count}")
-        if cuda_available:
-            logging.info(f"GPU: {torch.cuda.get_device_name(0)}")
-        return cuda_available
-    except ImportError:
-        logging.warning("PyTorch not available for GPU check")
-        return False
-
-def load_gemma_model():
-    global llm
-    check_gpu_support()
-    if not os.path.exists(MODEL_PATH):
-        logging.error(f"Model file not found at: {MODEL_PATH}")
-        return False
-    
-    try:
-        logging.info(f"Loading Gemma model from: {MODEL_PATH}")
-        llm = Llama(
-            model_path=MODEL_PATH,
-            n_gpu_layers=8,
-            n_ctx=2048,
-            verbose=True
-        )
-        print(llm.get_gpu_layer_count())  
-        logging.info("Gemma model loaded successfully!")
-        return True
-    except Exception as e:
-        logging.error(f"Failed to load Gemma model: {str(e)}", exc_info=True)
-        llm = None
-        return False
+content_extractor = None
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="*", supports_credentials=True,
+      allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+      expose_headers=["Content-Type"])
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Request timeout configuration
-REQUEST_TIMEOUT = 30  # seconds
+# ==============================================================================
+# FLASK ENDPOINTS
+# ==============================================================================
 
-@app.before_request
-def before_request():
-    request.start_time = time.time()
+@app.route("/ask_search", methods=["POST"])
+def ask_with_search():
+    data = request.get_json()
+    if not data or "prompt" not in data:
+        return jsonify({"error": "Missing 'prompt'"}), 400
 
-@app.after_request
-def after_request(response):
-    duration = time.time() - request.start_time
-    if duration > REQUEST_TIMEOUT:
-        logging.warning(f"Request took too long: {duration:.2f}s")
-    response.headers['X-Request-Duration'] = str(duration)
-    return response
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({
-        'status': 'ready' if llm is not None else 'not ready',
-        'model_loaded': llm is not None
-    })
-
-@app.route('/chat', methods=['POST'])
-def chat():
-    if llm is None:
-        return jsonify({"error": "Model not loaded"}), 503
+    query = data["prompt"]
+    stream = data.get("stream", False)
 
     try:
+        # Restore original crawling logic
+        urls = get_web_urls(query)
+        if not urls:
+            return jsonify({"error": "Web search returned no results."}), 500
+
+        crawled_data = asyncio.run(crawl_webpages_hybrid(urls))
+        if not crawled_data:
+            return jsonify({"error": "Crawling failed to retrieve any content."}), 500
+
+        if not content_extractor or not content_extractor.model:
+            return jsonify({"error": "Could not load the semantic search model."}), 500
+
+        processed_results = process_crawled_results(crawled_data, query, content_extractor)
+        if not processed_results:
+            return jsonify({"content": "I found some web pages, but none contained specific information relevant to your question."}), 200
+
+        search_context, golden_source_info, context_len, final_tokens, supporting_sources = build_search_context(processed_results, query, content_extractor)
+        payload = build_llm_payload(search_context, query, data, supporting_sources)
+        return handle_llm_response(payload, stream, processed_results, golden_source_info, context_len, final_tokens)
+
+    except Exception as e:
+        logging.error(f"Error during ask_search: {e}", exc_info=True)
+        return jsonify({"error": f"An error occurred: {e}"}), 500
+    
+@app.route('/chat', methods=['POST'])
+def chat():
+    try:
         data = request.get_json()
+        stream = data.get("stream", False)
         user_message = data.get('message')
         chat_history = data.get('history', [])
 
@@ -96,75 +74,85 @@ def chat():
 
         logging.info(f"Processing message: '{user_message[:50]}...' (history: {len(chat_history)} messages)")
 
-        # Prepare messages - consider using fresh context if issues persist
-        messages_for_gemma = chat_history + [{"role": "user", "content": user_message}]
+        # Compose prompt for LLM
+        prompt = ""
+        for turn in chat_history:
+            role = turn.get("role", "user")
+            content = turn.get("content", "")
+            prompt += f"{role.capitalize()}: {content}\n"
+        prompt += f"User: {user_message}\nAssistant:"
 
-        def generate_stream():
-            full_response = ""
-            stream_active = True
+        token_count = content_extractor.count_tokens(prompt) if content_extractor else len(prompt.split())
 
+        llama_payload = {
+            "prompt": prompt,
+            "n_predict": 512,
+            "temperature": 0.7,
+            "stop": ["\nUser:", "User:", "<end_of_turn>", "<|eot_id|>"],  # <-- Add these stop sequences
+            "stream": stream
+        }
+
+        LLAMA_URL = LLAMA_SERVER_URL if LLAMA_SERVER_URL.startswith("http") else "http://localhost:8080/completion"
+
+        if stream:
+            # This nested function will be our clean, reliable stream proxy.
+            # We pass the payload and URL as arguments to avoid any scope issues.
+            def generate_sse_proxy(payload_to_send, url_to_use):
+                """
+                Acts as a simple, robust proxy for the SSE stream from the LLM server.
+                It forwards valid data lines directly to the client without parsing them.
+                """
+                try:
+                    # Open a streaming connection to the LLM server
+                    with requests.post(url_to_use, json=payload_to_send, stream=True, timeout=90) as response:
+                        # Immediately check for HTTP errors (e.g., 404, 500, 502)
+                        response.raise_for_status()
+
+                        # Use `iter_lines` to process the stream line by line.
+                        # This automatically handles buffering and is much safer than iter_content.
+                        for line_bytes in response.iter_lines():
+                            if line_bytes:
+                                line_str = line_bytes.decode('utf-8')
+                                
+                                # The Llama.cpp server sends lines like "data: {...}".
+                                # We only need to forward these valid data lines.
+                                if line_str.startswith("data:"):
+                                    # Yield the original line plus the required SSE terminator.
+                                    # This forwards the JSON object perfectly.
+                                    yield f"{line_str}\n\n"
+
+                except requests.exceptions.RequestException as e:
+                    logging.error(f"Failed to connect to LLM server during stream: {e}")
+                    # Create and send a properly formatted SSE error message
+                    error_payload = json.dumps({"error": "The connection to the language model failed."})
+                    yield f"data: {error_payload}\n\n"
+                except Exception as e:
+                    logging.error(f"An unexpected error occurred in the streaming proxy: {e}")
+                    error_payload = json.dumps({"error": "An internal server error occurred during the stream."})
+                    yield f"data: {error_payload}\n\n"
+
+            # Call the proxy function and return its response
+            return Response(stream_with_context(generate_sse_proxy(llama_payload, LLAMA_SERVER_URL)), mimetype='text/event-stream')
+
+        else:
             try:
-                response_stream = llm.create_chat_completion(
-                    messages=messages_for_gemma,
-                    max_tokens=1024,
-                    stop=["<end_of_turn>", "<|eot_id|>"],
-                    temperature=0.7,
-                    stream=True
-                )
-
-                for chunk in response_stream:
-                    # Check if client disconnected or timeout reached
-                    if not stream_active or time.time() - request.start_time > REQUEST_TIMEOUT:
-                        break
-
-                    if "choices" in chunk and len(chunk["choices"]) > 0:
-                        delta = chunk["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        
-                        if content:
-                            full_response += content
-                            try:
-                                yield f"data: {content}\n\n"
-                            except (BrokenPipeError, GeneratorExit):
-                                logging.warning("Client disconnected during streaming")
-                                stream_active = False
-                                break
-                            except Exception as e:
-                                logging.error(f"Streaming error: {str(e)}")
-                                stream_active = False
-                                break
-
-            except Exception as e:
-                logging.error(f"Generation error: {str(e)}", exc_info=True)
-                yield "data: [ERROR] Generation failed\n\n"
-            finally:
-                logging.info(f"Stream completed. Response length: {(full_response)}")
-                # Log the raw response when stream is done
-                if full_response:
-                    logging.info(f"Raw response content: {repr(full_response)}")
-                else:
-                    logging.warning("Stream completed but no response content was generated")
-                # Ensure resources are released
-                if hasattr(llm, 'reset'):
-                    try:
-                        llm.reset()
-                    except Exception as e:
-                        logging.error(f"Error resetting model: {str(e)}")
-
-        return Response(stream_with_context(generate_stream()), 
-                       mimetype='text/event-stream',
-                       headers={'Cache-Control': 'no-cache'})
+                response = requests.post(LLAMA_URL, json=llama_payload, timeout=90)
+                response.raise_for_status()
+                content = response.json().get("content", "")
+                return jsonify({
+                    "content": content.strip(),
+                    "tokens": token_count
+                })
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Chat backend error: {str(e)}", exc_info=True)
+                return jsonify({"error": "Backend connection failed"}), 502
 
     except Exception as e:
         logging.error(f"Chat endpoint error: {str(e)}", exc_info=True)
         return jsonify({"error": "Internal server error"}), 500
 
-# Initialize model
-with app.app_context():
-    if not load_gemma_model():
-        logging.error("Failed to initialize model - some endpoints will be unavailable")
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    logging.info(f"Starting server on port {port}")
-    app.run(host='0.0.0.0', port=port, threaded=True)
+if __name__ == "__main__":
+    print("Pre-loading semantic search model for the application...")
+    content_extractor = ContentExtractor() 
+    app.run(port=5000, debug=False)

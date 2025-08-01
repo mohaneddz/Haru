@@ -272,5 +272,3 @@ class ContentExtractor:
             logging.error(f"Error during semantic extraction: {e}", exc_info=True)
             truncated = self.intelligent_truncate(content, 500)
             return truncated, 0.0, full_fields
-
-

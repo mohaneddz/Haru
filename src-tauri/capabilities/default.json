@@ -42,6 +42,16 @@
     "sql:allow-load",
     "sql:allow-execute",
     "stronghold:default",
-    "dialog:default"
+    "dialog:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://localhost:5600/*"
+        }
+      ],
+      "deny": []
+    },
+    "http:default"
   ]
 }

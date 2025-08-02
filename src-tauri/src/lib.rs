@@ -1,5 +1,5 @@
-use std::{fs, io};
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 #[tauri::command]
 fn read_dir_recursive(path: String) -> Result<Vec<String>, String> {
@@ -20,8 +20,7 @@ fn read_dir_recursive(path: String) -> Result<Vec<String>, String> {
     }
 
     let mut result = Vec::new();
-    walk_dir(PathBuf::from(path.clone()), &mut result)
-        .map_err(|e| e.to_string())?;
+    walk_dir(PathBuf::from(path.clone()), &mut result).map_err(|e| e.to_string())?;
     Ok(result)
 }
 
@@ -96,9 +95,36 @@ fn move_path(source: String, destination: String) -> Result<(), String> {
     fs::rename(&source, &destination).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn run_fasttext() -> Result<String, String> {
+    use std::process::Command;
+
+    let output = Command::new("D:\\Programming\\Projects\\Tauri\\haru\\models\\fasttext.exe")
+        .args([
+            "predict",
+            "D:\\Programming\\Projects\\Tauri\\haru\\models\\model.bin",
+            "D:\\Programming\\Projects\\Tauri\\haru\\models\\input.txt",
+        ])
+        .output()
+        .map_err(|e| format!("Failed to execute: {}", e))?;
+
+    if !output.status.success() {
+        return Err(format!(
+            "FastText failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
+    let result = String::from_utf8(output.stdout)
+        .map_err(|e| format!("Invalid UTF-8 in output: {}", e))?;
+
+    Ok(result.trim().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_stronghold::Builder::new(|_password| vec![0u8; 32]).build())
         .plugin(tauri_plugin_sql::Builder::new().build())
@@ -113,7 +139,8 @@ pub fn run() {
             rename_path,
             delete_path,
             move_path,
-            save_file
+            save_file,
+            run_fasttext
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

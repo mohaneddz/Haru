@@ -15,16 +15,16 @@ name = "haru_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.0.0-beta.15", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
+tauri = { version = "2.0.0-beta.19", features = [] }
+tauri-plugin-opener = "2.0.0-beta.5"
+tauri-plugin-shell = "2.0.0-beta.5"
+tauri-plugin-fs = "2.0.0-beta.5"
+tauri-plugin-sql = { version = "2.0.0-beta.5", features = ["sqlite"] }
+tauri-plugin-stronghold = "2.0.0-beta.5"
+tauri-plugin-dialog = "2.0.0-beta.5"
+tauri-plugin-http = "2.0.0-beta.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-shell = "2"
-tauri-plugin-fs = "2"
-tauri-plugin-sql = { version = "2", features = ["sqlite"] }
-tauri-plugin-stronghold = "2"
-tauri-plugin-dialog = "2"
-

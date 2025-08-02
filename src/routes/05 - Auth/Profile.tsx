@@ -1,7 +1,7 @@
 import { createSignal, onMount } from "solid-js";
 import { dropDummy, testDummy, testInert, testUpdate, testDelete, testGetAll, testGetById } from "@/database/api/test";
 
-function Button(props) {
+function Button(props: { onClick: () => void; children: any }) {
   return (
     <button
       class="px-2 py-3 hover:brightness-95 cursor-pointer hover:scale-95 active:scale-100 bg-accent text-white rounded-sm"
@@ -23,7 +23,8 @@ export default function Profile() {
       await testDummy();
       console.log("Database table initialized");
     } catch (err) {
-      console.error("Error initializing database:", err);
+      const error = err as Error;
+      console.error("Error initializing database:", error);
     }
   });
 
@@ -33,8 +34,9 @@ export default function Profile() {
       setResult(JSON.stringify(res, null, 2));
       setParameters(""); // Clear parameters after insertion
     } catch (err) {
-      console.error("Error inserting data:", err);
-      setResult(`Error: ${err.message}`);
+      const error = err as Error;
+      console.error("Error inserting data:", error);
+      setResult(`Error: ${error.message}`);
       alert("Failed to insert data.");
     }
   };
@@ -44,8 +46,9 @@ export default function Profile() {
       const res = await testDelete();
       setResult(JSON.stringify(res, null, 2));
     } catch (err) {
-      console.error("Error deleting data:", err);
-      setResult(`Error: ${err.message}`);
+      const error = err as Error;
+      console.error("Error deleting data:", error);
+      setResult(`Error: ${error.message}`);
       alert("Failed to delete data.");
     }
   };
@@ -56,8 +59,9 @@ export default function Profile() {
       const res = await testUpdate();
       setResult(JSON.stringify(res, null, 2));
     } catch (err) {
-      console.error("Error updating data:", err);
-      setResult(`Error: ${err.message}`);
+      const error = err as Error;
+      console.error("Error updating data:", error);
+      setResult(`Error: ${error.message}`);
       alert("Failed to update data.");
     }
   };
@@ -67,8 +71,9 @@ export default function Profile() {
       const res = await testGetAll();
       setResult(JSON.stringify(res, null, 2));
     } catch (err) {
-      console.error("Error fetching all data:", err);
-      setResult(`Error: ${err.message}`);
+      const error = err as Error;
+      console.error("Error fetching all data:", error);
+      setResult(`Error: ${error.message}`);
       alert("Failed to fetch all data.");
     }
   };
@@ -83,8 +88,9 @@ export default function Profile() {
       const res = await testGetById(params);
       setResult(JSON.stringify(res, null, 2));
     } catch (err) {
-      console.error("Error fetching by ID:", err);
-      setResult(`Error: ${err.message}`);
+      const error = err as Error;
+      console.error("Error fetching by ID:", error);
+      setResult(`Error: ${error.message}`);
       alert("Failed to fetch data by ID.");
     }
   };

@@ -6,10 +6,10 @@ import LayoutCard from '@/components/02 - Practice/training/LayoutCard';
 
 // IMPORT the data processing functions
 import {
-    getDailyTimeData,
-    getProductivityData,
-    getCategoryData,
-    getWeeklyTrendData,
+    getTimeDataForPeriod,
+    getProductivityDataForPeriod,
+    getCategoryDataForPeriod,
+    getTrendDataForPeriod,
 } from '@/utils/track/chartsUtils';
 
 import { dailyLayout, productivityLayout, categoryLayout, weeklyLayout } from '@/utils/track/layoutsUtils';
@@ -18,36 +18,30 @@ import { dailyLayout, productivityLayout, categoryLayout, weeklyLayout } from '@
 interface Props {
     events: Accessor<any[]>;
     timelineDay: Accessor<Date>;
+    period: 'week' | 'month' | 'quarter';
 }
 
 export default function ChartsGrid(props: Props) {
-    // These memos are correct as they don't mutate anything
-    const dailyData = createMemo(() => getDailyTimeData(props.events()));
-    const categoryData = createMemo(() => getCategoryData(props.events()));
-    const weeklyTrendData = createMemo(() => getWeeklyTrendData(props.events()));
+    // Use the correct period for all chart data
+    const dailyData = createMemo(() => getTimeDataForPeriod(props.events(), props.period));
+    const categoryData = createMemo(() => getCategoryDataForPeriod(props.events(), props.period));
+    const weeklyTrendData = createMemo(() => getTrendDataForPeriod(props.events(), props.period));
 
-    // This is the memo that needs to be fixed
+    // Productivity chart: filter events for the selected day, but use period for overall context if needed
     const eventsForProductivityChart = createMemo(() => {
         const selected = props.timelineDay();
-
-        // --- THE FIX ---
-        // Create NEW Date objects to avoid mutating the original signal
         const dayStart = new Date(selected);
         dayStart.setHours(0, 0, 0, 0);
-
         const dayEnd = new Date(selected);
         dayEnd.setHours(23, 59, 59, 999);
-        // --- END OF FIX ---
-
-        // Now the filter will work without causing side effects
         return props.events().filter(event => {
             const eventDate = new Date(event.timestamp);
             return eventDate >= dayStart && eventDate <= dayEnd;
         });
     });
 
-    // This memo now safely uses the purely calculated events
-    const productivityData = createMemo(() => getProductivityData(eventsForProductivityChart()));
+    // Pass the correct period to productivity chart
+    const productivityData = createMemo(() => getProductivityDataForPeriod(eventsForProductivityChart(), props.period));
 
     return (
         <div class="grid grid-cols-1 md:grid-cols-2 grid-rows-4 md:grid-rows-2 gap-6 h-full ">

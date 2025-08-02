@@ -10,6 +10,7 @@ import { getActivityWatchEvents, emptyDb } from '@/utils/track/awUtils';
 import Modal from '@/components/core/Modal';
 
 export default function Time() {
+
   // --- STATE MANAGEMENT ---
   // --- THE FIX for Initial State ---
   const today = new Date();
@@ -26,6 +27,8 @@ export default function Time() {
 
   const [events, setEvents] = createSignal<any[]>([]);
   const [timelineDay, setTimelineDay] = createSignal(new Date());
+  // Add period signal, default to 'week'
+  const [period, setPeriod] = createSignal<'week' | 'month' | 'quarter'>('week');
 
   // --- DATA FETCHING ---
   const fetchEvents = async () => {
@@ -54,6 +57,28 @@ export default function Time() {
     });
   });
 
+  createEffect(() => {
+    // change start end end on period change
+    if (period() === 'week') {
+      const newStart = new Date(today);
+      newStart.setDate(newStart.getDate() - 6);
+      newStart.setHours(0, 0, 0, 0);
+      setStart(newStart);
+      setEnd(new Date(today));
+    } else if (period() === 'month') {
+      const newStart = new Date(today);
+      newStart.setDate(1);
+      newStart.setHours(0, 0, 0, 0);
+      setStart(newStart);
+      setEnd(new Date(today));
+    } else if (period() === 'quarter') {
+      const quarter = Math.floor((today.getMonth() + 3) / 3);
+      const newStart = new Date(today.getFullYear(), (quarter - 1) * 3, 1, 0, 0, 0, 0);
+      setStart(newStart);
+      setEnd(new Date(today));
+    }
+  });
+
   return (
     <main class='flex flex-col h-full w-full p-8 px-16  gap-8 overflow-y-auto'>
 
@@ -71,20 +96,16 @@ export default function Time() {
       </Modal>
 
       {/* Top cards display summary stats from all events */}
-      <TimeTopCards events={events} />
+      <TimeTopCards events={events} period={period} />
 
       {/* Selectors to update the date range and the timeline day */}
       <TimeRangeSelectors
-        start={start}
-        setStart={setStart}
-        end={end}
-        setEnd={setEnd}
-        timelineDay={timelineDay}
-        setTimelineDay={setTimelineDay}
+        period={period}
+        setPeriod={setPeriod}
       />
 
       {/* Charts visualize data from all events */}
-      <ChartsGrid events={events} timelineDay={timelineDay} />
+      <ChartsGrid events={events} timelineDay={timelineDay} period={period()} />
 
       {/* Timeline shows detailed activity for a single, selected day */}
       <Timeline

@@ -2,7 +2,13 @@ import { Target, Trophy, Calendar } from 'lucide-solid'
 import { BookOpen, Briefcase } from 'lucide-solid';
 import LayoutCard from "@/components/02 - Practice/training/LayoutCard";
 
-export default function RightMenu() {
+interface Props {
+    setGoalAddModalOpen: (open: boolean) => void;
+    setHabitAddModalOpen: (open: boolean) => void;
+    setProjectAddModalOpen: (open: boolean) => void;
+}
+
+export default function RightMenu(props: Props) {
     return (
         <div class="w-full h-full rounded-md col-span-2 flex flex-col gap-4 overflow-hidden">
 
@@ -10,24 +16,24 @@ export default function RightMenu() {
             <div class="w-full gap-4 p-8 rounded-md bg-sidebar" >
 
                 <div class="grid grid-cols-3 w-full gap-4 h-max">
-                    <div class="aspect-square">
+                    <div class="aspect-square" onClick={() => props.setGoalAddModalOpen(true)}>
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-accent/10 transition-colors" >
                             <Target class="text-accent w-10 h-10" />
                             <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>New Goal</p>
                         </LayoutCard>
                     </div>
 
-                    <div class="aspect-square">
+                    <div class="aspect-square" onClick={() => props.setHabitAddModalOpen(true)}>
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-accent/10 transition-colors" >
                             <BookOpen class="text-accent w-10 h-10" />
-                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>Study Plan</p>
+                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>New Habit</p>
                         </LayoutCard>
                     </div>
 
-                    <div class="aspect-square">
+                    <div class="aspect-square" onClick={() => props.setProjectAddModalOpen(true)}>
                         <LayoutCard border class="w-full gap-4 flex-1/3 h-full hover:bg-good/10 transition-colors" >
                             <Briefcase class="text-accent w-10 h-10" />
-                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>Project</p>
+                            <p class='text-text/70 text-[0.5rem] lg:text-sm font-medium text-nowrap'>New Project</p>
                         </LayoutCard>
                     </div>
 
@@ -36,11 +42,11 @@ export default function RightMenu() {
             </div>
 
             {/* Lower part */}
-            
+
             <div class="w-full gap-4 p-8 rounded-md bg-sidebar h-full flex flex-col overflow-y-auto" >
 
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class='text-lg font-semibold text-text/70'>Achievement Streak</h2>
+                <div class="flex items-center justify-between">
+                    <p class='text-lg text-accent font-semibold'>Achievement Streak</p>
                     <Calendar class="text-accent w-5 h-5" />
                 </div>
 

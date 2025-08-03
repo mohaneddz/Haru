@@ -12,7 +12,6 @@ export async function testDummy() {
   return result;
 }
 
-
 export async function testInert() {
     // Use AUTOINCREMENT instead of manually calculating the next ID
     const result = await db.execute(

@@ -1,5 +1,3 @@
-import overlay from '@/assets/overlay.png';
-import * as LucideIcons from 'lucide-solid';
 import { For } from 'solid-js';
 
 interface Props {
@@ -7,14 +5,12 @@ interface Props {
   description: string;
   icon: string;
   img?: string; 
-  type: 'PDF' | 'Book' | 'Sheet' | 'Paper' | 'Notes';
+  type: 'Exercises' | 'Book' | 'Sheet' | 'Paper' | 'Notes';
   href?: string;
   tags?: string[];
-  field?: string;
 }
 
 export default function DocumentCard(props: Props) {
-  const IconComponent = (LucideIcons as any)[props.icon];
 
   return (
     <a
@@ -32,37 +28,33 @@ export default function DocumentCard(props: Props) {
           />
         )}
 
-        <img
-          src={overlay}
-          class="absolute opacity-70 inset-0 w-full h-full object-cover z-10 pointer-events-none"
+        {/* Gradient overlay instead of image */}
+        <div
+          class="absolute inset-0 w-full h-full z-10 pointer-events-none"
+          style={{
+            "background": "linear-gradient(0deg, rgba(30,30,40,1) 0%, rgba(30,30,40,0.7) 25%, rgba(0,0,0,0.0) 40%)"
+          }}
         />
 
-        <div class="absolute top-4 right-4 z-20">
-          <span class="text-xs font-medium px-2 py-0.5 bg-black/60 rounded text-white uppercase">
-            {props.type}
+        <div class="absolute top-0 right-2 z-20">
+          <span class="text-[0.6rem] font-medium px-2 py-0.5 bg-black/60 rounded text-white uppercase">
+            {props.type ? props.type : 'Document'}
           </span>
         </div>
 
-        <div class="absolute top-4 left-4 z-20">
-          <div class="bg-black/40 p-2 rounded-full">
-            {IconComponent && (
-              <IconComponent class="w-6 h-6 text-accent group-hover:text-white transition-colors" />
-            )}
-          </div>
-        </div>
 
-        <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-4 flex flex-col gap-2">
-          <h3 class="text-lg font-bold text-accent line-clamp-2 group-hover:text-white transition-colors">
+        <div class="absolute bottom-0 left-0 right-0 z-20 px-4 py-4 flex flex-col gap-2 translate-y-2 group-hover:-translate-y-4 transition-transform duration-300">
+          <p class="text-sm text-nowrap  font-bold text-accent line-clamp-2 transition-colors">
             {props.title}
-          </h3>
-          <p class="text-sm text-gray-300 line-clamp-2 group-hover:text-gray-200">
+          </p>
+          <p class="text-[0.75rem] text-gray-300 line-clamp-2  truncate w-[80%]">
             {props.description}
           </p>
           
           {/* Tags */}
           {props.tags && props.tags.length > 0 && (
-            <div class="flex flex-wrap gap-1 mt-1">
-              <For each={props.tags.slice(0, 3)}>
+            <div class="flex-wrap gap-1 mt-1 flex transition-transform duration-300 translate-y-4 group-hover:translate-y-0">
+              <For each={props.tags.slice(0, 2)}>
                 {(tag) => (
                   <span class="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
                     {tag}
@@ -77,16 +69,7 @@ export default function DocumentCard(props: Props) {
             </div>
           )}
           
-          {/* Field indicator */}
-          {props.field && (
-            <div class="mt-1">
-              <span class="text-xs text-accent-light-1 font-medium">
-                {props.field}
-              </span>
-            </div>
-          )}
         </div>
-
       </div>
     </a>
   );

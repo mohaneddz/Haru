@@ -20,9 +20,13 @@ export default function VideoCard(props: Props) {
 
   return (
     <a
-      class="p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
+      class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
+      style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
       href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
     >
+
       <div class="relative bg-background-light-3 rounded-lg shadow-md overflow-hidden aspect-[5/3] w-full group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)] transition-shadow duration-300">
 
         {/* Background Image */}
@@ -37,17 +41,18 @@ export default function VideoCard(props: Props) {
           class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
         />
 
-        <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1">
+        <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1 translate-y-8 group-hover:translate-y-0 transition-transform duration-300">
           <div class="flex items-center gap-2">
-            {IconComponent && (
-              <IconComponent class="text-accent w-5 h-5 group-hover:text-white transition-colors duration-200" />
-            )}
-            <span class="text-sm font-semibold text-accent group-hover:text-accent-light-1 transition-colors duration-200">
+            <span class="text-sm font-semibold text-accent 1 transition-colors duration-200">
               {props.title}
             </span>
           </div>
-          <span class="text-xs text-gray-300 truncate w-70 group-hover:text-gray-300">{props.description}</span>
+          <span class="text-xs text-gray-300 truncate w-70 ">{props.description}</span>
           
+          {IconComponent && (
+            <IconComponent class="text-accent w-8 h-8 transition-colors duration-200 absolute mb-2 right-4 bottom-2 -translate-y-8" />
+          )}
+
           {/* Tags */}
           {props.tags && props.tags.length > 0 && (
             <div class="flex flex-wrap gap-1 mt-1">
@@ -58,14 +63,9 @@ export default function VideoCard(props: Props) {
                   </span>
                 )}
               </For>
-              {props.tags.length > 2 && (
-                <span class="px-1.5 py-0.5 bg-accent/10 text-accent text-xs rounded-full">
-                  +{props.tags.length - 2}
-                </span>
-              )}
             </div>
           )}
-          
+
           {/* Field indicator */}
           {props.field && (
             <span class="text-xs text-accent-light-1 font-medium mt-0.5">
@@ -79,7 +79,7 @@ export default function VideoCard(props: Props) {
         </div>
 
         {isPlaylist && props.count !== undefined && (
-          <div class="absolute bottom-2 right-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-white group-hover:text-accent">
+          <div class="absolute left-2 top-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-white group-hover:text-accent ">
             {props.count} videos
           </div>
         )}

@@ -9,13 +9,22 @@ from urllib.parse import urlparse
 import asyncio
 from constants import *
 from classes import *
+
+# --- New Imports for Voice Functionality ---
+import base64
+import io
+import numpy as np
+import torch
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
+# Note: The 'kokoro' and 'soundfile' libraries are required for TTS.
+# They are imported lazily within the VoiceProcessor class.
+
 # --- Third-Party Libraries ---
 import fitz  # PyMuPDF for PDFs
 import mammoth # For .doc files
 import pandas as pd
 from docx import Document # For .docx files
 import chromadb # Persistent, file-based vector database
-import numpy as np
 import requests
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
@@ -245,6 +254,141 @@ class RAGSystem:
         self.client.persist()
         logging.info("ChromaDB index has been persisted to disk.")
 
+
+# ======================================================================================
+# --- VOICE PROCESSING IMPLEMENTATION ---
+# ======================================================================================
+
+class VoiceProcessor:
+    def __init__(self):
+        """Initialize voice processing components. Models are loaded lazily on first use."""
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        
+        # Lazy loading - models will be initialized when first used
+        self.stt_model = None
+        self.stt_processor = None
+        self.tts_pipeline = None
+        self.voice_tensor = None
+        
+        # In-memory storage for conversation sessions
+        self.voice_sessions = {}
+        
+        logging.info(f"VoiceProcessor initialized on device: {self.device}. Models will load on first use.")
+    
+    def _load_stt_model(self):
+        """Lazy load the Speech-to-Text (Whisper) model."""
+        if self.stt_model is None:
+            logging.info("Loading Whisper STT model...")
+            model_id = "openai/whisper-large-v3-turbo"
+            try:
+                self.stt_model = AutoModelForSpeechSeq2Seq.from_pretrained(
+                    model_id, torch_dtype=self.torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
+                ).to(self.device)
+                
+                self.stt_processor = AutoProcessor.from_pretrained(model_id)
+                
+                # Configure generation parameters
+                if hasattr(self.stt_model.config, "eos_token_id"):
+                    self.stt_model.generation_config.eos_token_id = self.stt_model.config.eos_token_id
+                if hasattr(self.stt_model.config, "pad_token_id") and self.stt_model.config.pad_token_id is not None:
+                    self.stt_model.generation_config.pad_token_id = self.stt_model.config.pad_token_id
+                else:
+                    self.stt_model.generation_config.pad_token_id = self.stt_model.generation_config.eos_token_id
+                
+                logging.info("✅ Whisper STT model loaded successfully.")
+            except Exception as e:
+                logging.error(f"❌ Failed to load Whisper STT model: {e}", exc_info=True)
+                self.stt_model = None # Ensure it remains None on failure
+    
+    def _load_tts_model(self):
+        """Lazy load the Text-to-Speech (Kokoro) model."""
+        if self.tts_pipeline is None:
+            try:
+                logging.info("Loading Kokoro TTS model...")
+                from kokoro import KPipeline
+                
+                self.tts_pipeline = KPipeline(lang_code='a')
+                # Ensure the voice file is available at this path
+                self.voice_tensor = torch.load("voices/af_alloy.pt", weights_only=True)
+                logging.info("✅ Kokoro TTS model loaded successfully.")
+            except ImportError:
+                logging.error("❌ Failed to load TTS: 'kokoro-tts' library not found. Please install it.")
+                self.tts_pipeline = None
+            except FileNotFoundError:
+                logging.error("❌ Failed to load TTS voice file: 'voices/af_alloy.pt' not found.")
+                self.tts_pipeline = None
+            except Exception as e:
+                logging.error(f"❌ Failed to load TTS model: {e}", exc_info=True)
+                self.tts_pipeline = None
+    
+    def transcribe_audio(self, audio_data, sample_rate=16000) -> str:
+        """Transcribe audio data (base64 string) to text."""
+        self._load_stt_model()
+        if not self.stt_model:
+            logging.error("STT model is not available. Cannot transcribe.")
+            return ""
+
+        try:
+            audio_bytes = base64.b64decode(audio_data)
+            # Convert 16-bit PCM bytes to a normalized float32 numpy array
+            audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+            
+            inputs = self.stt_processor(
+                audio_array, sampling_rate=sample_rate, return_tensors="pt"
+            ).to(self.device, self.torch_dtype)
+            
+            generate_kwargs = {"language": "en", "task": "transcribe", "max_new_tokens": 256}
+            
+            with torch.no_grad():
+                predicted_ids = self.stt_model.generate(**inputs, **generate_kwargs)
+            
+            transcription = self.stt_processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
+            return transcription
+            
+        except Exception as e:
+            logging.error(f"Error during audio transcription: {e}", exc_info=True)
+            return ""
+    
+    def synthesize_speech(self, text: str) -> str | None:
+        """Convert text to speech and return base64 encoded WAV audio."""
+        self._load_tts_model()
+        if not self.tts_pipeline:
+            logging.error("TTS model is not available. Cannot synthesize speech.")
+            return None
+        
+        try:
+            import soundfile as sf
+            
+            generator = self.tts_pipeline(text, voice=self.voice_tensor, speed=1.0, split_pattern=r'[.!?]+|\n+')
+            
+            audio_segments = [audio for _, _, audio in generator]
+            
+            if not audio_segments:
+                logging.warning("TTS generated no audio segments for the given text.")
+                return None
+
+            full_audio = np.concatenate(audio_segments)
+            
+            # Use an in-memory buffer to avoid disk I/O
+            buffer = io.BytesIO()
+            sf.write(buffer, full_audio, 24000, format='WAV', subtype='PCM_16')
+            buffer.seek(0)
+            audio_bytes = buffer.read()
+            
+            return base64.b64encode(audio_bytes).decode('utf-8')
+            
+        except Exception as e:
+            logging.error(f"Error during speech synthesis: {e}", exc_info=True)
+            return None
+    
+    def get_session(self, session_id: str) -> dict:
+        """Get or create a voice conversation session."""
+        if session_id not in self.voice_sessions:
+            self.voice_sessions[session_id] = {'history': [], 'created': time.time()}
+        return self.voice_sessions[session_id]
+
+
 # ======================================================================================
 # --- AUTOMATED DOCUMENT WATCHER ---
 # ======================================================================================
@@ -298,7 +442,7 @@ def create_llm_payload(prompt: str, stream: bool, llm_config: dict = None) -> di
         "prompt": prompt,
         "n_predict": llm_config.get("n_predict", 512),
         "temperature": llm_config.get("temperature", 0.7),
-        "stop": llm_config.get("stop", ["\nUser:", "User:", "<end_of_turn>", "<|eot_id|>", "\n###"]),
+        "stop": llm_config.get("stop", ["\nUser:", "User:", "<end_of_turn>", "<|eot_id|>", "\n###", "\nHuman:", "Human:"]),
         "stream": stream
     }
 
@@ -341,7 +485,6 @@ def stream_unified_response(payload: dict, url: str, sources: list) -> Response:
 
     return Response(stream_with_context(generate_sse()), mimetype='text/event-stream')
 
-
 def handle_non_streaming_llm_response(payload: dict, url: str) -> dict:
     """Handles a standard, non-streaming request to the LLM."""
     start_time = time.monotonic()
@@ -358,6 +501,7 @@ def handle_non_streaming_llm_response(payload: dict, url: str) -> dict:
 config = Config()
 http_session = requests.Session()
 rag_system = RAGSystem(config)
+voice_processor = VoiceProcessor()
 
 # --- Chat Endpoint ---
 @app.route('/chat', methods=['POST'])
@@ -397,7 +541,7 @@ def chat_endpoint():
         logging.error(f"General chat endpoint error: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
-# -- Web Search Endpoint ---
+# --- Web Search Endpoint ---
 @app.route("/ask_search", methods=["POST"])
 def ask_with_search():
     data = request.get_json()
@@ -408,7 +552,6 @@ def ask_with_search():
     stream = data.get("stream", False)
 
     try:
-        # Crawling and processing logic remains the same
         urls = get_web_urls(query)
         if not urls:
             return jsonify({"content": "Web search returned no results.", "sources": []}), 500
@@ -427,7 +570,6 @@ def ask_with_search():
                 "sources": []
              }), 200
 
-        # Format sources for both streaming and non-streaming responses
         final_sources = [{
             "title": source.get("title", "No Title Available"),
             "url": source.get("url"),
@@ -469,7 +611,6 @@ def rag_query_endpoint():
         if not query:
             return jsonify({"error": "Query is missing"}), 400
 
-        # 1. Retrieve and format context
         retrieved_chunks = rag_system.retrieve_context(query)
         unique_contents = set()
         deduplicated_chunks = [
@@ -483,13 +624,9 @@ def rag_query_endpoint():
                 "sources": []
             })
 
-        # 2. Format sources and prompt
         final_sources = [{
-            "title": "",
-            "url": "",
-            "path": chunk['source'],
-            "section": chunk.get('id', f"chunk_{i}"),
-            "score": round(chunk['score'], 4)
+            "title": "", "url": "", "path": chunk['source'],
+            "section": chunk.get('id', f"chunk_{i}"), "score": round(chunk['score'], 4)
         } for i, chunk in enumerate(deduplicated_chunks)]
 
         context_parts = [f"[Source {i+1}: {Path(c['source']).name}]\n{c['content']}" for i, c in enumerate(deduplicated_chunks)]
@@ -497,7 +634,6 @@ def rag_query_endpoint():
         template = config.LLM_PROMPT_TEMPLATE_ADVANCED if use_advanced_prompt else config.LLM_PROMPT_TEMPLATE_BASIC
         full_prompt = template.format(context=context_string, query=query)
 
-        # 3. Generate response
         payload = create_llm_payload(full_prompt, stream=stream, llm_config=llm_config)
 
         if stream:
@@ -506,11 +642,7 @@ def rag_query_endpoint():
             llm_data = handle_non_streaming_llm_response(payload, config.LLAMA_SERVER_URL)
             final_answer = llm_data.get("content", "").strip()
             final_answer = re.sub(r'(\[Source \d+\])\1+', r'\1', final_answer)
-
-            return jsonify({
-                "content": final_answer,
-                "sources": final_sources
-            })
+            return jsonify({"content": final_answer, "sources": final_sources})
 
     except requests.exceptions.RequestException as e:
         logging.error(f"RAG request to LLM server failed: {e}", exc_info=True)
@@ -519,6 +651,132 @@ def rag_query_endpoint():
         logging.error(f"RAG endpoint error: {e}", exc_info=True)
         return jsonify({"error": "An internal RAG error occurred"}), 500
 
+# --- Voice Chat Endpoints ---
+
+@app.route('/voice', methods=['POST'])
+def voice_endpoint():
+    """Handles a full voice-to-voice interaction: STT -> LLM -> TTS."""
+    try:
+        data = request.get_json()
+        audio_data = data.get('audio_data')
+        text_input = data.get('text')
+        session_id = data.get('session_id', 'default_voice_session')
+        include_audio = data.get('include_audio', False)
+        llm_config = data.get('llm_config', {})
+        sample_rate = data.get('sample_rate', 16000)
+
+        response_data = {
+            "session_id": session_id, "transcription": "", "llm_response": "",
+            "audio_data": None, "processing_time": {}
+        }
+        start_total = time.time()
+
+        # Step 1: Speech-to-Text (if audio is provided)
+        user_message = text_input
+        if audio_data and not user_message:
+            stt_start = time.time()
+            user_message = voice_processor.transcribe_audio(audio_data, sample_rate)
+            response_data["transcription"] = user_message
+            response_data["processing_time"]["stt"] = time.time() - stt_start
+            if not user_message:
+                return jsonify({"error": "No speech detected in audio"}), 400
+        
+        if not user_message:
+            return jsonify({"error": "No message provided (either as audio or text)"}), 400
+
+        # Step 2: Build prompt from conversation history
+        session = voice_processor.get_session(session_id)
+        prompt = "You are a helpful AI assistant. Respond naturally and conversationally.\n\n"
+        for turn in session['history'][-10:]: # Use last 10 exchanges for context
+            prompt += f"{turn.get('role', 'Human').capitalize()}: {turn.get('content', '')}\n"
+        prompt += f"Human: {user_message}\nAssistant:"
+
+        # Step 3: Call LLM for a response
+        llm_start = time.time()
+        llama_payload = create_llm_payload(prompt, stream=False, llm_config=llm_config)
+        
+        try:
+            llm_response_data = handle_non_streaming_llm_response(llama_payload, config.LLAMA_SERVER_URL)
+            llm_response = llm_response_data.get("content", "").strip()
+            
+            # Clean common artifacts from the response
+            for artifact in ["\nHuman:", "Human:", "Assistant:"]:
+                llm_response = llm_response.split(artifact)[0].strip()
+
+            response_data["llm_response"] = llm_response
+            response_data["processing_time"]["llm"] = time.time() - llm_start
+
+            # Update session history
+            session['history'].append({"role": "Human", "content": user_message})
+            session['history'].append({"role": "Assistant", "content": llm_response})
+            session['history'] = session['history'][-20:] # Keep history trimmed
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"LLM processing error for voice chat: {e}", exc_info=True)
+            return jsonify({"error": "Failed to get response from LLM"}), 502
+
+        # Step 4: Text-to-Speech (if requested and there's a response)
+        if include_audio and llm_response:
+            tts_start = time.time()
+            audio_response = voice_processor.synthesize_speech(llm_response)
+            response_data["audio_data"] = audio_response
+            response_data["processing_time"]["tts"] = time.time() - tts_start
+        
+        response_data["processing_time"]["total"] = time.time() - start_total
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logging.error(f"Voice endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "An internal error occurred during voice processing"}), 500
+
+@app.route('/voice/transcribe', methods=['POST'])
+def transcribe_only_endpoint():
+    """Endpoint for performing only Speech-to-Text."""
+    try:
+        data = request.get_json()
+        audio_data = data.get('audio_data')
+        if not audio_data: return jsonify({"error": "No audio data provided"}), 400
+        
+        sample_rate = data.get('sample_rate', 16000)
+        transcription = voice_processor.transcribe_audio(audio_data, sample_rate)
+        return jsonify({"transcription": transcription, "success": bool(transcription)})
+    except Exception as e:
+        logging.error(f"Transcription endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "Transcription failed"}), 500
+
+@app.route('/voice/synthesize', methods=['POST'])
+def synthesize_only_endpoint():
+    """Endpoint for performing only Text-to-Speech."""
+    try:
+        data = request.get_json()
+        text = data.get('text')
+        if not text: return jsonify({"error": "No text provided"}), 400
+        
+        audio_response = voice_processor.synthesize_speech(text)
+        return jsonify({"audio_data": audio_response, "success": bool(audio_response)})
+    except Exception as e:
+        logging.error(f"TTS endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "Text-to-speech synthesis failed"}), 500
+
+@app.route('/voice/sessions/<session_id>', methods=['GET', 'DELETE'])
+def manage_voice_session_endpoint(session_id):
+    """Get or delete a voice conversation session history."""
+    try:
+        if request.method == 'GET':
+            session = voice_processor.get_session(session_id)
+            return jsonify({"session_id": session_id, "history": session['history'], "created": session['created']})
+        
+        elif request.method == 'DELETE':
+            if session_id in voice_processor.voice_sessions:
+                del voice_processor.voice_sessions[session_id]
+                return jsonify({"message": f"Voice session '{session_id}' deleted"})
+            else:
+                return jsonify({"error": "Voice session not found"}), 404
+    except Exception as e:
+        logging.error(f"Voice session management error: {e}", exc_info=True)
+        return jsonify({"error": "Session management failed"}), 500
+
+
 # --- Management & Status Endpoints ---
 
 @app.route("/health", methods=["GET"])
@@ -526,13 +784,11 @@ def health_check_endpoint():
     """Performs a health check on the service and its dependencies."""
     try:
         # Check LLM Server
-        with http_session.get(config.LLAMA_SERVER_URL, timeout=5) as resp:
-             llm_status = "ok"
+        llm_status = "ok" if http_session.get(config.LLAMA_SERVER_URL, timeout=5).ok else "unavailable"
     except requests.exceptions.RequestException:
         llm_status = "unavailable"
     
-    try:
-        # Check Vector DB
+    try: # Check Vector DB
         rag_system.collection.count()
         db_status = "ok"
     except Exception:
@@ -583,20 +839,19 @@ def warmup_llm_server():
     start_time = time.monotonic()
     try:
         payload = create_llm_payload("User: Hello\nAssistant:", stream=False, llm_config={"n_predict": 10})
-        response = http_session.post(config.LLAMA_SERVER_URL, json=payload, timeout=180)
-        response.raise_for_status()
+        http_session.post(config.LLAMA_SERVER_URL, json=payload, timeout=180).raise_for_status()
         duration = time.monotonic() - start_time
         logging.info(f"✅ LLM Server is warm. Model loaded in {duration:.2f} seconds.")
     except requests.exceptions.RequestException as e:
         logging.error(f"❌ Failed to warm up LLM server: {e}")
-        logging.error("   Please ensure the LLM server is running and accessible.")
+        logging.error("   Please ensure the LLM server is running and accessible at " + config.LLAMA_SERVER_URL)
 
 if __name__ == "__main__":
     # Ensure document directory exists
     content_extractor = ContentExtractor() 
     Path(config.DOCUMENTS_DIR).mkdir(exist_ok=True)
     
-    # Run the warm-up routine
+    # Run the warm-up routine for the LLM server
     warmup_llm_server()
     
     # Start background tasks for initial indexing and file watching
@@ -606,5 +861,5 @@ if __name__ == "__main__":
     
     # Start the Flask server
     # For production, use a proper WSGI server like Gunicorn or Waitress.
-    # Example: gunicorn --workers 4 --bind 0.0.0.0:5000 your_script_name:app
+    # Example: gunicorn --workers 4 --bind 0.0.0.0:5000 app:app
     app.run(port=5000, host="0.0.0.0", debug=False, threaded=True)

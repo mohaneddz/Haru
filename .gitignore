@@ -3,3 +3,4 @@ dist
 backend/models/*
 backend/documents/*
 idea/models/*
+.env

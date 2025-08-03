@@ -5,33 +5,34 @@ import LayoutCard from "@/components/02 - Practice/training/LayoutCard";
 interface GoalProps {
   name: string;
   progress: number;
-  category: 'learning' | 'project' | 'personal';
-  priority: 'high' | 'medium' | 'low';
-  deadline: string;
+  category: 'Goal' | 'Project' | 'Habit';
+  priority: 'Low' | 'Normal' | 'Medium' | 'High' | undefined;
+  deadline?: string;
   class?: string;
 }
 
 export default function GoalCard(props: GoalProps) {
   const getCategoryColor = () => {
     switch (props.category) {
-      case 'learning': return 'text-accent';
-      case 'project': return 'text-good';
-      case 'personal': return 'text-tertiary';
+      case 'Goal': return 'text-accent';
+      case 'Project': return 'text-good';
+      case 'Habit': return 'text-tertiary';
       default: return 'text-accent';
     }
   };
 
   const getPriorityColor = () => {
     switch (props.priority) {
-      case 'high': return 'bg-bad-dark-1/20 text-bad-light-1';
-      case 'medium': return 'bg-neutral-dark-2/20 text-neutral-light-1';
-      case 'low': return 'bg-good-dark-3/20 text-good-light-1';
+      case 'High': return 'bg-bad-dark-1/20 text-bad-light-1';
+      case 'Medium': return 'bg-neutral-dark-2/20 text-neutral-light-1';
+      case 'Low': return 'bg-good-dark-3/20 text-good-light-1';
       default: return 'bg-gray-500/20 text-gray-400';
     }
   };
 
   const formatDeadline = () => {
-    const date = new Date(props.deadline);
+    // if no deadline then return empty string
+    const date = new Date(props.deadline ? props.deadline : '');
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 

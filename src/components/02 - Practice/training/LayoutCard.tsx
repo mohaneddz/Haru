@@ -37,7 +37,7 @@ export default function LayoutCard(props: TrainingCardProps) {
         <a href={href} class={`bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md overflow-hidden ${borderHoverClasses} block w-full h-full`}>
           <div class="p-0.5 h-full w-full">
             <div
-              class={`h-full w-full flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-b from-gray-800 to-gray-900 rounded-md transition-all duration-300 ${props.class || ''} ${getVariationClasses()}`}
+              class={`cursor-pointer h-full w-full flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-b from-gray-800 to-gray-900 rounded-md transition-all duration-300 ${props.class || ''} ${getVariationClasses()}`}
             >
               {props.children}
             </div>

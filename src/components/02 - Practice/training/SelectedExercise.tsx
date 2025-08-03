@@ -34,7 +34,7 @@ export default function SelectedExercise(props: ExerciseProps) {
           <span class="text-xl font-semibold text-accent">{props.name}</span>
         </div>
 
-        <p class="text-sm text-gray-300 mb-4 flex-1 transition-colors duration-300 group-hover:text-gray-200">
+        <p class="text-sm text-gray-300 mb-4 flex-1 transition-colors duration-300 ">
           {props.description}
         </p>
 

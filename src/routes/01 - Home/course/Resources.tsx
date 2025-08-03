@@ -31,7 +31,7 @@ export default function Resources() {
 
   // Define all available options for filtering
   const availableTags = [
-    "fundamentals", "course", "exercise", "supplement", "reference", 
+    "fundamentals", "course", "exercise", "supplement", "reference",
     "advanced", "beginner", "matlab", "python", "lab", "theory",
     "practical", "audio", "biomedical", "communication", "image",
     "radar", "sensors", "speech", "wireless", "fourier", "filtering",
@@ -46,26 +46,26 @@ export default function Resources() {
   ];
 
   const availableTypes = [
-    "PDF", "Book", "Sheet", "Paper", "Notes", "Video", "Playlist", "Software", "Tool"
+    "Exercises", "Book", "Sheet", "Paper", "Notes", "Video", "Playlist", "Software", "Tool"
   ];
 
   // Document data with tags and fields
   const documentsData = [
-    { title: "Signal Processing Fundamentals", description: "Complete guide to signal processing basics", type: "PDF" as const, icon: "FileText", img: doc1, tags: ["fundamentals", "course", "theory"], field: "Signal Processing" },
-    { title: "MATLAB Code Examples", description: "Collection of MATLAB scripts", type: "PDF" as const, icon: "Code", img: doc2, tags: ["matlab", "programming", "practical"], field: "Software Development" },
+    { title: "Signal Processing Fundamentals", description: "Complete guide to signal processing basics", type: "Exercises" as const, icon: "FileText", img: doc1, tags: ["fundamentals", "course", "theory"], field: "Signal Processing" },
+    { title: "MATLAB Code Examples", description: "Collection of MATLAB scripts", type: "Exercises" as const, icon: "Code", img: doc2, tags: ["matlab", "programming", "practical"], field: "Software Development" },
     { title: "Laboratory Manual", description: "Step-by-step lab exercises", type: "Book" as const, icon: "BookOpen", img: doc3, tags: ["lab", "exercise", "practical"], field: "Signal Processing" },
     { title: "Reference Formulas", description: "Quick reference sheet for formulas", type: "Sheet" as const, icon: "Calculator", img: doc4, tags: ["reference", "theory", "supplement"], field: "Mathematics" },
-    { title: "Python Signal Processing", description: "Python implementation examples", type: "PDF" as const, icon: "Code", img: doc1, tags: ["python", "programming", "practical"], field: "Software Development" },
+    { title: "Python Signal Processing", description: "Python implementation examples", type: "Exercises" as const, icon: "Code", img: doc1, tags: ["python", "programming", "practical"], field: "Software Development" },
     { title: "Exam Preparation Guide", description: "Study guide with practice problems", type: "Notes" as const, icon: "GraduationCap", img: doc2, tags: ["exercise", "course", "theory"], field: "Signal Processing" },
-    { title: "Advanced Topics", description: "Deep dive into complex concepts", type: "PDF" as const, icon: "FileText", img: doc3, tags: ["advanced", "theory", "supplement"], field: "Signal Processing" },
+    { title: "Advanced Topics", description: "Deep dive into complex concepts", type: "Exercises" as const, icon: "FileText", img: doc3, tags: ["advanced", "theory", "supplement"], field: "Signal Processing" },
     { title: "Problem Sets", description: "Comprehensive exercise collection", type: "Sheet" as const, icon: "Calculator", img: doc4, tags: ["exercise", "practical", "theory"], field: "Mathematics" },
-    { title: "Audio Signal Dataset", description: "Collection of audio files for processing", type: "PDF" as const, icon: "Music", img: doc1, tags: ["audio", "practical", "supplement"], field: "Audio Processing" },
-    { title: "Biomedical Signals", description: "ECG, EEG, and EMG signals", type: "PDF" as const, icon: "Activity", img: doc2, tags: ["biomedical", "practical", "supplement"], field: "Biomedical Engineering" },
-    { title: "Communication Signals", description: "Modulated signals and noise samples", type: "PDF" as const, icon: "Radio", img: doc3, tags: ["communication", "practical", "supplement"], field: "Digital Communications" },
-    { title: "Image Processing Dataset", description: "Sample images for 2D processing", type: "PDF" as const, icon: "Image", img: doc4, tags: ["image", "practical", "supplement"], field: "Image Processing" },
-    { title: "Radar Signal Data", description: "Synthetic aperture radar examples", type: "PDF" as const, icon: "Radar", img: doc1, tags: ["radar", "practical", "supplement"], field: "Radar Systems" },
+    { title: "Audio Signal Dataset", description: "Collection of audio files for processing", type: "Exercises" as const, icon: "Music", img: doc1, tags: ["audio", "practical", "supplement"], field: "Audio Processing" },
+    { title: "Biomedical Signals", description: "ECG, EEG, and EMG signals", type: "Exercises" as const, icon: "Activity", img: doc2, tags: ["biomedical", "practical", "supplement"], field: "Biomedical Engineering" },
+    { title: "Communication Signals", description: "Modulated signals and noise samples", type: "Exercises" as const, icon: "Radio", img: doc3, tags: ["communication", "practical", "supplement"], field: "Digital Communications" },
+    { title: "Image Processing Dataset", description: "Sample images for 2D processing", type: "Exercises" as const, icon: "Image", img: doc4, tags: ["image", "practical", "supplement"], field: "Image Processing" },
+    { title: "Radar Signal Data", description: "Synthetic aperture radar examples", type: "Exercises" as const, icon: "Radar", img: doc1, tags: ["radar", "practical", "supplement"], field: "Radar Systems" },
     { title: "Sensor Network Data", description: "Multi-sensor array data", type: "Sheet" as const, icon: "Sensors", img: doc2, tags: ["sensors", "practical", "supplement"], field: "Signal Processing" },
-    { title: "Speech Processing Data", description: "Voice recognition datasets", type: "PDF" as const, icon: "Mic", img: doc3, tags: ["speech", "practical", "supplement"], field: "Audio Processing" },
+    { title: "Speech Processing Data", description: "Voice recognition datasets", type: "Exercises" as const, icon: "Mic", img: doc3, tags: ["speech", "practical", "supplement"], field: "Audio Processing" },
     { title: "Wireless Communications", description: "Channel modeling datasets", type: "Sheet" as const, icon: "Wifi", img: doc4, tags: ["wireless", "communication", "supplement"], field: "Digital Communications" }
   ];
 
@@ -93,18 +93,18 @@ export default function Resources() {
   // Filter functions
   const matchesFilter = (item: any, filters: FilterState) => {
     const query = filters.searchQuery.toLowerCase();
-    const matchesSearch = !query || 
-      item.title.toLowerCase().includes(query) || 
+    const matchesSearch = !query ||
+      item.title.toLowerCase().includes(query) ||
       item.description.toLowerCase().includes(query) ||
       (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(query)));
 
-    const matchesTags = filters.selectedTags.length === 0 || 
+    const matchesTags = filters.selectedTags.length === 0 ||
       (item.tags && filters.selectedTags.some(tag => item.tags.includes(tag)));
 
-    const matchesFields = filters.selectedFields.length === 0 || 
+    const matchesFields = filters.selectedFields.length === 0 ||
       (item.field && filters.selectedFields.includes(item.field));
 
-    const matchesTypes = filters.selectedTypes.length === 0 || 
+    const matchesTypes = filters.selectedTypes.length === 0 ||
       (item.type && filters.selectedTypes.includes(item.type));
 
     return matchesSearch && matchesTags && matchesFields && matchesTypes;
@@ -116,91 +116,93 @@ export default function Resources() {
 
   return (
     <div class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll">
-      
+
       {/* Composable Filter Component */}
-      <ComposableFilter 
-        onFilterChange={setFilters}
-        pageType="resources"
-        tagsConfig={{
-          enabled: true,
-          options: availableTags,
-          title: "Tags",
-          icon: Tag
-        }}
-        fieldsConfig={{
-          enabled: true,
-          options: availableFields,
-          title: "Subject Fields",
-          icon: BookOpen
-        }}
-        typesConfig={{
-          enabled: true,
-          options: availableTypes,
-          title: "Content Type",
-          icon: FileText
-        }}
-      />
+      <div class="relative w-[80%] mt-20">
+        <ComposableFilter
+          title="Resource Filters"
+          icon={Tag}
+          onFilterChange={setFilters}
+          pageType="resources"
+          tagsConfig={{
+            enabled: true,
+            options: availableTags,
+            title: "Tags",
+            icon: Tag
+          }}
+          fieldsConfig={{
+            enabled: true,
+            options: availableFields,
+            title: "Subject Fields",
+            icon: BookOpen
+          }}
+          typesConfig={{
+            enabled: true,
+            options: availableTypes,
+            title: "Content Type",
+            icon: FileText
+          }}
+        />
+      </div>
 
       {/* ─── DOCUMENTS ───────────────────────────────────── */}
-      <Separator 
+      <Separator
         title={`📄 Course Documents (${filteredDocuments().length})`}
-        description="Essential material including notes, books, and references" 
+        description="Essential material including notes, books, and references"
         onToggle={(isExpanded) => setShowDocuments(isExpanded)}
       />
       <Show when={showDocuments()}>
         <div class="grid grid-cols-4 gap-8 w-full max-w-[80%] p-4 transition-all duration-300">
           {filteredDocuments().map((doc) => (
-            <DocumentCard 
-              title={doc.title} 
-              description={doc.description} 
-              type={doc.type} 
-              icon={doc.icon} 
+            <DocumentCard
+              title={doc.title}
+              description={doc.description}
+              type={doc.type}
+              icon={doc.icon}
               img={doc.img}
               tags={doc.tags}
-              field={doc.field}
             />
           ))}
         </div>
       </Show>
 
       {/* ─── VIDEOS ───────────────────────────────────── */}
-      <Separator 
+      <Separator
         title={`🎥 Video Lectures (${filteredVideos().length})`}
-        description="Interactive lessons and walkthroughs" 
+        description="Interactive lessons and walkthroughs"
         onToggle={(isExpanded) => setShowVideos(isExpanded)}
       />
       <Show when={showVideos()}>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-[80%] p-4 transition-all duration-300">
           {filteredVideos().map((video) => (
-            <VideoCard 
-              title={video.title} 
-              description={video.description} 
-              icon={video.icon} 
-              img={video.img} 
-              duration={video.duration} 
-              type={video.type} 
+            <VideoCard
+              title={video.title}
+              description={video.description}
+              icon={video.icon}
+              img={video.img}
+              duration={video.duration}
+              type={video.type}
               count={video.count}
               tags={video.tags}
-              field={video.field}
             />
           ))}
         </div>
       </Show>
 
       {/* ─── TOOLS ───────────────────────────────────── */}
-      <Separator 
+      <Separator
         title={`🛠️ Tools & Software (${filteredTools().length})`}
-        description="Interactive software and environments for experimentation" 
+        description="Interactive software and environments for experimentation"
         onToggle={(isExpanded) => setShowTools(isExpanded)}
       />
       <Show when={showTools()}>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-[80%] p-4 transition-all duration-300">
           {filteredTools().map((tool) => (
-            <ToolCard 
-              title={tool.title} 
-              description={tool.description} 
-              icon={tool.icon} 
-              img={tool.img} 
+            <ToolCard
+              title={tool.title}
+              description={tool.description}
+              icon={tool.icon}
+              img={tool.img}
               link={tool.link}
               tags={tool.tags}
               field={tool.field}

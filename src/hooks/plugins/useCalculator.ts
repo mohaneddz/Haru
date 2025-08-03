@@ -1,7 +1,7 @@
 import { createSignal } from 'solid-js';
 import { AngleMode, Operation, ScientificFunction, Constant } from '@/types/calculator';
-import { toRadians, toDegrees, factorial } from '@/utils/mathUtils';
-import { mathematicalConstants } from '@/utils/constants';
+import { toRadians, toDegrees, factorial } from '@/utils/math/mathUtils';
+import { mathematicalConstants } from '@/utils/math/constants';
 import { getOperationSymbol } from '@/utils/operationUtils';
 
 export function useCalculator() {

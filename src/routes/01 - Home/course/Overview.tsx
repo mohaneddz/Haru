@@ -94,7 +94,7 @@ export default function Overview() {
             <div class="grid grid-cols-3 gap-4 mb-6">
               <CourseInfoTopCard value={currentCourse().difficulty} attribute="Difficulty" />
               <CourseInfoTopCard value={currentCourse().duration} attribute="Duration" />
-              <CourseInfoTopCard value={currentCourse().prerequisites.join(', ')} attribute="Prerequisites" />
+              <CourseInfoTopCard value={currentCourse().topics?.[0]} attribute="Main Topic" />
             </div>
 
             <p class="text-3xl font-bold text-sidebar-light-3 mb-4 brightness-120">Course Overview</p>
@@ -120,11 +120,11 @@ export default function Overview() {
               <h3 class="text-xl font-semibold text-sidebar-light-3 pb-4">What You'll Learn</h3>
               <div class="grid grid-cols-2 gap-3">
                 {currentCourse().topics.map((topic: string, index: number) => (
-                  <div class="flex items-start space-x-3 p-3 bg-accent-dark-3/50 rounded-lg transition-all duration-300 hover:bg-accent-dark-2/70 hover:scale-105 hover:shadow-lg cursor-pointer group transform">
+                  <div class="flex items-start space-x-3 p-3 bg-accent-dark-3/70 rounded-lg transition-all duration-300 hover:bg-accent-dark-2 hover:scale-102 hover:shadow-lg cursor-pointer group transform">
                     <span class="flex-shrink-0 w-6 h-6 bg-accent-light-1 text-accent-dark-3 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 group-hover:bg-white group-hover:scale-110">
                       {index + 1}
                     </span>
-                    <span class="text-text/80 group-hover:text-white transition-colors duration-300">{topic}</span>
+                    <span class="text-text/80 group-hover:text-white transition-colors duration-300 truncate text-nowrap w-[90%]">{topic}</span>
                   </div>
                 ))}
               </div>

@@ -1,6 +1,6 @@
 from ddgs import DDGS
 import asyncio
-# from crawl4ai import AsyncWebCrawler, BrowserConfig, CacheMode, CrawlerRunConfig
+
 import re
 import aiohttp
 from urllib.parse import urlparse
@@ -12,57 +12,57 @@ from datetime import datetime
 from constants import * 
 from classes import *
 
-async def fetch_wikipedia_api_data(title: str) -> dict:
-    """Fetch structured data from Wikipedia API as fallback."""
-    try:
-        # Clean title for API call
-        clean_title = re.sub(r'[^\w\s]', '', title).replace(' ', '_')
-        url = f"{WIKIPEDIA_API_URL}{clean_title}"
+# async def fetch_wikipedia_api_data(title: str) -> dict:
+#     """Fetch structured data from Wikipedia API as fallback."""
+#     try:
+#         # Clean title for API call
+#         clean_title = re.sub(r'[^\w\s]', '', title).replace(' ', '_')
+#         url = f"{WIKIPEDIA_API_URL}{clean_title}"
         
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=5) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return {
-                        'title': data.get('title'),
-                        'description': data.get('extract'),
-                        'published_date': data.get('timestamp'),
-                        'canonical_url': data.get('content_urls', {}).get('desktop', {}).get('page')
-                    }
-    except Exception as e:
-        logging.debug(f"Wikipedia API fallback failed: {e}")
+#         async with aiohttp.ClientSession() as session:
+#             async with session.get(url, timeout=5) as response:
+#                 if response.status == 200:
+#                     data = await response.json()
+#                     return {
+#                         'title': data.get('title'),
+#                         'description': data.get('extract'),
+#                         'published_date': data.get('timestamp'),
+#                         'canonical_url': data.get('content_urls', {}).get('desktop', {}).get('page')
+#                     }
+#     except Exception as e:
+#         logging.debug(f"Wikipedia API fallback failed: {e}")
     
-    return {}
+#     return {}
 
-async def fetch_omdb_api_data(title: str, year: str = None) -> dict:
-    """Fetch movie data from OMDb API as fallback."""
-    if not OMDB_API_KEY or OMDB_API_KEY == "your_omdb_key":
-        return {}
+# async def fetch_omdb_api_data(title: str, year: str = None) -> dict:
+#     """Fetch movie data from OMDb API as fallback."""
+#     if not OMDB_API_KEY or OMDB_API_KEY == "your_omdb_key":
+#         return {}
     
-    try:
-        params = {'apikey': OMDB_API_KEY, 't': title}
-        if year:
-            params['y'] = year
+#     try:
+#         params = {'apikey': OMDB_API_KEY, 't': title}
+#         if year:
+#             params['y'] = year
             
-        async with aiohttp.ClientSession() as session:
-            async with session.get('http://www.omdbapi.com/', params=params, timeout=5) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    if data.get('Response') == 'True':
-                        return {
-                            'title': data.get('Title'),
-                            'release_date': data.get('Released'),
-                            'genre': data.get('Genre'),
-                            'director': data.get('Director'),
-                            'actors': data.get('Actors', '').split(', '),
-                            'awards': data.get('Awards'),
-                            'rating': data.get('imdbRating'),
-                            'plot': data.get('Plot')
-                        }
-    except Exception as e:
-        logging.debug(f"OMDb API fallback failed: {e}")
+#         async with aiohttp.ClientSession() as session:
+#             async with session.get('http://www.omdbapi.com/', params=params, timeout=5) as response:
+#                 if response.status == 200:
+#                     data = await response.json()
+#                     if data.get('Response') == 'True':
+#                         return {
+#                             'title': data.get('Title'),
+#                             'release_date': data.get('Released'),
+#                             'genre': data.get('Genre'),
+#                             'director': data.get('Director'),
+#                             'actors': data.get('Actors', '').split(', '),
+#                             'awards': data.get('Awards'),
+#                             'rating': data.get('imdbRating'),
+#                             'plot': data.get('Plot')
+#                         }
+#     except Exception as e:
+#         logging.debug(f"OMDb API fallback failed: {e}")
     
-    return {}
+#     return {}
 
 # ==============================================================================
 # WEB SEARCH FUNCTIONS

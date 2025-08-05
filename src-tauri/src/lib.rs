@@ -1,5 +1,10 @@
 use std::path::{Path, PathBuf};
 use std::{fs, io};
+use std::process::{Command, Child};
+use once_cell::sync::OnceCell;
+use std::sync::Mutex;
+
+static VOICE_PROCESS: OnceCell<Mutex<Option<Child>>> = OnceCell::new();
 
 #[tauri::command]
 fn read_dir_recursive(path: String) -> Result<Vec<String>, String> {
@@ -121,6 +126,55 @@ fn run_fasttext() -> Result<String, String> {
     Ok(result.trim().to_string())
 }
 
+#[tauri::command]
+fn run_llm() -> Result<String, String> {
+    let child = Command::new("C:\\Users\\Mohaned\\miniconda3\\envs\\haru\\python.exe")
+        .arg("D:\\Programming\\Projects\\Tauri\\haru\\backend\\app.py")
+        .spawn()
+        .map_err(|e| format!("❌ Failed to start app.py: {}", e))?;
+
+    VOICE_PROCESS
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .unwrap()
+        .replace(child);
+
+    Ok("✅ Voice client started.".into())
+}
+
+#[tauri::command]
+fn run_voice() -> Result<String, String> {
+    let child = Command::new("C:\\Users\\Mohaned\\miniconda3\\envs\\haru\\python.exe")
+        .arg("D:\\Programming\\Projects\\Tauri\\haru\\models\\voice.py")
+        .spawn()
+        .map_err(|e| format!("❌ Failed to start voice.py: {}", e))?;
+
+    VOICE_PROCESS
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .unwrap()
+        .replace(child);
+
+    Ok("✅ Voice client started.".into())
+}
+
+#[tauri::command]
+fn stop_voice() -> Result<String, String> {
+    if let Some(mut child) = VOICE_PROCESS
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .unwrap()
+        .take()
+    {
+        match child.kill() {
+            Ok(_) => Ok("🛑 Voice client stopped.".into()),
+            Err(e) => Err(format!("❌ Failed to stop voice.py: {}", e)),
+        }
+    } else {
+        Err("⚠️ No voice client is currently running.".into())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -134,13 +188,16 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             read_dir_recursive,
             read_file,
+            run_voice,
             create_file,
             create_folder,
             rename_path,
             delete_path,
             move_path,
             save_file,
-            run_fasttext
+            stop_voice,
+            run_fasttext,
+            run_llm
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

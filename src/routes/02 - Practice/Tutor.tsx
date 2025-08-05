@@ -1,47 +1,34 @@
-import { Paperclip, Send } from "lucide-solid";
-import { For } from "solid-js";
-import Message from "@/components/02 - Practice/Tutor/Messasge";
-import useTutor from "@/hooks/training/useTutor";
+import { Paperclip, Send, Mic } from "lucide-solid";
 import { Globe } from "lucide-solid";
+import Chat from "@/components/02 - Practice/Tutor/Chat";
+import useTutor from "@/hooks/training/useTutor";
+import { Show } from "solid-js";
+import Sphere from "@/components/02 - Practice/Tutor/Shpere";
 
 export default function Tutor() {
 
-  const { messages, currText, setCurrText, isLoading, handleSend, messageContainerRef, web, toggleWeb, rag, toggleRag, mode, setMode, newChat } = useTutor();
+  const { messages, currText, setCurrText, isLoading, handleSend, messageContainerRef, web, toggleWeb, rag, toggleRag, voice, toggleVoice, mode, setMode, newChat, currResponse } = useTutor();
 
   return (
-    <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-12 mx-auto">
+    <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-12 mx-auto transition-all duration-300">
 
-      <div class="absolute top-8 left-4 flex flex-col justify-center z-50">
+      <Show when={!voice()} fallback={<Sphere />}>
+        <Chat
+          messages={messages}
+          messageContainerRef={messageContainerRef}
+          newChat={newChat}
+          isLoading={isLoading}
+          setMode={setMode}
+          mode={mode}
+        />
+      </Show>
 
-        <select class="mb-4 backdrop:blur-lg focus:outline-none focus:ring-0" onChange={(e) => setMode(e.currentTarget.value)} value={mode()}>
-          <option value="tutor" class="bg-background-light-1">General</option>
-          <option value="explorer" class="bg-background-light-1">Explorer</option>
-          <option value="objective" class="bg-background-light-1">Objective</option>
-        </select>
-
-        <p class="text-text-light-2 text-sm clickable w-min text-nowrap" onClick={newChat}>New Chat</p>
-
-      </div>
-
-
-      <div
-        id="message-container"
-        ref={messageContainerRef}
-        class="max-h-full mt-8 flex-col w-full px-[10%] flex flex-nowrap items-center justify-start relative rounded-md mb-4 overflow-y-auto overflow-x-hidden"
-      >
-        <For each={messages()}>
-          {(message) => <Message text={message.text} user={message.user} id={message.id} sources={message.sources} showSources={!isLoading() || message.id < messages().length } />}
-        </For>
-
-      </div>
-
-
-      <div class="bg-background-light-3/25 h-max w-[80%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4">
+      <div class="bg-background-light-3/25 h-max w-[80%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4 transition-all duration-300">
 
         <textarea
-          class="text-lg pt-4 px-8 text-text-light-2/70 font-bold m-auto flex-1/1 outline-none h-max focus:outline-none focus:ring-0 focus:border-transparent text-wrap bg-transparent resize-none"
-          placeholder={isLoading() ? "Bot is typing..." : "Type your message here..."}
-          value={currText()}
+          class="text-lg pt-4 px-8 text-text-light-2/70 font-bold m-auto flex-1/1 outline-none h-max focus:outline-none focus:ring-0 focus:border-transparent text-wrap bg-transparent resize-none transition-all duration-300"
+          placeholder={voice() ? "..." : isLoading() ? "Bot is typing..." : "Type your message here..."}
+          value={voice() ? currResponse() : currText()}
           onFocus={(e) => (e.currentTarget.placeholder = "")}
           onInput={(e) => {
             setCurrText(e.currentTarget.value);
@@ -60,21 +47,25 @@ export default function Tutor() {
           }}
         />
 
-        <div class="flex items-center justify-between w-full mt-4 z-50">
+        <div class={`flex items-center justify-between w-full mt-4 z-50 gap-2 transition-all duration-300`}>
 
-          <div class="flex gap-4 w-min mx-4">
+          <div class="flex gap-4 w-min mx-4 transition-all duration-300">
 
-            <button class={` p-2 rounded-md clickable ${rag() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleRag} >
+            <button class={`p-2 rounded-md clickable transition-all duration-300 ${voice() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleVoice} >
+              <Mic size={20} />
+            </button>
+
+            <button class={`p-2 rounded-md clickable transition-all duration-300 ${rag() ? "bg-accent" : "bg-gray-700"} ${voice() ? "opacity-0" : ""}`} onClick={toggleRag} >
               <Paperclip size={20} />
             </button>
 
-            <button class={` p-2 rounded-md clickable ${web() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleWeb}>
+            <button class={`p-2 rounded-md clickable transition-all duration-300 ${web() ? "bg-accent" : "bg-gray-700"} ${voice() ? "opacity-0" : ""}`} onClick={toggleWeb}>
               <Globe size={20} />
             </button>
 
           </div>
 
-          <button class={`bg-gray-700 p-2 rounded-md mx-4 ${isLoading() ? "cursor-not-allowed" : "clickable"}`} onClick={handleSend} disabled={currText().trim() === "" || isLoading()}>
+          <button class={`bg-gray-700 p-2 rounded-md mx-4 transition-all duration-300 ${isLoading() ? "cursor-not-allowed" : "clickable"} ${voice() ? "opacity-0" : ""}`} onClick={handleSend} disabled={currText().trim() === "" || isLoading()}>
             <Send size={20} />
           </button>
 

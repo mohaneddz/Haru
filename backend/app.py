@@ -2,45 +2,29 @@ import os
 import logging
 import re
 import threading
-import json
 from pathlib import Path
 import time
-from urllib.parse import urlparse
 import asyncio
-from constants import *
-from classes import *
+from constants import LLAMA_SERVER_URL
+from classes import client
+from llm import create_llm_payload, stream_unified_response, handle_non_streaming_llm_response, voice_create_llm_payload, voice_stream_unified_response
+import sys
 
 # --- New Imports for Voice Functionality ---
-import base64
-import io
-import numpy as np
-import torch
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
-# Note: The 'kokoro' and 'soundfile' libraries are required for TTS.
-# They are imported lazily within the VoiceProcessor class.
 
-# --- Third-Party Libraries ---
-import fitz  # PyMuPDF for PDFs
-import mammoth # For .doc files
-import pandas as pd
-from docx import Document # For .docx files
-import chromadb # Persistent, file-based vector database
+import subprocess
 import requests
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from sentence_transformers import SentenceTransformer
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
 from web import *
 from utils import (
     process_crawled_results,
     build_search_context,
     build_llm_payload,
-    handle_llm_response
 )
 
 content_extractor = None
+main_process = None
 
 # ======================================================================================
 # --- CONFIGURATION (via Environment Variables with Defaults) ---
@@ -50,458 +34,58 @@ def get_env(variable_name, default_value):
     """Gets an environment variable or returns a default."""
     return os.environ.get(variable_name, default_value)
 
-class Config:
-    """Centralized configuration for the entire application."""
-    # --- Server and Model Settings ---
-    LLAMA_SERVER_URL = get_env("LLAMA_SERVER_URL", "http://localhost:8080/completion")
-    EMBEDDING_MODEL_NAME = get_env("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
-    
-    # --- RAG System Settings ---
-    PERSIST_DIRECTORY = get_env("PERSIST_DIRECTORY", "chroma_db")
-    COLLECTION_NAME = get_env("COLLECTION_NAME", "local_docs")
-    DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "documents")
-    SUPPORTED_EXTS = {".md", ".txt", ".pdf", ".docx", ".doc", ".csv"}
-    CHUNK_SIZE = int(get_env("CHUNK_SIZE", 1000))
-    CHUNK_OVERLAP = int(get_env("CHUNK_OVERLAP", 200))
-    EMBEDDING_BATCH_SIZE = int(get_env("EMBEDDING_BATCH_SIZE", 32))
-    RETRIEVAL_TOP_K = int(get_env("RETRIEVAL_TOP_K", 10))
+# --- Llama Server Management ---
+def run_llama_server():
+    """Starts the llama-server.exe as a background process."""
+    global main_process
+    try:
+        logging.info("Starting llama-server...")
+        main_process = subprocess.Popen([
+            "lib/llama-server.exe",
+            "-m", "models/gemma-3-4b-it-q4_0.gguf",
+            "-ngl", "99",
+            "-c", "8192",
+            "-t", "6",
+            "--port", "8080"
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL)
+        
+        time.sleep(5) # Give it time to initialize
+        logging.info("✅ Llama server appears to be running.")
+    except Exception as e:
+        logging.error(f"❌ Error running llama-server: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # --- Watchdog Settings ---
-    WATCHER_DEBOUNCE_SECONDS = float(get_env("WATCHER_DEBOUNCE_SECONDS", 2.0))
+def kill_llama_server():
+    """Terminates the llama-server.exe process."""
+    global main_process
+    if main_process:
+        logging.info("Terminating llama-server...")
+        main_process.terminate()
+        try:
+            main_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            main_process.kill()
+        main_process = None
+        logging.info("✅ Llama server terminated.")
 
-    # --- LLM Prompt Templates for RAG ---
-    LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant. Based ONLY on the context provided below, answer the user's question.
-You MUST cite the specific sources you use. At the end of each sentence that uses context, add the citation in brackets, like [Source 1], [Source 2], etc.
-If the context does not contain the answer, state that you cannot answer based on the provided documents. Do not use any external knowledge.
-
-Context:
-{context}
-
-Question: {query}
-Answer:"""
-
-    LLM_PROMPT_TEMPLATE_ADVANCED = """### INSTRUCTIONS FOR AI ASSISTANT ###
-You are an expert technical writer. Your task is to synthesize the information from the 'Context' section to provide a clear, comprehensive, and well-structured answer to the 'Question'.
-1.  **Synthesize, Don't Summarize**: Weave the information together into a cohesive narrative.
-2.  **Cite Correctly**: At the end of a sentence or paragraph that relies on context, group all relevant sources in a single block, like `[Source 1, 3]`.
-3.  **Handle Missing Information**: If the context does not contain the answer, state that you cannot provide an answer based on the available documents.
-
-### Context ###
-{context}
-
-### Question ###
-{query}
-
-### Answer ###
-"""
 
 # --- Logging Configuration ---
 app = Flask(__name__)
 CORS(app, origins="*", supports_credentials=True,
       allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
       expose_headers=["Content-Type"])
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-# ======================================================================================
-# --- RAG SYSTEM IMPLEMENTATION ---
-# ======================================================================================
-
-class RAGSystem:
-    """Handles all backend logic for document processing, indexing, and retrieval."""
-    def __init__(self, config: Config):
-        self.config = config
-        logging.info("Initializing RAG System...")
-        self.embedding_model = SentenceTransformer(self.config.EMBEDDING_MODEL_NAME)
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.config.CHUNK_SIZE,
-            chunk_overlap=self.config.CHUNK_OVERLAP
-        )
-        self.client = chromadb.PersistentClient(path=self.config.PERSIST_DIRECTORY)
-        self.collection = self.client.get_or_create_collection(
-            name=self.config.COLLECTION_NAME,
-            metadata={"hnsw:space": "cosine"}
-        )
-        logging.info("RAG System Initialized.")
-
-    def count_tokens(self, text: str) -> int:
-        """Counts tokens in a string (simple split-by-space implementation)."""
-        return len(text.split())
-
-    def get_status(self):
-        """Returns the current status of the RAG system."""
-        return {
-            "document_count": self.collection.count(),
-            "collection_name": self.config.COLLECTION_NAME,
-            "embedding_model": self.config.EMBEDDING_MODEL_NAME
-        }
-
-    def process_document(self, file_path: Path):
-        """Processes and indexes a single document."""
-        if self._is_file_indexed(file_path):
-            logging.info(f"File '{file_path.name}' is already indexed. Skipping.")
-            return
-
-        logging.info(f"Processing and indexing new file: {file_path.name}")
-        try:
-            raw_text = self._extract_text(file_path)
-            if not raw_text or not raw_text.strip():
-                logging.warning(f"No text extracted from {file_path.name}. Skipping.")
-                return
-
-            cleaned_text = self._clean_text(raw_text)
-            chunks = self.text_splitter.split_text(cleaned_text)
-            if not chunks:
-                logging.warning(f"File {file_path.name} produced no chunks. Skipping.")
-                return
-
-            chunk_ids = [f"{str(file_path)}_{i}" for i in range(len(chunks))]
-            metadata = [{"source": str(file_path), "filename": file_path.name} for _ in chunks]
-            
-            embeddings = self.embedding_model.encode(
-                chunks,
-                batch_size=self.config.EMBEDDING_BATCH_SIZE,
-                show_progress_bar=False
-            ).tolist()
-
-            self.collection.add(documents=chunks, metadatas=metadata, ids=chunk_ids, embeddings=embeddings)
-            logging.info(f"Successfully indexed {len(chunks)} chunks from {file_path.name}.")
-        except Exception as e:
-            logging.error(f"Failed to process file {file_path.name}: {e}", exc_info=True)
-
-    def build_index_from_directory(self, force_rebuild=False):
-        """Scans the documents directory and indexes all supported files."""
-        if force_rebuild:
-            logging.warning("FORCE REBUILD: Clearing existing collection.")
-            self.client.delete_collection(name=self.config.COLLECTION_NAME)
-            self.collection = self.client.get_or_create_collection(name=self.config.COLLECTION_NAME)
-
-        logging.info(f"Scanning directory: {self.config.DOCUMENTS_DIR}")
-        for file in Path(self.config.DOCUMENTS_DIR).rglob("*"):
-            if file.is_file() and file.suffix.lower() in self.config.SUPPORTED_EXTS:
-                self.process_document(file)
-        logging.info("Initial document scan and indexing complete.")
-        
-    def update_document(self, file_path: Path):
-        """Removes an old document and re-indexes the new version."""
-        logging.info(f"Updating document in index: {file_path.name}")
-        self.remove_document_from_index(file_path)
-        self.process_document(file_path)
-
-    def remove_document_from_index(self, file_path: Path):
-        """Removes all chunks associated with a specific file from the index."""
-        logging.info(f"Removing document '{file_path.name}' from index...")
-        self.collection.delete(where={"source": str(file_path)})
-        logging.info(f"Successfully removed '{file_path.name}'.")
-
-    def _extract_text(self, path: Path) -> str:
-        """Extracts text from a file based on its extension."""
-        ext = path.suffix.lower()
-        try:
-            if ext == ".pdf":
-                with fitz.open(path) as doc: return "\n".join(page.get_text() for page in doc)
-            elif ext == ".docx":
-                return "\n".join(para.text for para in Document(path).paragraphs)
-            elif ext == ".doc":
-                with open(path, "rb") as f: return mammoth.extract_raw_text(f).value
-            elif ext == ".csv":
-                df = pd.read_csv(path, encoding_errors="ignore").fillna("").astype(str)
-                return "\n".join(["Row contains: " + "; ".join(f"{col}: {val}" for col, val in row.items()) for _, row in df.iterrows()])
-            else:
-                return path.read_text(encoding="utf-8", errors="ignore")
-        except Exception as e:
-            logging.warning(f"Failed to read {path.name}: {e}"); return ""
-
-    def _clean_text(self, text: str) -> str:
-        """Performs basic text cleaning."""
-        return re.sub(r'\s+', ' ', text).strip()
-
-    def _is_file_indexed(self, file_path: Path) -> bool:
-        """Checks if a file has already been indexed."""
-        return len(self.collection.get(where={"source": str(file_path)}, limit=1)['ids']) > 0
-
-    def retrieve_context(self, query: str) -> list[dict]:
-        """Retrieves relevant context chunks with scores and metadata."""
-        query_embedding = self.embedding_model.encode([query]).tolist()
-        results = self.collection.query(
-            query_embeddings=query_embedding,
-            n_results=self.config.RETRIEVAL_TOP_K,
-            include=["metadatas", "documents", "distances"]
-        )
-        
-        retrieved_chunks = []
-        if not results or not results.get('ids', [None])[0]:
-            return []
-
-        for i in range(len(results['ids'][0])):
-            distance = results['distances'][0][i]
-            retrieved_chunks.append({
-                "id": results['ids'][0][i],
-                "content": results['documents'][0][i],
-                "source": results['metadatas'][0][i]['source'],
-                "score": 1 - distance # Cosine similarity
-            })
-        return retrieved_chunks
-    
-    def get_indexed_documents(self) -> list[str]:
-        """Returns a list of all unique source file paths in the index."""
-        all_items = self.collection.get(include=["metadatas"])
-        if not all_items or not all_items['metadatas']: return []
-        return sorted(list(set(meta['source'] for meta in all_items['metadatas'])))
-
-    def persist_index(self):
-        """Forces a persist-to-disk of the ChromaDB index."""
-        self.client.persist()
-        logging.info("ChromaDB index has been persisted to disk.")
-
-
-# ======================================================================================
-# --- VOICE PROCESSING IMPLEMENTATION ---
-# ======================================================================================
-
-class VoiceProcessor:
-    def __init__(self):
-        """Initialize voice processing components. Models are loaded lazily on first use."""
-        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-        
-        # Lazy loading - models will be initialized when first used
-        self.stt_model = None
-        self.stt_processor = None
-        self.tts_pipeline = None
-        self.voice_tensor = None
-        
-        # In-memory storage for conversation sessions
-        self.voice_sessions = {}
-        
-        logging.info(f"VoiceProcessor initialized on device: {self.device}. Models will load on first use.")
-    
-    def _load_stt_model(self):
-        """Lazy load the Speech-to-Text (Whisper) model."""
-        if self.stt_model is None:
-            logging.info("Loading Whisper STT model...")
-            model_id = "openai/whisper-large-v3-turbo"
-            try:
-                self.stt_model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                    model_id, torch_dtype=self.torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
-                ).to(self.device)
-                
-                self.stt_processor = AutoProcessor.from_pretrained(model_id)
-                
-                # Configure generation parameters
-                if hasattr(self.stt_model.config, "eos_token_id"):
-                    self.stt_model.generation_config.eos_token_id = self.stt_model.config.eos_token_id
-                if hasattr(self.stt_model.config, "pad_token_id") and self.stt_model.config.pad_token_id is not None:
-                    self.stt_model.generation_config.pad_token_id = self.stt_model.config.pad_token_id
-                else:
-                    self.stt_model.generation_config.pad_token_id = self.stt_model.generation_config.eos_token_id
-                
-                logging.info("✅ Whisper STT model loaded successfully.")
-            except Exception as e:
-                logging.error(f"❌ Failed to load Whisper STT model: {e}", exc_info=True)
-                self.stt_model = None # Ensure it remains None on failure
-    
-    def _load_tts_model(self):
-        """Lazy load the Text-to-Speech (Kokoro) model."""
-        if self.tts_pipeline is None:
-            try:
-                logging.info("Loading Kokoro TTS model...")
-                from kokoro import KPipeline
-                
-                self.tts_pipeline = KPipeline(lang_code='a')
-                # Ensure the voice file is available at this path
-                self.voice_tensor = torch.load("voices/af_alloy.pt", weights_only=True)
-                logging.info("✅ Kokoro TTS model loaded successfully.")
-            except ImportError:
-                logging.error("❌ Failed to load TTS: 'kokoro-tts' library not found. Please install it.")
-                self.tts_pipeline = None
-            except FileNotFoundError:
-                logging.error("❌ Failed to load TTS voice file: 'voices/af_alloy.pt' not found.")
-                self.tts_pipeline = None
-            except Exception as e:
-                logging.error(f"❌ Failed to load TTS model: {e}", exc_info=True)
-                self.tts_pipeline = None
-    
-    def transcribe_audio(self, audio_data, sample_rate=16000) -> str:
-        """Transcribe audio data (base64 string) to text."""
-        self._load_stt_model()
-        if not self.stt_model:
-            logging.error("STT model is not available. Cannot transcribe.")
-            return ""
-
-        try:
-            audio_bytes = base64.b64decode(audio_data)
-            # Convert 16-bit PCM bytes to a normalized float32 numpy array
-            audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-            
-            inputs = self.stt_processor(
-                audio_array, sampling_rate=sample_rate, return_tensors="pt"
-            ).to(self.device, self.torch_dtype)
-            
-            generate_kwargs = {"language": "en", "task": "transcribe", "max_new_tokens": 256}
-            
-            with torch.no_grad():
-                predicted_ids = self.stt_model.generate(**inputs, **generate_kwargs)
-            
-            transcription = self.stt_processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
-            return transcription
-            
-        except Exception as e:
-            logging.error(f"Error during audio transcription: {e}", exc_info=True)
-            return ""
-    
-    def synthesize_speech(self, text: str) -> str | None:
-        """Convert text to speech and return base64 encoded WAV audio."""
-        self._load_tts_model()
-        if not self.tts_pipeline:
-            logging.error("TTS model is not available. Cannot synthesize speech.")
-            return None
-        
-        try:
-            import soundfile as sf
-            
-            generator = self.tts_pipeline(text, voice=self.voice_tensor, speed=1.0, split_pattern=r'[.!?]+|\n+')
-            
-            audio_segments = [audio for _, _, audio in generator]
-            
-            if not audio_segments:
-                logging.warning("TTS generated no audio segments for the given text.")
-                return None
-
-            full_audio = np.concatenate(audio_segments)
-            
-            # Use an in-memory buffer to avoid disk I/O
-            buffer = io.BytesIO()
-            sf.write(buffer, full_audio, 24000, format='WAV', subtype='PCM_16')
-            buffer.seek(0)
-            audio_bytes = buffer.read()
-            
-            return base64.b64encode(audio_bytes).decode('utf-8')
-            
-        except Exception as e:
-            logging.error(f"Error during speech synthesis: {e}", exc_info=True)
-            return None
-    
-    def get_session(self, session_id: str) -> dict:
-        """Get or create a voice conversation session."""
-        if session_id not in self.voice_sessions:
-            self.voice_sessions[session_id] = {'history': [], 'created': time.time()}
-        return self.voice_sessions[session_id]
-
-
-# ======================================================================================
-# --- AUTOMATED DOCUMENT WATCHER ---
-# ======================================================================================
-
-class DocumentHandler(FileSystemEventHandler):
-    """Handles file system events to automatically update the index."""
-    def __init__(self, rag_system: RAGSystem, debounce_seconds: float):
-        self.rag_system = rag_system
-        self.debounce_timers = {}
-        self.debounce_seconds = debounce_seconds
-
-    def _debounce_and_process(self, event_path_str, action):
-        if event_path_str in self.debounce_timers:
-            self.debounce_timers[event_path_str].cancel()
-        timer = threading.Timer(self.debounce_seconds, action)
-        self.debounce_timers[event_path_str] = timer
-        timer.start()
-
-    def on_created(self, event):
-        if not event.is_directory and Path(event.src_path).suffix.lower() in rag_system.config.SUPPORTED_EXTS:
-            action = lambda: self.rag_system.process_document(Path(event.src_path))
-            self._debounce_and_process(event.src_path, action)
-
-    def on_modified(self, event):
-        if not event.is_directory and Path(event.src_path).suffix.lower() in rag_system.config.SUPPORTED_EXTS:
-            action = lambda: self.rag_system.update_document(Path(event.src_path))
-            self._debounce_and_process(event.src_path, action)
-
-    def on_deleted(self, event):
-        if not event.is_directory and Path(event.src_path).suffix.lower() in rag_system.config.SUPPORTED_EXTS:
-            action = lambda: self.rag_system.remove_document_from_index(Path(event.src_path))
-            self._debounce_and_process(event.src_path, action)
-
-def start_watcher(rag_system: RAGSystem):
-    """Initializes and starts the file system observer."""
-    handler = DocumentHandler(rag_system, rag_system.config.WATCHER_DEBOUNCE_SECONDS)
-    observer = Observer()
-    observer.schedule(handler, path=rag_system.config.DOCUMENTS_DIR, recursive=True)
-    observer.start()
-    logging.info(f"Started watching directory: {rag_system.config.DOCUMENTS_DIR}")
-
-# ======================================================================================
-# --- UNIFIED LLM & API HELPER FUNCTIONS ---
-# ======================================================================================
-
-def create_llm_payload(prompt: str, stream: bool, llm_config: dict = None) -> dict:
-    """Creates the payload dictionary for the LLM API request."""
-    if llm_config is None:
-        llm_config = {}
-    return {
-        "prompt": prompt,
-        "n_predict": llm_config.get("n_predict", 512),
-        "temperature": llm_config.get("temperature", 0.7),
-        "stop": llm_config.get("stop", ["\nUser:", "User:", "<end_of_turn>", "<|eot_id|>", "\n###", "\nHuman:", "Human:"]),
-        "stream": stream
-    }
-
-def stream_unified_response(payload: dict, url: str, sources: list) -> Response:
-    """
-    Handles streaming a unified response format (sources, then tokens) via SSE.
-    """
-    def generate_sse():
-        # 1. Send the sources event first
-        sources_json = json.dumps(sources)
-        yield f"event: sources\ndata: {sources_json}\n\n"
-        
-        # 2. Stream the LLM tokens
-        try:
-            with http_session.post(url, json=payload, stream=True, timeout=90) as response:
-                response.raise_for_status()
-                for line_bytes in response.iter_lines():
-                    if line_bytes and line_bytes.startswith(b"data:"):
-                        # Extract the JSON part of the SSE message
-                        data_str = line_bytes.decode('utf-8').split("data: ", 1)[1]
-                        try:
-                            # Extract the 'content' token from the LLM's JSON response
-                            content_token = json.loads(data_str).get("content", "")
-                            # Yield our custom 'token' event
-                            yield f"event: token\ndata: {json.dumps(content_token)}\n\n"
-                        except json.JSONDecodeError:
-                            logging.warning(f"Could not decode JSON from LLM stream: {data_str}")
-
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Stream connection to LLM failed: {e}")
-            error_payload = json.dumps({"error": "LLM connection failed."})
-            yield f"event: error\ndata: {error_payload}\n\n"
-        except Exception as e:
-            logging.error(f"Streaming proxy error: {e}")
-            error_payload = json.dumps({"error": "Internal stream error."})
-            yield f"event: error\ndata: {error_payload}\n\n"
-        
-        # 3. Signal the end of the stream
-        yield "event: end\ndata: {}\n\n"
-
-    return Response(stream_with_context(generate_sse()), mimetype='text/event-stream')
-
-def handle_non_streaming_llm_response(payload: dict, url: str) -> dict:
-    """Handles a standard, non-streaming request to the LLM."""
-    start_time = time.monotonic()
-    response = http_session.post(url, json=payload, timeout=120)
-    logging.info(f"LLM API call took {time.monotonic() - start_time:.4f} seconds.")
-    response.raise_for_status()
-    return response.json()
+# Log received requests explicitly
+@app.before_request
+def log_request():
+    logging.info(f"Received {request.method} request at {request.path}")
 
 # ======================================================================================
 # --- FLASK APPLICATION & ENDPOINTS ---
 # ======================================================================================
-
-# --- Global Instances ---
-config = Config()
-http_session = requests.Session()
-rag_system = RAGSystem(config)
-voice_processor = VoiceProcessor()
 
 # --- Chat Endpoint ---
 @app.route('/chat', methods=['POST'])
@@ -653,131 +237,91 @@ def rag_query_endpoint():
 
 # --- Voice Chat Endpoints ---
 
+@app.route('/voicechat', methods=['POST'])
+def voice_chat_endpoint():
+    """Endpoint to start the voice client and handle voice chat."""
+    # if body says on, start, else close 
+    data = request.get_json()
+    if not data or 'action' not in data:
+        return jsonify({"error": "Missing 'action' parameter"}), 400
+    action = data['action'].lower()
+    if action == "on":
+        client.run()
+    elif action == "off":
+        client.stop()
+    else:
+        return jsonify({"error": "Invalid 'action' parameter"}), 400
+
 @app.route('/voice', methods=['POST'])
 def voice_endpoint():
-    """Handles a full voice-to-voice interaction: STT -> LLM -> TTS."""
+    """The one and only endpoint. Handles chat requests and streams responses."""
     try:
         data = request.get_json()
-        audio_data = data.get('audio_data')
-        text_input = data.get('text')
-        session_id = data.get('session_id', 'default_voice_session')
-        include_audio = data.get('include_audio', False)
-        llm_config = data.get('llm_config', {})
-        sample_rate = data.get('sample_rate', 16000)
-
-        response_data = {
-            "session_id": session_id, "transcription": "", "llm_response": "",
-            "audio_data": None, "processing_time": {}
-        }
-        start_total = time.time()
-
-        # Step 1: Speech-to-Text (if audio is provided)
-        user_message = text_input
-        if audio_data and not user_message:
-            stt_start = time.time()
-            user_message = voice_processor.transcribe_audio(audio_data, sample_rate)
-            response_data["transcription"] = user_message
-            response_data["processing_time"]["stt"] = time.time() - stt_start
-            if not user_message:
-                return jsonify({"error": "No speech detected in audio"}), 400
+        user_message = data.get('message')
+        chat_history = data.get('history', [])
+        stream = data.get("stream", False) # We'll set this to True from the client
         
         if not user_message:
-            return jsonify({"error": "No message provided (either as audio or text)"}), 400
-
-        # Step 2: Build prompt from conversation history
-        session = voice_processor.get_session(session_id)
+            return jsonify({"error": "No message provided"}), 400
+        
         prompt = "You are a helpful AI assistant. Respond naturally and conversationally.\n\n"
-        for turn in session['history'][-10:]: # Use last 10 exchanges for context
-            prompt += f"{turn.get('role', 'Human').capitalize()}: {turn.get('content', '')}\n"
+        for turn in chat_history[-10:]:
+            role = turn.get('role', 'user')
+            content = turn.get('content', '')
+            prompt += f"{'Human' if role == 'user' else 'Assistant'}: {content}\n"
         prompt += f"Human: {user_message}\nAssistant:"
-
-        # Step 3: Call LLM for a response
-        llm_start = time.time()
-        llama_payload = create_llm_payload(prompt, stream=False, llm_config=llm_config)
         
-        try:
-            llm_response_data = handle_non_streaming_llm_response(llama_payload, config.LLAMA_SERVER_URL)
-            llm_response = llm_response_data.get("content", "").strip()
+        # We will always use the streaming capability of this server
+        llama_payload = voice_create_llm_payload(prompt, True)
+        return voice_stream_unified_response(llama_payload, LLAMA_SERVER_URL, sources=[])
             
-            # Clean common artifacts from the response
-            for artifact in ["\nHuman:", "Human:", "Assistant:"]:
-                llm_response = llm_response.split(artifact)[0].strip()
-
-            response_data["llm_response"] = llm_response
-            response_data["processing_time"]["llm"] = time.time() - llm_start
-
-            # Update session history
-            session['history'].append({"role": "Human", "content": user_message})
-            session['history'].append({"role": "Assistant", "content": llm_response})
-            session['history'] = session['history'][-20:] # Keep history trimmed
-
-        except requests.exceptions.RequestException as e:
-            logging.error(f"LLM processing error for voice chat: {e}", exc_info=True)
-            return jsonify({"error": "Failed to get response from LLM"}), 502
-
-        # Step 4: Text-to-Speech (if requested and there's a response)
-        if include_audio and llm_response:
-            tts_start = time.time()
-            audio_response = voice_processor.synthesize_speech(llm_response)
-            response_data["audio_data"] = audio_response
-            response_data["processing_time"]["tts"] = time.time() - tts_start
-        
-        response_data["processing_time"]["total"] = time.time() - start_total
-        return jsonify(response_data)
-        
     except Exception as e:
-        logging.error(f"Voice endpoint error: {e}", exc_info=True)
-        return jsonify({"error": "An internal error occurred during voice processing"}), 500
+        logging.error(f"General chat endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred"}), 500
 
-@app.route('/voice/transcribe', methods=['POST'])
-def transcribe_only_endpoint():
-    """Endpoint for performing only Speech-to-Text."""
-    try:
-        data = request.get_json()
-        audio_data = data.get('audio_data')
-        if not audio_data: return jsonify({"error": "No audio data provided"}), 400
-        
-        sample_rate = data.get('sample_rate', 16000)
-        transcription = voice_processor.transcribe_audio(audio_data, sample_rate)
-        return jsonify({"transcription": transcription, "success": bool(transcription)})
-    except Exception as e:
-        logging.error(f"Transcription endpoint error: {e}", exc_info=True)
-        return jsonify({"error": "Transcription failed"}), 500
+@app.route('/transcribe', methods=['GET'])
+def stream_transcription():
+    def event_stream():
+        last_text = ""
+        while True:
+            current = client.transcription
+            if current != last_text:
+                yield f"data: {current}\n\n"
+                last_text = current
+            time.sleep(0.5)  # minimal overhead
+    return Response(event_stream(), mimetype='text/event-stream')
 
-@app.route('/voice/synthesize', methods=['POST'])
-def synthesize_only_endpoint():
-    """Endpoint for performing only Text-to-Speech."""
-    try:
-        data = request.get_json()
-        text = data.get('text')
-        if not text: return jsonify({"error": "No text provided"}), 400
-        
-        audio_response = voice_processor.synthesize_speech(text)
-        return jsonify({"audio_data": audio_response, "success": bool(audio_response)})
-    except Exception as e:
-        logging.error(f"TTS endpoint error: {e}", exc_info=True)
-        return jsonify({"error": "Text-to-speech synthesis failed"}), 500
-
-@app.route('/voice/sessions/<session_id>', methods=['GET', 'DELETE'])
-def manage_voice_session_endpoint(session_id):
-    """Get or delete a voice conversation session history."""
-    try:
-        if request.method == 'GET':
-            session = voice_processor.get_session(session_id)
-            return jsonify({"session_id": session_id, "history": session['history'], "created": session['created']})
-        
-        elif request.method == 'DELETE':
-            if session_id in voice_processor.voice_sessions:
-                del voice_processor.voice_sessions[session_id]
-                return jsonify({"message": f"Voice session '{session_id}' deleted"})
-            else:
-                return jsonify({"error": "Voice session not found"}), 404
-    except Exception as e:
-        logging.error(f"Voice session management error: {e}", exc_info=True)
-        return jsonify({"error": "Session management failed"}), 500
-
+@app.route('/response', methods=['GET'])
+def stream_response():
+    def event_stream():
+        last_text = ""
+        while True:
+            current = client.response
+            if current != last_text:
+                yield f"data: {current}\n\n"
+                last_text = current
+            time.sleep(0.5)  # minimal overhead
+    return Response(event_stream(), mimetype='text/event-stream')
 
 # --- Management & Status Endpoints ---
+
+@app.route("/start-llama-server", methods=["POST"])
+def start_llama_server_endpoint():
+    """Starts the llama-server if it's not already running."""
+    if main_process and main_process.poll() is None:
+        return jsonify({"message": "Llama server is already running."}), 200
+    
+    run_llama_server()
+    return jsonify({"message": "Llama server started successfully."}), 200
+
+@app.route("/stop-llama-server", methods=["POST"])
+def stop_llama_server_endpoint():
+    """Stops the llama-server if it's running."""
+    if not main_process or main_process.poll() is not None:
+        return jsonify({"message": "Llama server is not running."}), 200
+    
+    kill_llama_server()
+    return jsonify({"message": "Llama server stopped successfully."}), 200
 
 @app.route("/health", methods=["GET"])
 def health_check_endpoint():
@@ -852,6 +396,7 @@ if __name__ == "__main__":
     Path(config.DOCUMENTS_DIR).mkdir(exist_ok=True)
     
     # Run the warm-up routine for the LLM server
+    run_llama_server()
     warmup_llm_server()
     
     # Start background tasks for initial indexing and file watching

@@ -1,0 +1,77 @@
+import { Paperclip, Send, Mic } from "lucide-solid";
+import { Globe } from "lucide-solid";
+import Chat from "@/components/02 - Practice/Tutor/Chat";
+import useTutor from "@/hooks/training/useTutor";
+import { Show } from "solid-js";
+import Sphere from "@/components/02 - Practice/Tutor/Shpere";
+
+export default function Tutor() {
+
+  const { messages, currText, setCurrText, isLoading, handleSend, messageContainerRef, web, toggleWeb, rag, toggleRag, voice, toggleVoice, mode, setMode, newChat } = useTutor();
+
+  return (
+    <section class="w-full h-full flex flex-col items-center justify-end p-4 pb-12 mx-auto transition-all duration-300">
+
+      <Show when={!voice()} fallback={<Sphere />}>
+        <Chat
+          messages={messages}
+          messageContainerRef={messageContainerRef}
+          newChat={newChat}
+          isLoading={isLoading}
+          setMode={setMode}
+          mode={mode}
+        />
+      </Show>
+
+      <div class="bg-background-light-3/25 h-max w-[80%] rounded-md bottom-20 text-center flex flex-wrap items-center py-4 transition-all duration-300">
+
+        <textarea
+          class="text-lg pt-4 px-8 text-text-light-2/70 font-bold m-auto flex-1/1 outline-none h-max focus:outline-none focus:ring-0 focus:border-transparent text-wrap bg-transparent resize-none transition-all duration-300"
+          placeholder={voice() ? "..." : isLoading() ? "Bot is typing..." : "Type your message here..."}
+          value={currText()}
+          onFocus={(e) => (e.currentTarget.placeholder = "")}
+          onInput={(e) => {
+        setCurrText(e.currentTarget.value);
+          }}
+          onKeyDown={(e) => {
+        if (e.key === "Enter" && (e.shiftKey || e.ctrlKey)) {
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (!isLoading()) {
+            handleSend();
+          }
+          return;
+        }
+          }}
+        />
+
+        <div class={`flex items-center justify-between w-full mt-4 z-50 gap-2 transition-all duration-300`}>
+
+          <div class="flex gap-4 w-min mx-4 transition-all duration-300">
+
+        <button class={`p-2 rounded-md clickable transition-all duration-300 ${voice() ? "bg-accent" : "bg-gray-700"}`} onClick={toggleVoice} >
+          <Mic size={20} />
+        </button>
+
+        <button class={`p-2 rounded-md clickable transition-all duration-300 ${rag() ? "bg-accent" : "bg-gray-700"} ${voice() ? "opacity-0" : ""}`} onClick={toggleRag} >
+          <Paperclip size={20} />
+        </button>
+
+        <button class={`p-2 rounded-md clickable transition-all duration-300 ${web() ? "bg-accent" : "bg-gray-700"} ${voice() ? "opacity-0" : ""}`} onClick={toggleWeb}>
+          <Globe size={20} />
+        </button>
+
+          </div>
+
+          <button class={`bg-gray-700 p-2 rounded-md mx-4 transition-all duration-300 ${isLoading() ? "cursor-not-allowed" : "clickable"} ${voice() ? "opacity-0" : ""}`} onClick={handleSend} disabled={currText().trim() === "" || isLoading()}>
+        <Send size={20} />
+          </button>
+
+        </div>
+
+      </div>
+    </section>
+  );
+}

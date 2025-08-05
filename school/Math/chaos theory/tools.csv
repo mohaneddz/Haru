@@ -1,0 +1,11 @@
+title,description,link,thumbnailUrl,tags
+"XaoS Fractal Zoomer","Interactive real‑time fractal visualizer for exploring chaos & fractals","https://xaos-project.github.io/","https://xaos-project.github.io/xaos.png","fractals,chaos theory,simulation,visualization"
+"Apophysis","Open‑source fractal generation software for iterated chaotic functions","https://en.wikipedia.org/wiki/Apophysis","", "fractals,IFS,chaos theory,visual art"
+"Chaos Toolkit","Open‑source toolkit for building chaos engineering experiments","https://github.com/dastergon/awesome-chaos-engineering","", "chaos engineering,testing,resilience,toolkit"
+"Gremlin","Commercial chaos engineering service with hands‑on tutorials","https://www.gremlin.com","", "chaos engineering,DevOps,reliability"
+"Chaos Mesh","Kubernetes‑native open‑source chaos engineering platform","https://chaos-mesh.org","", "chaos engineering,Kubernetes,cloud native"
+"LitmusChaos","Open‑source chaos experiments platform with ChaosHub","https://litmuschaos.io","", "chaos engineering,Kubernetes,experiments"
+"AWS Fault Injection Simulator","Managed AWS service for injecting faults in cloud systems","https://aws.amazon.com/fis/","", "AWS,cloud resilience,chaos engineering"
+"Chaos Monkey","Netflix’s original tool for simulating random instance failures","https://en.wikipedia.org/wiki/Chaos_Monkey_(service)","", "chaos engineering,Simian Army,testing"
+"PyPhi","Python library implementing Integrated Information Theory (chaos/complexity)","https://pyphi.readthedocs.io/","", "complexity,theory,causality,chaos"
+"OpenTURNS","Industrial software for uncertainty quantification in complex simulations","https://openturns.org","", "uncertainty quantification,simulation,chaos,statistics"

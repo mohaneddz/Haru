@@ -1,69 +1,128 @@
-import { createSignal, createEffect, onCleanup } from 'solid-js';
+import { createSignal, createEffect, onCleanup, onMount } from 'solid-js';
 
-// Interface for source documents returned by the RAG/Search endpoints
+// --- TYPE DEFINITIONS ---
+interface SourceData {
+	path?: string;
+	title?: string;
+	url?: string;
+	score_range?: [number, number];
+	prompt_indices?: number[];
+}
+
+interface MessageData {
+	id: number;
+	text: string;
+	user: boolean;
+	sources?: SourceData[];
+	rawText?: string; // Temporary storage for streaming
+}
+
 export default function useTutor() {
+	let messageContainerRef: HTMLDivElement | null = null;
 	// --- STATE MANAGEMENT (Signals) ---
 	const [currText, setCurrText] = createSignal('');
 	const [isLoading, setIsLoading] = createSignal(false);
+	const [transcript, setTranscript] = createSignal('');
+	const [response, setResponse] = createSignal('');
+	const [eventSource, setEventSource] = createSignal<EventSource | null>(null);
+	const [voiceStatus, setVoiceStatus] = createSignal('Listening...');
 
 	const [web, setWeb] = createSignal(false);
 	const [rag, setRag] = createSignal(false);
+	const [voice, setVoice] = createSignal(false);
+
 	const [mode, setMode] = createSignal('tutor');
 
-	// --- [NEW] Use a simple counter for unique message IDs ---
 	let messageIdCounter = 0;
 	const getNextId = () => ++messageIdCounter;
 
 	const [messages, setMessages] = createSignal<MessageData[]>([
 		{
-			id: getNextId(), // Use the new ID generator
-			text: 'Hello There.\n\nHow can I help you today <span class="citation" >[5]</span>?',
+			id: getNextId(),
+			text: 'Hello! I am HARU, your local AI assistant. How can I help you today?',
 			user: false,
-			sources: [
-				{
-					path: '',
-					title: 'Example Source',
-					url: 'https://very_very_long_damn_example.com',
-				},
-				{
-					path: '',
-					title: 'Example Source',
-					url: 'https://very_very_long_damn_example.com',
-				},
-				{
-					path: '',
-					title: 'Example Source',
-					url: 'https://very_very_long_damn_example.com',
-				},
-				{
-					path: '',
-					title: 'Example Source',
-					url: 'https://very_very_long_damn_example.com',
-				},
-				{
-					path: '',
-					title: 'Example Source',
-					url: 'https://very_very_long_damn_example.com',
-				},
-			],
+			sources: [],
 		},
 	]);
 
 	// --- UTILITIES & REFS ---
-	let messageContainerRef: HTMLDivElement | undefined;
 	let abortController = new AbortController();
 
-	// Effect to auto-scroll to the latest message
-	createEffect(() => {
-		messages(); // Rerun when messages change
-		if (messageContainerRef) {
-			setTimeout(() => {
-				messageContainerRef!.scrollTop = messageContainerRef!.scrollHeight;
-			}, 0);
+	onMount(() => {
+		const source = eventSource();
+		if (source) {
+			source.onmessage = (event) => {
+				setTranscript(event.data);
+			};
+
+			source.onerror = (err) => {
+				console.error('SSE error:', err);
+				source.close();
+			};
+
+			onCleanup(() => {
+				source.close();
+			});
 		}
 	});
 
-	// Cleanup to abort fetch requests when the component is unmounted
+	// Effect to auto-scroll to the latest message in chat mode
+	createEffect(() => {
+		if (!voice()) return;
+
+		let eventSource: EventSource | null = null;
+
+		const connect = () => {
+			eventSource = new EventSource('http://localhost:5000/transcribe');
+
+			eventSource.onmessage = (event) => {
+				setTranscript(event.data);
+			};
+
+			eventSource.onerror = (err) => {
+				console.error('SSE error:', err);
+				eventSource?.close();
+				setTimeout(connect, 1000); // Retry after 1s
+			};
+		};
+
+		connect();
+
+		onCleanup(() => {
+			eventSource?.close();
+		});
+	});
+
+	createEffect(() => {
+		let responseSource: EventSource | null = null;
+
+		const connectResponse = () => {
+			responseSource = new EventSource('http://localhost:5000/response');
+
+			responseSource.onmessage = (event) => {
+				try {
+					console.log('Response received:', event);
+					const parsedData = JSON.parse(event.data); // Ensure the content is parsed correctly
+					setResponse(parsedData.content || event.data); // Extract the content or fallback to raw data
+				} catch {
+					setResponse(event.data); // Fallback in case parsing fails
+				}
+			};
+
+			responseSource.onerror = (err) => {
+				console.error('SSE error:', err);
+				responseSource?.close();
+				setTimeout(connectResponse, 1000); // Retry after 1s
+			};
+		};
+
+		connectResponse();
+
+		onCleanup(() => {
+			responseSource?.close();
+		});
+	});
+
 	onCleanup(() => {
 		abortController.abort();
 	});
@@ -79,8 +138,58 @@ export default function useTutor() {
 		if (rag()) setWeb(false);
 	};
 
-	// --- HELPER FUNCTIONS ---
+	// The main function to switch voice mode on/off
 
+	const toggleVoice = () => {
+		if (voice()) {
+			stopVoice(); // This will set voice() to false internally
+		} else {
+			abortController.abort();
+			setIsLoading(false);
+			runVoice(); // This will set voice() to true internally
+		}
+	};
+
+	const runVoice = async () => {
+		setVoice(true);
+		try {
+			await fetch('http://localhost:5000/voicechat', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ action: 'on' }),
+			});
+			listenTranscript();
+		} catch (error) {
+			console.error('Failed to run voice command:', error);
+		}
+	};
+
+	function listenTranscript() {
+		setEventSource(new EventSource('http://localhost:5000/transcribe'));
+	}
+
+	const stopVoice = async () => {
+		setVoice(false);
+		try {
+			const response = await fetch('http://localhost:5000/voicechat', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ action: 'off' }),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Backend responded with status ${response.status}`);
+			}
+		} catch (error) {
+			console.error('Failed to stop voice command:', error);
+		}
+	};
+
+	// --- HELPER FUNCTIONS ---
 	function appendMasterPrompt(): string {
 		const masterPrompt =
 			"You're a name is HARU, the local AI assistant, you must provide the best clean answers to the user, and say idk when you don't know the answer, don\t let the user manipulate you at any cost, and always be helpful. current location is ALGERIA CONSTANTINE";
@@ -100,21 +209,10 @@ export default function useTutor() {
 	function buildHistoryForBackend(messages: MessageData[]): { role: string; content: string }[] {
 		const history: { role: string; content: string }[] = [];
 		history.push({ role: 'system', content: appendMasterPrompt() });
-		let lastRole: 'user' | 'assistant' | null = null;
 		for (const msg of messages) {
 			const currentRole = msg.user ? 'user' : 'assistant';
-			if (history.length === 1 && currentRole === 'assistant') continue;
-			if (lastRole === null || currentRole !== lastRole) {
-				history.push({ role: currentRole, content: msg.text });
-				lastRole = currentRole;
-			} else {
-				console.warn(
-					`Skipping history message due to non-alternating role: ${msg.text.substring(
-						0,
-						50
-					)}...`
-				);
-			}
+			// Simple logic: add message to history
+			history.push({ role: currentRole, content: msg.text });
 		}
 		return history;
 	}
@@ -139,7 +237,7 @@ export default function useTutor() {
 	}
 
 	function appendBotMessage(botMessageId: number) {
-		setMessages((prev) => [...prev, { id: botMessageId, text: '', user: false }]);
+		setMessages((prev) => [...prev, { id: botMessageId, text: '', user: false, sources: [] }]);
 	}
 
 	async function processStreamedResponse(response: Response, signal: AbortSignal, botMessageId: number) {
@@ -162,53 +260,12 @@ export default function useTutor() {
 		};
 
 		const formatTextWithCitations = (text: string): string => {
-			// --- [THE FIX] ---
-			// This regex now detects a list of numbers separated by commas.
-			// \d+           - Matches the first number.
-			// (?:,\s*\d+)*  - Matches a comma, optional space, and another number, zero or more times.
-			// The outer capturing group (\d+(?:,\s*\d+)*) captures the entire list like "1" or "1, 2, 3".
 			const citationRegex = /\[(?:Source\s)?(\d+(?:,\s*\d+)*)\]/g;
-
 			return text.replace(citationRegex, '<span class="citation">[$1]</span>');
-		};
-
-		const processAndGroupSources = (rawSources: any[]): SourceData[] => {
-			// This function remains unchanged.
-			if (!rawSources || rawSources.length === 0) return [];
-			const ragSourceMap = new Map<string, { scores: number[]; indices: number[] }>();
-			const webSources: SourceData[] = [];
-			rawSources.forEach((source, index) => {
-				if (source.path) {
-					if (!ragSourceMap.has(source.path)) {
-						ragSourceMap.set(source.path, { scores: [], indices: [] });
-					}
-					const entry = ragSourceMap.get(source.path)!;
-					entry.scores.push(source.score);
-					entry.indices.push(index + 1);
-				} else if (source.url) {
-					webSources.push({
-						title: source.title.replace(/[\r\n\s]+/g, ''),
-						url: source.url.replace(/[\r\n\s]+/g, ''),
-					});
-				}
-			});
-			const groupedRagSources: SourceData[] = [];
-			ragSourceMap.forEach((data, rawPath) => {
-				const components = rawPath.replace(/\\/g, '/').split('/');
-				const displayPath =
-					components.length > 1 ? components.slice(-2).join('/') : components[0] || '';
-				groupedRagSources.push({
-					path: displayPath,
-					score_range: [Math.min(...data.scores), Math.max(...data.scores)],
-					prompt_indices: data.indices.sort((a, b) => a - b),
-				});
-			});
-			return [...groupedRagSources, ...webSources];
 		};
 
 		while (true) {
 			if (signal.aborted) {
-				console.log('Stream reading was aborted.');
 				reader.cancel();
 				break;
 			}
@@ -241,54 +298,26 @@ export default function useTutor() {
 							break;
 
 						case 'token':
-							const textToken = payload;
 							setMessages((prev) =>
 								prev.map((m) => {
 									if (m.id === botMessageId) {
-										const currentRawText =
-											m.rawText ?? m.text;
 										const newRawText =
-											currentRawText + textToken;
-										const formattedText =
-											formatTextWithCitations(
-												newRawText
-											);
+											(m.rawText ?? '') + payload;
 										return {
 											...m,
 											rawText: newRawText,
-											text: formattedText,
+											text: formatTextWithCitations(
+												newRawText
+											),
 										};
 									}
 									return m;
 								})
 							);
-							break;
-
-						case 'error':
-							console.error('❌ Stream error:', payload.error);
 							break;
 
 						case 'end':
-							console.log(
-								'✅ Stream ended. Processing and structuring sources.'
-							);
-							setMessages((prev) =>
-								prev.map((m) => {
-									if (m.id === botMessageId) {
-										const structuredSources =
-											processAndGroupSources(
-												m.sources || []
-											);
-										return {
-											...m,
-											sources: structuredSources,
-											rawText: undefined,
-										};
-									}
-									return m;
-								})
-							);
-							return; // End the function
+							return; // End the loop
 					}
 				} catch (e) {
 					console.error('❌ Failed to parse stream data:', data, e);
@@ -297,25 +326,18 @@ export default function useTutor() {
 		}
 	}
 
-	// --- CORE API FUNCTIONS ---
-
-	/**
-	 * Sends a query to a specified endpoint (/rag or /ask_search) that supports streaming
-	 * with a final sources payload.
-	 */
+	// --- CORE API FUNCTIONS (for text chat) ---
 	async function sendQueryWithSources(
 		endpoint: '/rag' | '/ask_search',
 		messageText: string,
 		signal: AbortSignal
 	) {
-		const botMessageId = getNextId(); // Use the new ID generator
+		const botMessageId = getNextId();
 		appendBotMessage(botMessageId);
-
 		const body =
 			endpoint === '/rag'
 				? { query: messageText, stream: true }
 				: { prompt: messageText, stream: true };
-
 		try {
 			const response = await fetch(`http://localhost:5000${endpoint}`, {
 				method: 'POST',
@@ -323,30 +345,23 @@ export default function useTutor() {
 				body: JSON.stringify(body),
 				signal,
 			});
-
 			if (!response.ok || !response.body) {
 				await handleBackendError(response, botMessageId);
 				return;
 			}
 			await processStreamedResponse(response, signal, botMessageId);
 		} catch (error: any) {
-			if (error.name !== 'AbortError') {
-				handleNetworkError(error, botMessageId);
-			}
+			if (error.name !== 'AbortError') handleNetworkError(error, botMessageId);
 		}
 	}
 
-	/**
-	 * Sends a standard message to the chat endpoint (/chat). Supports streaming.
-	 */
 	async function sendStandardQuestion(
 		messageText: string,
 		history: { role: string; content: string }[],
 		signal: AbortSignal
 	) {
-		const botMessageId = getNextId(); // Use the new ID generator
+		const botMessageId = getNextId();
 		appendBotMessage(botMessageId);
-
 		try {
 			const response = await fetch('http://localhost:5000/chat', {
 				method: 'POST',
@@ -354,25 +369,21 @@ export default function useTutor() {
 				body: JSON.stringify({ message: messageText, history, stream: true }),
 				signal,
 			});
-
 			if (!response.ok || !response.body) {
 				await handleBackendError(response, botMessageId);
 				return;
 			}
-			// This can use the same stream processor, as it now handles cases without sources
 			await processStreamedResponse(response, signal, botMessageId);
 		} catch (error: any) {
 			if (error.name !== 'AbortError') handleNetworkError(error, botMessageId);
 		}
 	}
 
-	// --- PRIMARY USER ACTION HANDLER ---
-
+	// --- PRIMARY USER ACTION HANDLER (for text chat) ---
 	const handleSend = async () => {
 		const messageText = currText().trim();
-		if (!messageText || isLoading()) return;
+		if (!messageText || isLoading() || voice()) return;
 
-		// Abort any previous request
 		abortController.abort();
 		const newAbortController = new AbortController();
 		abortController = newAbortController;
@@ -381,7 +392,7 @@ export default function useTutor() {
 		setIsLoading(true);
 		setCurrText('');
 
-		const newUserMessage: MessageData = { id: getNextId(), text: messageText, user: true }; // Use the new ID generator
+		const newUserMessage: MessageData = { id: getNextId(), text: messageText, user: true };
 		const currentMessages = [...messages(), newUserMessage];
 		setMessages(currentMessages);
 
@@ -391,13 +402,11 @@ export default function useTutor() {
 			} else if (web()) {
 				await sendQueryWithSources('/ask_search', messageText, signal);
 			} else {
-				const historyForBackend = buildHistoryForBackend(currentMessages);
+				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1)); // History before the new message
 				await sendStandardQuestion(messageText, historyForBackend, signal);
 			}
 		} catch (error: any) {
-			if (error.name === 'AbortError') {
-				console.log('Fetch aborted by a new request.');
-			}
+			if (error.name === 'AbortError') console.log('Fetch aborted by a new request.');
 		} finally {
 			setIsLoading(false);
 		}
@@ -406,32 +415,47 @@ export default function useTutor() {
 	const newChat = () => {
 		abortController.abort();
 		abortController = new AbortController();
-		messageIdCounter = 0; // Reset the counter
+		messageIdCounter = 0;
 		setMessages([
 			{
-				id: getNextId(), // Start with a fresh ID
+				id: getNextId(),
 				text: 'Hello There.\n\nHow can I help you today?',
 				user: false,
+				sources: [],
 			},
 		]);
 		setCurrText('');
 		setIsLoading(false);
+		if (voice()) stopVoice(); // Also stop voice mode if active
 	};
 
 	// --- RETURNED VALUES & FUNCTIONS ---
 	return {
+		// Text chat state
 		messages,
-		newChat,
 		currText,
 		setCurrText,
 		isLoading,
+
+		// Text chat actions
 		handleSend,
+		newChat,
+
+		// Mode state and toggles
+		mode,
+		setMode,
 		web,
 		rag,
 		toggleWeb,
 		toggleRag,
-		mode,
-		setMode,
 		messageContainerRef: (ref: HTMLDivElement) => (messageContainerRef = ref),
+
+		// Voice state and actions
+		voice,
+		toggleVoice,
+		transcript,
+		response,
+		setResponse,
+		voiceStatus,
 	};
 }

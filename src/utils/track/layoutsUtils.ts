@@ -1,4 +1,5 @@
-import type { Layout } from 'plotly.js';
+import type {Data, Layout } from 'plotly.js';
+import { getCSSVariableColor } from '@/utils/track/themeUtils';
 
 // Chart layout configurations
 export const dailyLayout: Partial<Layout> = {
@@ -47,3 +48,19 @@ export const weeklyLayout: Partial<Layout> = {
 	plot_bgcolor: 'transparent',
 	font: { color: 'white' },
 };
+
+export const getWeeklyTrendData = (): any[] =>
+	[
+		{
+			x: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+			y: [8.2, 7.9, 8.8, 9.1, 8.5, 6.2, 5.8],
+			name: 'Total Hours',
+			type: 'scatter',
+			mode: 'lines+markers',
+			line: { color: getCSSVariableColor('--color-accent'), width: 4 },
+			marker: { color: getCSSVariableColor('--color-accent-dark-3'), size: 8 },
+			fill: 'tonexty',
+			fillcolor: `rgba(6, 182, 212, 0.1)`, 
+		},
+	] as any[];
+

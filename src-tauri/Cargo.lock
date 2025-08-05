@@ -2027,6 +2027,7 @@ name = "haru"
 version = "0.1.0"
 dependencies = [
  "dotenvy",
+ "once_cell",
  "serde",
  "serde_json",
  "tauri",

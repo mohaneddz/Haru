@@ -1,6 +1,7 @@
 node_modules
 dist
 backend/models/*
+backend/chroma_db/*
 backend/documents/*
 idea/models/*
 .env

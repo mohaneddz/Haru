@@ -67,5 +67,5 @@ export default function NoteEditor(props: Props) {
     view?.destroy();
   });
 
-  return <div ref={editorRef} class="rounded-md w-full h-full pt-16 [&>div]:h-full" />;
+  return <div ref={editorRef} class="rounded-md w-full h-full [&>div]:h-full" />;
 }

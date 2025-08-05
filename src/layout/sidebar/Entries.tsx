@@ -1,6 +1,6 @@
 export const entries = [
-  { title: 'Discover', icon: 'Compass', section: 'home', slug: 'discover' },
   { title: 'Library', icon: 'Library', section: 'home', slug: 'library' },
+  { title: 'Quicknotes', icon: 'StickyNote', section: 'home', slug: 'quicknotes' },
   { title: 'Notes', icon: 'FileText', section: 'home', slug: 'notes' },
   { title: 'Dictionary', icon: 'Book', section: 'home', slug: 'dictionary' },
 

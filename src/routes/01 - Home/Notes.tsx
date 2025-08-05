@@ -25,7 +25,7 @@ export default function Notes() {
 
         <div
           ref={el => editorContainerRef = el}
-          class="overflow-x-hidden justify-center items-center mx-16 drop-shadow-lg min-w-100 h-full bg-background-light-1"
+          class="overflow-x-hidden justify-center items-center mx-16 drop-shadow-lg min-w-100 h-full bg-background-light-1 pt-16"
         >
           <div class="absolute top-4 left-4" title="Open in Obsidian" onClick={openObsidian}>
             <Link class="text-primary cursor-pointer" />

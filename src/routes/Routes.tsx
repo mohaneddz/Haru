@@ -9,12 +9,12 @@ export const routes = [
 
       // 01 - Home
 
-      { path: "/home/discover", component: lazy(() => import("@/routes/01 - Home/Discover")) },
       { path: "/home/library", component: lazy(() => import("@/routes/01 - Home/Library")) },
+      { path: "/home/quicknotes", component: lazy(() => import("@/routes/01 - Home/Quicknotes")) },
       { path: "/home/notes", component: lazy(() => import("@/routes/01 - Home/Notes")) },
       { path: "/home/dictionary", component: lazy(() => import("@/routes/01 - Home/Dictionary")) },
 
-      { path: "/home/discover/*", component: lazy(() => import("@/routes/01 - Home/Course")) },
+      { path: "/home/library/*", component: lazy(() => import("@/routes/01 - Home/Course")) },
       
       // 02 - Practice
       // { path: "/practice/", component: lazy(() => import("@/routes/02 - Practice/Practice")) },

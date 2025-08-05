@@ -43,7 +43,7 @@ export default function DocumentCard(props: Props) {
         </div>
 
 
-        <div class="absolute bottom-0 left-0 right-0 z-20 px-4 py-4 flex flex-col gap-2 translate-y-2 group-hover:-translate-y-4 transition-transform duration-300">
+        <div class="absolute bottom-0 left-0 right-0 z-20 px-4 py-4 flex flex-col gap-2 translate-y-8 group-hover:-translate-y-4 transition-transform duration-300">
           <p class="text-sm text-nowrap  font-bold text-accent line-clamp-2 transition-colors">
             {props.title}
           </p>

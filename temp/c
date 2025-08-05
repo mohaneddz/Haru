@@ -1,0 +1,301 @@
+import os
+import logging
+import re
+import threading
+import time
+import asyncio
+from constants import LLAMA_SERVER_URL
+from pathlib import Path
+
+import requests
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+from classes import  start_watcher, rag_system, content_extractor, config
+from llm import stream_unified_response, create_llm_payload, handle_non_streaming_llm_response
+
+# ======================================================================================
+# --- CONFIGURATION (via Environment Variables with Defaults) ---
+# ======================================================================================
+
+def get_env(variable_name, default_value):
+    """Gets an environment variable or returns a default."""
+    return os.environ.get(variable_name, default_value)
+
+app = Flask(__name__)
+CORS(app, origins="*", supports_credentials=True,
+      allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+      expose_headers=["Content-Type"])
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+http_session = requests.Session()
+
+# ======================================================================================
+# --- FLASK APPLICATION & ENDPOINTS ---
+# ======================================================================================
+
+# --- Chat Endpoint ---
+@app.route('/chat', methods=['POST'])
+def chat_endpoint():
+    """Main endpoint for direct chat functionality."""
+    try:
+        data = request.get_json()
+        user_message = data.get('message')
+        chat_history = data.get('history', [])
+        stream = data.get("stream", False)
+
+        if not user_message:
+            return jsonify({"error": "No message provided"}), 400
+        
+        prompt = ""
+        for turn in chat_history:
+            prompt += f"{turn.get('role', 'user').capitalize()}: {turn.get('content', '')}\n"
+        prompt += f"User: {user_message}\nAssistant:"
+
+        llama_payload = create_llm_payload(prompt, stream)
+        
+        if stream:
+            # For chat, the sources list is always empty.
+            return stream_unified_response(llama_payload, config.LLAMA_SERVER_URL, sources=[])
+        else:
+            response_data = handle_non_streaming_llm_response(llama_payload, config.LLAMA_SERVER_URL)
+            content = response_data.get("content", "").strip()
+            return jsonify({
+                "content": content,
+                "sources": []
+            })
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Chat backend connection error: {e}", exc_info=True)
+        return jsonify({"error": "Backend connection failed"}), 502
+    except Exception as e:
+        logging.error(f"General chat endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred"}), 500
+
+# --- Web Search Endpoint ---
+@app.route("/ask_search", methods=["POST"])
+def ask_with_search():
+    from web import get_web_urls, crawl_webpages_hybrid
+    from utils import process_crawled_results, build_search_context, build_llm_payload
+
+    data = request.get_json()
+    if not data or "prompt" not in data:
+        return jsonify({"error": "Missing 'prompt'"}), 400
+
+    query = data["prompt"]
+    stream = data.get("stream", False)
+
+    try:
+        urls = get_web_urls(query)
+        if not urls:
+            return jsonify({"content": "Web search returned no results.", "sources": []}), 500
+
+        crawled_data = asyncio.run(crawl_webpages_hybrid(urls))
+        if not crawled_data:
+            return jsonify({"content": "Crawling failed to retrieve any content.", "sources": []}), 500
+
+        if not content_extractor or not content_extractor.model:
+            return jsonify({"error": "Could not load the semantic search model."}), 500
+
+        processed_results = process_crawled_results(crawled_data, query, content_extractor)
+        if not processed_results:
+             return jsonify({
+                "content": "I found some web pages, but none contained specific information relevant to your question.",
+                "sources": []
+             }), 200
+
+        final_sources = [{
+            "title": source.get("title", "No Title Available"),
+            "url": source.get("url"),
+            "score": round(source.get("score", 0.0), 4),
+            "path": "",
+            "section": ""
+        } for source in processed_results]
+
+        search_context, _, _, _, supporting_sources = build_search_context(processed_results, query, content_extractor)
+        payload = build_llm_payload(search_context, query, data, supporting_sources)
+        payload['stream'] = stream
+
+        if stream:
+            return stream_unified_response(payload, config.LLAMA_SERVER_URL, final_sources)
+        else:
+            llm_response = handle_non_streaming_llm_response(payload, config.LLAMA_SERVER_URL)
+            final_answer = llm_response.get("content", "").strip()
+
+            return jsonify({
+                "content": final_answer,
+                "sources": final_sources
+            })
+
+    except Exception as e:
+        logging.error(f"Error during ask_search: {e}", exc_info=True)
+        return jsonify({"error": f"An error occurred: {e}"}), 500
+
+# --- RAG Endpoint ---
+@app.route("/rag", methods=["POST"])
+def rag_query_endpoint():
+    from utils import build_llm_payload
+
+    try:
+        query_data = request.get_json()
+        query = query_data.get("query")
+        stream = query_data.get("stream", False)
+        use_advanced_prompt = query_data.get("use_advanced_prompt", True)
+        llm_config = query_data.get("llm_config", {})
+
+        if not query:
+            return jsonify({"error": "Query is missing"}), 400
+
+        retrieved_chunks = rag_system.retrieve_context(query)
+        unique_contents = set()
+        deduplicated_chunks = [
+            chunk for chunk in retrieved_chunks
+            if chunk['content'] not in unique_contents and not unique_contents.add(chunk['content'])
+        ]
+
+        if not deduplicated_chunks:
+            return jsonify({
+                "content": "I could not find any relevant documents to answer your question.",
+                "sources": []
+            })
+
+        final_sources = [{
+            "title": "", "url": "", "path": chunk['source'],
+            "section": chunk.get('id', f"chunk_{i}"), "score": round(chunk['score'], 4)
+        } for i, chunk in enumerate(deduplicated_chunks)]
+
+        context_parts = [f"[Source {i+1}: {Path(c['source']).name}]\n{c['content']}" for i, c in enumerate(deduplicated_chunks)]
+        context_string = "\n---\n".join(context_parts)
+        template = config.LLM_PROMPT_TEMPLATE_ADVANCED if use_advanced_prompt else config.LLM_PROMPT_TEMPLATE_BASIC
+        full_prompt = template.format(context=context_string, query=query)
+
+        payload = create_llm_payload(full_prompt, stream=stream, llm_config=llm_config)
+
+        if stream:
+            return stream_unified_response(payload, config.LLAMA_SERVER_URL, final_sources)
+        else:
+            llm_data = handle_non_streaming_llm_response(payload, config.LLAMA_SERVER_URL)
+            final_answer = llm_data.get("content", "").strip()
+            final_answer = re.sub(r'(\[Source \d+\])\1+', r'\1', final_answer)
+            return jsonify({"content": final_answer, "sources": final_sources})
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"RAG request to LLM server failed: {e}", exc_info=True)
+        return jsonify({"error": f"Failed to connect to the LLM at {config.LLAMA_SERVER_URL}"}), 502
+    except Exception as e:
+        logging.error(f"RAG endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "An internal RAG error occurred"}), 500
+
+# --- Voice Endpoint ---
+@app.route('/voice', methods=['POST'])
+def voice_endpoint():
+    """Handles voice requests and streams responses."""
+    try:
+        data = request.get_json()
+        user_message = data.get('message')
+        chat_history = data.get('history', [])
+        
+        if not user_message:
+            return jsonify({"error": "No message provided"}), 400
+        
+        prompt = "You are a helpful AI assistant. Respond naturally and conversationally.\n\n"
+        for turn in chat_history[-10:]:
+            role = turn.get('role', 'user')
+            content = turn.get('content', '')
+            prompt += f"{'Human' if role == 'user' else 'Assistant'}: {content}\n"
+        prompt += f"Human: {user_message}\nAssistant:"
+        
+        llama_payload = create_llm_payload(prompt, True)
+        # The sources list is empty as per your original code for the voice endpoint
+        return stream_unified_response(llama_payload, "http://127.0.0.1:8080/completion", sources=[])
+            
+    except Exception as e:
+        logging.error(f"Voice endpoint error: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred"}), 500
+
+# --- Management & Status Endpoints ---
+
+@app.route("/health", methods=["GET"])
+def health_check_endpoint():
+    """Performs a health check on the service and its dependencies."""
+    try:
+        # Check LLM Server
+        llm_status = "ok" if http_session.get(config.LLAMA_SERVER_URL, timeout=5).ok else "unavailable"
+    except requests.exceptions.RequestException:
+        llm_status = "unavailable"
+    
+    try: # Check Vector DB
+        rag_system.collection.count()
+        db_status = "ok"
+    except Exception:
+        db_status = "error"
+        
+    is_healthy = llm_status == "ok" and db_status == "ok"
+    status_code = 200 if is_healthy else 503
+    
+    return jsonify({
+        "status": "ok" if is_healthy else "error",
+        "dependencies": {"llm_server": llm_status, "vector_database": db_status}
+    }), status_code
+
+@app.route("/status", methods=["GET"])
+def get_system_status_endpoint():
+    """Returns basic status information about the RAG system."""
+    return jsonify(rag_system.get_status())
+
+@app.route("/documents", methods=["GET"])
+def list_indexed_documents_endpoint():
+    """Returns a list of all source files currently in the index."""
+    try:
+        return jsonify({"documents": rag_system.get_indexed_documents()})
+    except Exception as e:
+        logging.error(f"Failed to list documents: {e}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve document list"}), 500
+
+@app.route("/rebuild-index", methods=["POST"])
+def rebuild_index_endpoint():
+    """Triggers a full rebuild of the vector index in a background thread."""
+    thread = threading.Thread(target=rag_system.build_index_from_directory, kwargs={"force_rebuild": True})
+    thread.start()
+    return jsonify({"message": "Index rebuild process started in the background."}), 202
+
+@app.route("/persist-index", methods=["POST"])
+def persist_index_endpoint():
+    """Forces the vector database to save its current state to disk."""
+    rag_system.persist_index()
+    return jsonify({"message": "Index has been persisted to disk."}), 200
+
+# ======================================================================================
+# --- APPLICATION STARTUP ---
+# ======================================================================================
+
+def warmup_llm_server():
+    """Sends a dummy request to the LLM server to trigger model loading."""
+    logging.info("🚀 Warming up LLM server... This may take a moment.")
+    start_time = time.monotonic()
+    try:
+        payload = create_llm_payload("User: Hello\nAssistant:", stream=False, llm_config={"n_predict": 10})
+        http_session.post(config.LLAMA_SERVER_URL, json=payload, timeout=180).raise_for_status()
+        duration = time.monotonic() - start_time
+        logging.info(f"✅ LLM Server is warm. Model loaded in {duration:.2f} seconds.")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"❌ Failed to warm up LLM server: {e}")
+        logging.error("   Please ensure the LLM server is running and accessible at " + config.LLAMA_SERVER_URL)
+
+if __name__ == "__main__":
+    from classes import RAGSystem, ContentExtractor, start_watcher
+
+    content_extractor = ContentExtractor() 
+    Path(config.DOCUMENTS_DIR).mkdir(exist_ok=True)
+    
+    # Run the warm-up routine for the LLM server
+    warmup_llm_server()
+    
+    # Start background tasks for initial indexing and file watching
+    # These run as daemons, so they won't block app shutdown
+    threading.Thread(target=rag_system.build_index_from_directory, daemon=True).start()
+    threading.Thread(target=start_watcher, args=(rag_system,), daemon=True).start()
+    
+    # Start the Flask server
+    app.run(port=5000, host="0.0.0.0", debug=False, threaded=True)

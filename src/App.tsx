@@ -1,5 +1,8 @@
 import { Router, Route } from "@solidjs/router";
 
+// import { invoke } from "@tauri-apps/api/core";
+// import { onMount } from "solid-js";
+
 import Titlebar from "@/layout/Titlebar";
 import Sidebar from "@/layout/Sidebar";
 import Statebar from "@/layout/Statebar";
@@ -8,11 +11,19 @@ import { routes } from "@/routes/Routes";
 
 function App() {
 
+  // onMount(async () => {
+  //   await invoke("run_app");
+  //   console.log("App started successfully");
+  //   await invoke("run_llm");
+  //   console.log("LLM started successfully");
+  // });
+
 
   return (
     <Router
       root={(props) => (
         <section class="h-screen w-screen overflow-hidden flex">
+
           <Titlebar />
           <Sidebar />
           <div class="relative overflow-hidden w-full h-full flex flex-col">

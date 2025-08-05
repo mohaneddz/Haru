@@ -39,6 +39,7 @@ export default defineConfig(async () => ({
 			ignored: [
 				'**/src-tauri/**',
 				'**/models/**',
+				'**/notes/**',
 				'**/backend/**',
 				'**/node_modules/**',
 				'src-tauri/chroma_db/chroma.sqlite3', // Ignore changes to this file

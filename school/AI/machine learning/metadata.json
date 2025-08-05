@@ -1,0 +1,10 @@
+{
+  "title": "Machine Learning",
+  "icon": "Brain",
+  "img": "icon.png",
+  "description": "Algorithms that learn from data and make predictions",
+  "tags": ["machine-learning", "beginner", "fundamentals", "course"],
+  "field": "Artificial Intelligence",
+  "difficulty": "Beginner"
+}
+

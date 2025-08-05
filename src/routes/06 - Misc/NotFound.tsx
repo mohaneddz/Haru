@@ -4,7 +4,7 @@ export default function Redirect() {
     const navigate = useNavigate();
 
     onMount(() => {
-        navigate("/home/discover");
+        navigate("/home/library");
     });
 
     return (

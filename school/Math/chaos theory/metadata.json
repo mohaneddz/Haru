@@ -1,0 +1,9 @@
+{
+  "title": "Chaos Theory",
+  "icon": "Fractal",
+  "img": "icon.png",
+  "description": "Study of systems that exhibit unpredictable yet deterministic behavior",
+  "tags": ["chaos-theory", "mathematics", "complex-systems", "course"],
+  "field": "Mathematics",
+  "difficulty": "Intermediate"
+}

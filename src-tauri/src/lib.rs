@@ -37,16 +37,31 @@ fn cleanup_finished_process(child_opt: &mut Option<Child>) -> bool {
     false // It's not running if it was None to begin with
 }
 
+#[tauri::command]
+fn read_image(path: String) -> Result<String, String> {
+    use std::fs;
+    use base64::{engine::general_purpose, Engine as _};
+
+    let bytes = fs::read(&path).map_err(|e| e.to_string())?;
+    let encoded = general_purpose::STANDARD.encode(&bytes);
+    Ok(format!("data:image/png;base64,{}", encoded))
+}
 
 #[tauri::command]
-fn read_dir_recursive(path: String) -> Result<Vec<String>, String> {
-    fn walk_dir(dir: PathBuf, acc: &mut Vec<String>) -> io::Result<()> {
+fn read_dir_recursive(path: String, depth: Option<u32>) -> Result<Vec<String>, String> {
+    fn walk_dir(dir: PathBuf, acc: &mut Vec<String>, depth: Option<u32>) -> io::Result<()> {
+        if let Some(d) = depth {
+            if d == 0 {
+                return Ok(());
+            }
+        }
         acc.push(format!("{}/", dir.to_string_lossy()));
         for entry in fs::read_dir(&dir)? {
             let entry = entry?;
             let path = entry.path();
             if path.is_dir() {
-                walk_dir(path, acc)?;
+                let next_depth = depth.map(|d| d - 1);
+                walk_dir(path, acc, next_depth)?;
             } else {
                 acc.push(path.to_string_lossy().to_string());
             }
@@ -54,7 +69,7 @@ fn read_dir_recursive(path: String) -> Result<Vec<String>, String> {
         Ok(())
     }
     let mut result = Vec::new();
-    walk_dir(PathBuf::from(path.clone()), &mut result).map_err(|e| e.to_string())?;
+    walk_dir(PathBuf::from(path.clone()), &mut result, depth).map_err(|e| e.to_string())?;
     Ok(result)
 }
 
@@ -269,6 +284,7 @@ pub fn run() {
             delete_path,
             move_path,
             save_file,
+            read_image,
             
             run_voice,
             run_fasttext,

@@ -161,11 +161,11 @@ export default function FlashCardsHeatmap(props: Props) {
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <span class="text-gray-400">Cards:</span>
-                <span class="ml-1 text-white">{selectedCell()!.studyCount}</span>
+                <span class="ml-1 text-text">{selectedCell()!.studyCount}</span>
               </div>
               <div>
                 <span class="text-gray-400">Correct:</span>
-                <span class="ml-1 text-white">{selectedCell()!.correctAnswers}</span>
+                <span class="ml-1 text-text">{selectedCell()!.correctAnswers}</span>
               </div>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function FlashCardsHeatmap(props: Props) {
         {/* Floating Tooltip */}
         {hoveredCell() && (
           <div
-            class="fixed z-50 bg-gray-800 border border-cyan-400/50 rounded px-2 py-1 text-xs text-white shadow-lg pointer-events-none"
+            class="fixed z-50 bg-gray-800 border border-cyan-400/50 rounded px-2 py-1 text-xs text-text shadow-lg pointer-events-none"
             style={{
               left: `${tooltipPosition().x + 10}px`,
               top: `${tooltipPosition().y - 40}px`

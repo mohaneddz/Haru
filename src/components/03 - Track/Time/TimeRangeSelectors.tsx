@@ -18,17 +18,17 @@ export default function TimeRangeSelectors(props: Props) {
             <div class="flex gap-2">
 
                 <button
-                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'week' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'week' ? 'bg-accent-dark-2 text-text' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                     onClick={() => props.setPeriod('week')}>
                     Week
                 </button>
                 <button
-                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'month' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'month' ? 'bg-accent-dark-2 text-text' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                     onClick={() => props.setPeriod('month')}>
                     Month
                 </button>
                 <button
-                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'quarter' ? 'bg-accent-dark-2 text-white' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
+                    class={`px-4 py-2 rounded-lg transition hover:scale-105 cursor-pointer active:scale-95 ${props.period() === 'quarter' ? 'bg-accent-dark-2 text-text' : 'bg-sidebar-light-2 text-text/70 hover:bg-sidebar-light-3'}`}
                     onClick={() => props.setPeriod('quarter')}>
                     Quarter
                 </button>

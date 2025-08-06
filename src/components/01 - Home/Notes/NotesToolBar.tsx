@@ -69,7 +69,7 @@ const Tooltip: ParentComponent<TooltipProps> = (props) => {
         <div 
           class={`absolute z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-200 ${getPositionClasses()}`}
         >
-          <div class="bg-gray-800 text-white text-xs px-3 py-2 rounded-md shadow-lg whitespace-nowrap relative">
+          <div class="bg-gray-800 text-text text-xs px-3 py-2 rounded-md shadow-lg whitespace-nowrap relative">
             {props.content}
             <div class={getArrowClasses()}></div>
           </div>
@@ -113,7 +113,7 @@ function NotesToolBarButton(props: NotesToolBarButtonProps) {
           size={18} 
           class={`
             transition-all duration-200
-            text-white group-hover:text-accent-light-1
+            text-text group-hover:text-accent-light-1
             ${isPressed() ? 'text-accent' : ''}
           `}
         />

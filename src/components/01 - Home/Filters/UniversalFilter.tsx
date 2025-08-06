@@ -17,7 +17,7 @@ interface Props {
   showFields?: boolean;
   showTypes?: boolean;
   class?: string;
-  pageType: 'resources' | 'discover' | 'courses';
+  pageType: 'resources' | 'library' | 'courses';
 }
 
 export default function UniversalFilter(props: Props) {
@@ -87,7 +87,7 @@ export default function UniversalFilter(props: Props) {
     if (props.placeholder) return props.placeholder;
     switch (props.pageType) {
       case 'resources': return 'Search documents, videos, and tools...';
-      case 'discover': return 'Search courses and content...';
+      case 'library': return 'Search courses and content...';
       case 'courses': return 'Search course library...';
       default: return 'Search...';
     }
@@ -96,7 +96,7 @@ export default function UniversalFilter(props: Props) {
   const getPageIcon = () => {
     switch (props.pageType) {
       case 'resources': return BookOpen;
-      case 'discover': return Video;
+      case 'library': return Video;
       case 'courses': return GraduationCap;
       default: return Search;
     }

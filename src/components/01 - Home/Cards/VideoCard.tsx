@@ -22,7 +22,7 @@ export default function VideoCard(props: Props) {
     <a
       class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
       style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
-      href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
+      href={`/home/library/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
     >
@@ -74,12 +74,12 @@ export default function VideoCard(props: Props) {
           )}
         </div>
 
-        <div class="absolute top-2 right-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-white group-hover:text-accent">
+        <div class="absolute top-2 right-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-text group-hover:text-accent">
           {isPlaylist ? 'Playlist' : props.duration || 'Video'}
         </div>
 
         {isPlaylist && props.count !== undefined && (
-          <div class="absolute left-2 top-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-white group-hover:text-accent ">
+          <div class="absolute left-2 top-2 z-30 px-2 py-0.5 rounded text-xs font-medium bg-black/70 text-text group-hover:text-accent ">
             {props.count} videos
           </div>
         )}

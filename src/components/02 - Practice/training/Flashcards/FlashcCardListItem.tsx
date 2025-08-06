@@ -39,7 +39,7 @@ export default function FlashcCardListItem(props: Props) {
             </div>
             <span class="text-gray-400 text-sm">{props.description || "Because it's black and white, it has a classic look"}</span>
             <div class="flex justify-between items-center mt-2 gap-16 w-full">
-                <div class="flex items-center gap-2 bg-accent-dark-3 text-white text-xs px-3 py-1 rounded-full shadow">
+                <div class="flex items-center gap-2 bg-accent-dark-3 text-text text-xs px-3 py-1 rounded-full shadow">
                     <span>🎯 {props.accuracy || "80%"}</span>
                     <span class="text-gray-300/80">({props.attempts || "5 Attempts"})</span>
                 </div>

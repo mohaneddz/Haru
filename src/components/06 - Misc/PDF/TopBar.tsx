@@ -27,7 +27,7 @@ export default function TopBar(props: Props) {
                     <button
                         onClick={props.prevPage}
                         disabled={props.loading() || props.currentPage() === 1 || props.numPages() === 0}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:opacity-50 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:opacity-50 text-text transition-colors"
                         title="Previous page (←)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@ export default function TopBar(props: Props) {
                     <button
                         onClick={props.nextPage}
                         disabled={props.loading() || props.currentPage() === props.numPages() || props.numPages() === 0}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:opacity-50 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:opacity-50 text-text transition-colors"
                         title="Next page (→)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ export default function TopBar(props: Props) {
                                 }
                             }}
                             disabled={props.loading() || props.numPages() === 0}
-                            class="w-12 text-white bg-gray-700 border border-gray-600 text-center px-1 py-1 rounded text-xs disabled:opacity-50"
+                            class="w-12 text-text bg-gray-700 border border-gray-600 text-center px-1 py-1 rounded text-xs disabled:opacity-50"
                         />
                         <span class="text-gray-300 text-xs">/ {props.numPages() || 0}</span>
                     </form>
@@ -74,7 +74,7 @@ export default function TopBar(props: Props) {
 
                     <button
                         onClick={props.zoomOut}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-text transition-colors"
                         title="Zoom out (Ctrl + -)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ export default function TopBar(props: Props) {
                                 props.setFitToWidth(false);
                             }
                         }}
-                        class="bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-xs w-24"
+                        class="bg-gray-700 border border-gray-600 text-text px-2 py-1 rounded text-xs w-24"
                     >
                         {/* Show preset zoom levels */}
                         {props.zoomLevels.map(level => (
@@ -110,7 +110,7 @@ export default function TopBar(props: Props) {
 
                     <button
                         onClick={props.zoomIn}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-text transition-colors"
                         title="Zoom in (Ctrl + +)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export default function TopBar(props: Props) {
 
                     <button
                         onClick={() => props.setFitToWidth(!props.fitToWidth())}
-                        class={`p-1.5 rounded transition-colors ${props.fitToWidth() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'} text-white`}
+                        class={`p-1.5 rounded transition-colors ${props.fitToWidth() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'} text-text`}
                         title="Fit to width (Ctrl + W)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +133,7 @@ export default function TopBar(props: Props) {
                 <div class="flex items-center space-x-2">
                     <button
                         onClick={props.rotateClockwise}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-text transition-colors"
                         title="Rotate (R)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ export default function TopBar(props: Props) {
 
                     <button
                         onClick={props.toggleFullscreen}
-                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                        class="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-text transition-colors"
                         title="Fullscreen (Ctrl + F)"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

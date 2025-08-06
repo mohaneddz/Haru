@@ -14,7 +14,7 @@ export default function FlashDeckCard(props: Props) {
 
     return (
         <div class="h-min w-full">
-            <LayoutCard hoverable={false} class="px-6 py-12 border rounded-2xl shadow-xl bg-background-dark-1 text-white flex flex-col gap-4 relative">
+            <LayoutCard hoverable={false} class="px-6 py-12 border rounded-2xl shadow-xl bg-background-dark-1 text-text flex flex-col gap-4 relative">
 
                 <Trash2 class="absolute right-2 top-2 text-gray-400 hover:text-error transition-colors cursor-pointer" onClick={props.onDelete} />
 

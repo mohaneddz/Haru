@@ -56,7 +56,7 @@ export default function TreeNode(props: TreeNodeProps) {
                     <input
                         ref={inputRef}
                         value={editValue().replace(/\.md$/, '')}
-                        class="bg-background text-white px-1 rounded outline-accent w-full focus:outline-none focus:ring-none text-text"
+                        class="bg-background text-text px-1 rounded outline-accent w-full focus:outline-none focus:ring-none text-text"
                         onChange={e => setEditValue(e.currentTarget.value)}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {

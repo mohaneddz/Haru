@@ -72,7 +72,7 @@ export default function CompletionRatio(props: CompletionRatioProps) {
       </svg>
       
       {/* Percentage text */}
-      <div class={`absolute inset-0 flex items-center justify-center font-bold text-white ${dimensions().fontSize}`}>
+      <div class={`absolute inset-0 flex items-center justify-center font-bold text-text ${dimensions().fontSize}`}>
         {percentage()}%
       </div>
     </div>

@@ -60,12 +60,12 @@ export default function SudokuGame(props: Props) {
             onclick={() => props.setSudokuPage('menu')}
             class="p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
           >
-            <X size={20} class="text-white" />
+            <X size={20} class="text-text" />
           </button>
 
           <div class="flex items-center gap-4">
-            <div class="text-white text-lg text-md">{formatTime(timeElapsed())}</div>
-            <div class="text-white text-sm">Hints: {hintsUsed()}</div>
+            <div class="text-text text-lg text-md">{formatTime(timeElapsed())}</div>
+            <div class="text-text text-sm">Hints: {hintsUsed()}</div>
           </div>
 
           <button
@@ -73,7 +73,7 @@ export default function SudokuGame(props: Props) {
             onclick={() => generatePerfectBoard(60)}
             class="p-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <RotateCw size={20} class="text-white" />
+            <RotateCw size={20} class="text-text" />
           </button>
         </div>
 
@@ -89,11 +89,11 @@ export default function SudokuGame(props: Props) {
                       class={`
                         w-10 h-10 border flex items-center justify-center text-base font-bold
                         ${selectedCell()?.row === row && selectedCell()?.col === col
-                          ? 'bg-accent-dark-1 border-accent text-white'
+                          ? 'bg-accent-dark-1 border-accent text-text'
                           : errorCells()[row][col]
                             ? solidCells()[row][col]
-                              ? 'bg-red-800 text-white'
-                              : 'bg-error text-white'
+                              ? 'bg-red-800 text-text'
+                              : 'bg-error text-text'
                             : 'bg-background-light-1 hover:brightness-95'
                         }
                         ${solidCells()[row][col]
@@ -123,7 +123,7 @@ export default function SudokuGame(props: Props) {
             {(num) => (
               <button
                 onclick={() => handleNumberInput(num)}
-                class="w-14 h-14 bg-accent clickable text-white font-bold rounded-lg transition-colors text-lg"
+                class="w-14 h-14 bg-accent clickable text-text font-bold rounded-lg transition-colors text-lg"
               >
                 {num}
               </button>
@@ -133,7 +133,7 @@ export default function SudokuGame(props: Props) {
 
           <Button
             onClick={() => handleNumberInput(0)}
-            class="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors text-lg text-center"
+            class="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-text font-bold rounded-lg transition-colors text-lg text-center"
           >
             ✕
           </Button>
@@ -174,7 +174,7 @@ export default function SudokuGame(props: Props) {
       {/* Pause Modal */}
       <Modal show={isPaused() && !isWon()} onClose={() => setIsPaused(false)}>
         <div class="text-center p-6">
-          <h2 class="text-2xl font-bold text-white mb-4">Game Paused</h2>
+          <h2 class="text-2xl font-bold text-text mb-4">Game Paused</h2>
           <p class="text-gray-300 mb-6">Take a break! Click resume <br /> when you're ready to continue.</p>
           <Button
             onClick={() => setIsPaused(false)}

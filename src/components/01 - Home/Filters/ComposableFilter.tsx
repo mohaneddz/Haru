@@ -107,7 +107,7 @@ export default function UniversalFilter(props: Props) {
     // Fallback to pageType if provided for backward compatibility
     switch (props.pageType) {
       case 'resources': return 'Search documents, videos, and tools...';
-      case 'discover': return 'Search courses and content...';
+      case 'library': return 'Search courses and content...';
       case 'courses': return 'Search course library...';
       case 'flashcards': return 'Search flashcards...';
       default: return 'Search...';

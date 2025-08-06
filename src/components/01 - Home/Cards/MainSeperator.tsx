@@ -9,23 +9,23 @@ interface Props {
 }
 
 export default function MainSeperator(props: Props) {
-    const [isExpanded, setIsExpanded] = createSignal(true);
+    const [isClosed, setIsClosed] = createSignal(false);
 
     const handleToggle = () => {
-        const newState = !isExpanded();
-        setIsExpanded(newState);
+        const newState = !isClosed();
+        setIsClosed(newState);
         props.onToggle?.(newState);
     };
 
     return (
         <div 
-            class={`flex items-center justify-between w-full px-4 py-2 text-accent-dark-1 max-w-[80%] cursor-pointer` + (props.class || "")}
+            class={`flex items-center justify-between w-full py-2 text-accent-dark-1 max-w-[85%] cursor-pointer` + (props.class || "")}
             onClick={handleToggle}
         >
             {props.title ? (
                 <ChevronRight 
                     class={`w-6 h-6 text-accent transition-transform duration-200 ${
-                        isExpanded() ? 'rotate-90' : 'rotate-0'
+                        isClosed() ? 'rotate-0' : 'rotate-90'
                     }`} 
                 />
             ) : null}

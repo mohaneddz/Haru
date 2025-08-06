@@ -19,10 +19,10 @@ export default function CourseCard(props: Props) {
 
   onMount(async () => {
     if (props.img) {
-      // console.log(`Using provided image for ${props.title}:`, props.img);
+      console.log(`Using provided image for ${props.title}:`, props.img);
       const img = await invoke<string>('read_image', { path: props.img });
       setImage(img);
-      console.log(`Image for ${props.title}:`, img);
+      // console.log(`Image for ${props.title}:`, img);
     }
   });
   const IconComponent = (LucideIcons as any)[props.icon];
@@ -31,7 +31,7 @@ export default function CourseCard(props: Props) {
     <a
       class="group p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden block"
       style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
-      href={`/home/discover/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
+      href={`/home/library/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
     >

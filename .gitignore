@@ -5,3 +5,6 @@ backend/chroma_db/*
 backend/documents/*
 idea/models/*
 .env
+src-tauri/chroma_db/chroma.sqlite3
+models/static/audio/*
+notes/*

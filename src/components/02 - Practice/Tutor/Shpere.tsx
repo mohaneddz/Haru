@@ -219,7 +219,7 @@ const Sphere: Component = () => {
       <canvas ref={canvasRef} class="w-full h-full bg-transparent p-4" />
       <div class="absolute inset-0 flex items-center justify-center">
         {error() && (
-          <div class="text-center text-white p-6 bg-black/50 rounded-lg backdrop-blur-sm z-30">
+          <div class="text-center text-text p-6 bg-black/50 rounded-lg backdrop-blur-sm z-30">
             <h2 class="text-xl font-bold mb-2 text-red-400">Error</h2>
             <p class="text-neutral-300">{error()}</p>
           </div>

@@ -1,4 +1,4 @@
-import { loadTranslations } from '@/utils/dictionary/loadTranslations';
+import { loadTranslations } from '@/utils/home/dictionary/loadTranslations';
 import { createSignal, onMount, For } from 'solid-js';
 import TranslationRow from '@/components/01 - Home/Dictionary/TranslationRow';
 import Modal from '@/components/core/Modal';
@@ -58,7 +58,7 @@ export default function Translation() {
           <p class="text-sm text-muted mb-4">Are you sure you want to delete the selected translations?</p>
           <div class="flex space-x-2">
             <button
-              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
+              class="bg-red-600 text-text px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
               onClick={() => {
                 setTranslations((prev) =>
                   prev.filter((_, i) => !selectedIndices().includes(i))
@@ -110,7 +110,7 @@ export default function Translation() {
           />
           <div class="space-x-2 flex">
             <button
-              class="bg-accent-dark-1 text-white px-4 py-2 rounded hover:brightness-105 transition-colors cursor-pointer"
+              class="bg-accent-dark-1 text-text px-4 py-2 rounded hover:brightness-105 transition-colors cursor-pointer"
               onClick={() => {
                 const newTranslation = {
                   dateAdded: new Date().toISOString(),
@@ -259,12 +259,12 @@ export default function Translation() {
 
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-12 bg-accent-dark-2 rounded-full p-2
                   hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowDeleteModal.bind(null, true)}>
-        <Trash class="w-6 h-6 text-white " />
+        <Trash class="w-6 h-6 text-text " />
       </div>
 
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
                         hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowAddModal.bind(null, true)}>
-        <Pen class="w-6 h-6 text-white " />
+        <Pen class="w-6 h-6 text-text " />
       </div>
 
     </div>

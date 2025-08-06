@@ -16,11 +16,11 @@
 
 input[type="time"],
 input[type="number"] {
+  @apply bg-sidebar-light-2 
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: textfield;
   border: 1px solid #374151 !important;
-  background: #18181bad;
   color: #f3f4f6;
   padding: 0.2rem;
   border-radius: 0.5rem;
@@ -68,4 +68,47 @@ input[type="number"] {
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(100%);
+}
+
+.pdf-page-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.pdf-text-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: transparent;
+  user-select: text;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.pdf-text-layer::selection {
+  background: rgba(0, 123, 255, 0.3);
+}
+
+.pdf-text-layer::-moz-selection {
+  background: rgba(0, 123, 255, 0.3);
+}
+
+.pdf-text-layer div {
+  position: absolute;
+  color: transparent;
+  user-select: text;
+  pointer-events: auto;
+  white-space: nowrap;
+  transform-origin: 0 0;
+}
+
+.pdf-text-layer div::selection {
+  background: rgba(0, 123, 255, 0.3);
+  color: transparent;
+}
+
+.pdf-text-layer div::-moz-selection {
+  background: rgba(0, 123, 255, 0.3);
+  color: transparent;
 }

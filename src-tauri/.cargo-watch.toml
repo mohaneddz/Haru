@@ -1,7 +1,0 @@
-watch = [
-  "src-tauri",
-]
-
-ignore = [
-  "src-tauri/chroma_db/chroma.sqlite3"
-]

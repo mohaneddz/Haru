@@ -19,6 +19,9 @@ import '@/style/typography/Typography.css';
 import '@/style/ui/Scrollbar.css';
 import '@/style/ui/Titlebar.css';
 
-import 'katex/dist/katex.min.css'
+import '@/style/core/themes.css';
+
+import 'katex/dist/katex.min.css';
+
 
 render(() => <App />, document.getElementById("root") as HTMLElement);

@@ -3,60 +3,24 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker?worker";
 import { usePDFViewer } from "@/hooks/content/usePDFViewer";
 import { createEffect } from "solid-js";
+import { useLocation } from '@solidjs/router';
 
 pdfjsLib.GlobalWorkerOptions.workerPort = new pdfjsWorker();
 
 export default function PDF() {
   let containerRef!: HTMLDivElement;
-  const pdfViewer = usePDFViewer(() => containerRef);
+  const location = useLocation();
+
+  // Extract and decode path key from URL
+  const urlParams = new URLSearchParams(location.search);
+  const encodedPath = urlParams.get('path') || '';
+  const path = decodeURIComponent(encodedPath);
+
+  const pdfViewer = usePDFViewer(() => containerRef, path);
 
   // Add CSS for text selection
   createEffect(() => {
     const style = document.createElement('style');
-    style.textContent = `
-      .pdf-page-container {
-        position: relative;
-        display: inline-block;
-        margin-bottom: 20px;
-      }
-      
-      .pdf-text-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        color: transparent;
-        user-select: text;
-        pointer-events: auto;
-        z-index: 2;
-      }
-      
-      .pdf-text-layer::selection {
-        background: rgba(0, 123, 255, 0.3);
-      }
-      
-      .pdf-text-layer::-moz-selection {
-        background: rgba(0, 123, 255, 0.3);
-      }
-      
-      .pdf-text-layer div {
-        position: absolute;
-        color: transparent;
-        user-select: text;
-        pointer-events: auto;
-        white-space: nowrap;
-        transform-origin: 0 0;
-      }
-      
-      .pdf-text-layer div::selection {
-        background: rgba(0, 123, 255, 0.3);
-        color: transparent;
-      }
-      
-      .pdf-text-layer div::-moz-selection {
-        background: rgba(0, 123, 255, 0.3);
-        color: transparent;
-      }
-    `;
     document.head.appendChild(style);
     
     return () => {
@@ -95,7 +59,7 @@ export default function PDF() {
         <div class="flex flex-col items-center space-y-4">
           {pdfViewer.loading() && (
             <div class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 ">
-              <div class="text-white text-lg">Loading PDF...</div>
+              <div class="text-text text-lg">Loading PDF...</div>
             </div>
           )}
           {Array.from({ length: pdfViewer.numPages() }, (_, i) => i + 1).map(pageNumber => (
@@ -110,7 +74,7 @@ export default function PDF() {
               />
               {pdfViewer.renderingPages().has(pageNumber) && (
                 <div class="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 rounded-lg z-70">
-                  <div class="text-white text-sm">Rendering...</div>
+                  <div class="text-text text-sm">Rendering...</div>
                 </div>
               )}
             </div>

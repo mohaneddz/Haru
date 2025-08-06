@@ -83,7 +83,7 @@ export default function Toggle(props: Props) {
             {(props.label || props.description) && (
                 <div class="flex flex-col">
                     {props.label && (
-                        <span class={`text-sm font-medium ${props.disabled ? 'text-gray-500' : 'text-white'}`}>
+                        <span class={`text-sm font-medium ${props.disabled ? 'text-gray-500' : 'text-text'}`}>
                             {props.label}
                         </span>
                     )}

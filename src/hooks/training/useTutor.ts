@@ -198,7 +198,7 @@ export default function useTutor() {
 			case 'tutor':
 				return `${masterPrompt} You are a helpful tutor.`;
 			case 'explorer':
-				return `${masterPrompt} You are an explorer, ready to discover new knowledge.`;
+				return `${masterPrompt} You are an explorer, ready to library new knowledge.`;
 			case 'objective':
 				return `${masterPrompt} You are an objective assistant, focused on providing clear and concise answers.`;
 			default:

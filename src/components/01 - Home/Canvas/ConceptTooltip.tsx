@@ -40,7 +40,7 @@ export default function ConceptTooltip(props: Props) {
 
     return (
         <div
-            class="absolute bg-gray-800 text-white p-3 rounded-lg shadow-lg z-50 max-w-xs"
+            class="absolute bg-gray-800 text-text p-3 rounded-lg shadow-lg z-50 max-w-xs"
             style={{
                 left: `${props.transform.x + (props.node.x + props.node.width / 2) * props.transform.scale}px`,
                 top: `${props.transform.y + props.node.y * props.transform.scale - 140}px`,
@@ -76,21 +76,21 @@ export default function ConceptTooltip(props: Props) {
                     <div class="flex gap-2 mt-2 flex-wrap">
                         {props.node.learned ? (
                             <button
-                                class="bg-primary hover:bg-primary-dark-1 text-white text-xs px-2 py-1 rounded transition-colors"
+                                class="bg-primary hover:bg-primary-dark-1 text-text text-xs px-2 py-1 rounded transition-colors"
                                 onClick={handleMarkNotLearned}
                             >
                                 Not Learned
                             </button>
                         ) : (
                             <button
-                                class="bg-primary-dark-2 hover:bg-primary-dark-3 text-white text-xs px-2 py-1 rounded transition-colors"
+                                class="bg-primary-dark-2 hover:bg-primary-dark-3 text-text text-xs px-2 py-1 rounded transition-colors"
                                 onClick={handleMarkLearned}
                             >
                                 Learned
                             </button>
                         )}
                         <button
-                            class="bg-secondary-light-3 hover:bg-secondary-light-2 text-white text-xs px-2 py-1 rounded transition-colors"
+                            class="bg-secondary-light-3 hover:bg-secondary-light-2 text-text text-xs px-2 py-1 rounded transition-colors"
                             onClick={handleDelete}
                         >
                             Delete

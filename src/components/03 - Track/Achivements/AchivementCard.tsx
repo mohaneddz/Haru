@@ -22,7 +22,7 @@ export default function AchivementCard(props: Props) {
                         {IconComponent && <IconComponent class="text-accent w-8 h-8" />}
                     </div>
 
-                    <h3 class="text-white text-lg font-semibold mb-1 text-nowrap">{props.title}</h3>
+                    <h3 class="text-text text-lg font-semibold mb-1 text-nowrap">{props.title}</h3>
 
                     {/* replace with dots */}
                     <p class="text-gray-400 text-sm hyphens-auto">{props.description}</p>

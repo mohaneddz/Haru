@@ -35,7 +35,7 @@ export default function Goals() {
             <input
               id="goal-date"
               type="date"
-              class="p-2 col-span-2 rounded bg-background-light-2 border border-gray-400 text-white"
+              class="p-2 col-span-2 rounded bg-background-light-2 border border-gray-400 text-text"
               value={new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]}
               placeholder="Enter your goal..."
             />
@@ -49,8 +49,8 @@ export default function Goals() {
                 { value: 'Low', label: 'Low' }
               ]}
             />
-            <button class="clickable px-4 py-2 rounded bg-gray-700 text-white" onClick={() => setGoalAddModalOpen(false)}>Cancel</button>
-            <button class="clickable px-4 py-2 rounded bg-accent text-white" onClick={() => createGoal()}>Add</button>
+            <button class="clickable px-4 py-2 rounded bg-gray-700 text-text" onClick={() => setGoalAddModalOpen(false)}>Cancel</button>
+            <button class="clickable px-4 py-2 rounded bg-accent text-text" onClick={() => createGoal()}>Add</button>
           </div>
         </div>
       </Modal>
@@ -71,8 +71,8 @@ export default function Goals() {
                 { value: 'Low', label: 'Low' }
               ]}
             />
-            <button class="clickable px-4 py-2 rounded bg-gray-700 text-white" onClick={() => setHabitAddModalOpen(false)}>Cancel</button>
-            <button class="clickable px-4 py-2 rounded bg-accent text-white" onClick={() => createHabit()}>Add</button>
+            <button class="clickable px-4 py-2 rounded bg-gray-700 text-text" onClick={() => setHabitAddModalOpen(false)}>Cancel</button>
+            <button class="clickable px-4 py-2 rounded bg-accent text-text" onClick={() => createHabit()}>Add</button>
           </div>
         </div>
       </Modal>
@@ -82,8 +82,8 @@ export default function Goals() {
           <p class="text-xl text-accent font-semibold">Add Project</p>
           <div class="grid grid-cols-2 justify-stretch gap-4">
             <input type="text" class="p-2 col-span-2 rounded bg-background-light-2 border border-gray-400" placeholder="Enter your project..." />
-            <button class="clickable px-4 py-2 rounded bg-gray-700 text-white" onClick={() => setProjectAddModalOpen(false)}>Cancel</button>
-            <button class="clickable px-4 py-2 rounded bg-accent text-white">Add</button>
+            <button class="clickable px-4 py-2 rounded bg-gray-700 text-text" onClick={() => setProjectAddModalOpen(false)}>Cancel</button>
+            <button class="clickable px-4 py-2 rounded bg-accent text-text">Add</button>
           </div>
         </div>
       </Modal>

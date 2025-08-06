@@ -34,7 +34,7 @@ export default function ContextMenu(props: ContextMenuProps) {
                     top: `${props.y}px`,
                     left: `${props.x}px`,
                 }}
-                class="fixed bg-background text-white rounded-lg shadow-lg w-max overflow-hidden z-9999"
+                class="fixed bg-background text-text rounded-lg shadow-lg w-max overflow-hidden z-9999"
             >
                 {(props.items ?? []).map(item => (
                     <div

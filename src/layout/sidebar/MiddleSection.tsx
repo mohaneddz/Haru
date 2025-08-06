@@ -1,18 +1,8 @@
 import { sections, entries } from '@/layout/sidebar/Entries';
+import { For, createSignal, onMount } from 'solid-js'; // Added Component and JSX
+import { invoke } from "@tauri-apps/api/core";
 import * as icons from 'lucide-solid';
-import { For, createSignal, Component, JSX } from 'solid-js'; // Added Component and JSX
-
-// Define a more specific type for Lucide icon components.
-// Lucide icons typically accept props like size, color, strokeWidth,
-// and standard SVG attributes.
-type LucideIconProps = {
-  size?: number | string;
-  color?: string;
-  strokeWidth?: number | string;
-  absoluteStrokeWidth?: boolean;
-} & JSX.SvgSVGAttributes<SVGSVGElement>;
-
-type LucideIconComponent = Component<LucideIconProps>;
+import type { LucideIconComponent } from '@/types/sidebar';
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;
@@ -20,11 +10,45 @@ interface Props {
 }
 
 export default function MiddleSection(props: Props) {
+
   const [activeSection, setActiveSection] = createSignal<string | null>(null);
   const [activeEntry, setActiveEntry] = createSignal<string | null>(null);
+  const [app, setApp] = createSignal(false);
+
+  onMount(() => {
+    invoke("is_app_running").then((isRunning) => setApp(isRunning as boolean));
+  });
+
+  const stopApp = async () => {
+    setApp(false);
+    try {
+      await invoke("stop_app");
+      console.log("App stopped successfully");
+    } catch (error) {
+      console.error("Failed to stop app:", error);
+    }
+  };
+
+  const startApp = async () => {
+    setApp(true);
+    try {
+      await invoke("run_app");
+      console.log("App started successfully");
+    } catch (error) {
+      console.error("Failed to start app:", error);
+    }
+  };
+
+  const handleToggleApp = () => {
+    if (app()) {
+      stopApp();
+    } else {
+      startApp();
+    }
+  };
 
   return (
-    <div class="h-full w-full flex flex-col items-center text-white gap-0">
+    <div class="h-full w-full flex flex-col items-center text-text gap-0 relative">
 
       <For each={sections}>
         {(section) => {
@@ -36,16 +60,15 @@ export default function MiddleSection(props: Props) {
             <div class="w-full bg-sidebar m-0">
 
               <div
-                class={`text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 cursor-pointer w-full py-4 ${props.isOpen? ` px-6 ` : `pl-4`}`}
+                class={`text-sm font-semibold uppercase tracking-widest text-accent hover:bg-sidebar-light-1 cursor-pointer w-full py-4 ${props.isOpen ? ` px-6 ` : `pl-4`}`}
                 onClick={() => setActiveSection(activeSection() === section.title ? null : section.title)}
               >
                 {SectionIcon && <SectionIcon class={`inline-block text-accent ${props.isOpen ? ` mr-2 ` : ``}`} />}
                 {props.isOpen ? section.title : ''}
                 {ChevronRightIcon && (
                   <ChevronRightIcon
-                    class={`inline-block ml-2 text-xsm text-accent transition-transform duration-200 ${
-                      activeSection() === section.title ? 'rotate-90' : ''
-                    }`}
+                    class={`inline-block ml-2 text-xsm text-accent transition-transform duration-200 ${activeSection() === section.title ? 'rotate-90' : ''
+                      }`}
                   />
                 )}
               </div>
@@ -62,8 +85,8 @@ export default function MiddleSection(props: Props) {
                           activeSection() !== section.title
                             ? 'hidden'
                             : activeEntry() === entry.title
-                            ? `text-xs py-3 text-accent-light-1 cursor-pointer bg-sidebar-light-3 ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
-                            : `text-xs py-3 text-accent-dark-1 hover:text-accent-light-1 hover:bg-sidebar-light-1 cursor-pointer ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
+                              ? `text-xs py-3 text-accent-light-1 cursor-pointer bg-sidebar-light-3 ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
+                              : `text-xs py-3 text-accent-dark-1 hover:text-accent-light-1 hover:bg-sidebar-light-1 cursor-pointer ${props.isOpen ? `px-6 pl-14` : `pl-8`}`
                         }
                         onClick={() =>
                           setActiveEntry(activeEntry() === entry.title ? null : entry.title)
@@ -85,6 +108,16 @@ export default function MiddleSection(props: Props) {
         }}
       </For>
 
+      {/* user icon + username + settings button */}
+      <div class="w-full gap-1 flex flex-col absolute bottom-0">
+        <div class="flex items-center justify-between w-full px-8 bg-sidebar text-text/40 text-xs">
+          <p>App ...</p>
+          <button onClick={handleToggleApp} class={`clickable rounded-full h-3 aspect-square ${app() ? 'bg-accent' : 'bg-gray-700'}`} />
+        </div>
+      </div>
+
     </div>
   );
 }
+
+

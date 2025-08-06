@@ -21,7 +21,7 @@ export default function PomodoroSettings(props: Props) {
 
             <div class=" bg-background-light-3 rounded-xl px-8 py-12 w-max center flex-col">
 
-                <h1 class="text-2xl text-white text-center text-nowrap">Pomodoro Settings</h1>
+                <h1 class="text-2xl text-text text-center text-nowrap">Pomodoro Settings</h1>
 
                 <div class="flex flex-col gap-4 mb-4 h-min w-full items-center content-center">
 

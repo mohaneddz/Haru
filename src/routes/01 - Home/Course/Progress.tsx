@@ -6,7 +6,7 @@ import Concept from '@/components/01 - Home/Canvas/Concept';
 import CanvasControls from '@/components/01 - Home/Canvas/CanvasControls';
 import CanvasToolbar from '@/components/01 - Home/Canvas/CanvasToolbar';
 
-import { CanvasRenderer } from '@/utils/canvas/canvaDraw';
+import { CanvasRenderer } from '@/utils/home/canvas/canvaDraw';
 
 export default function Progress() {
   const canvas = useCanvas();
@@ -95,7 +95,7 @@ export default function Progress() {
 
   return (
     <div class="flex flex-col items-center justify-start h-full w-full overflow-hidden mt-8">
-      <div class="w-full h-full relative bg-slate-900">
+      <div class="w-full h-full relative bg-background brightness-75">
         <canvas
           ref={canvas.canvasRef}
           class="w-full h-full block"

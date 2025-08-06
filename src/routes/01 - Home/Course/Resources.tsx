@@ -51,22 +51,106 @@ export default function Resources() {
 
   // Document data with tags and fields
   const documentsData = [
-    { title: "Signal Processing Fundamentals", description: "Complete guide to signal processing basics", type: "Exercises" as const, icon: "FileText", img: doc1, tags: ["fundamentals", "course", "theory"], field: "Signal Processing" },
-    { title: "MATLAB Code Examples", description: "Collection of MATLAB scripts", type: "Exercises" as const, icon: "Code", img: doc2, tags: ["matlab", "programming", "practical"], field: "Software Development" },
-    { title: "Laboratory Manual", description: "Step-by-step lab exercises", type: "Book" as const, icon: "BookOpen", img: doc3, tags: ["lab", "exercise", "practical"], field: "Signal Processing" },
-    { title: "Reference Formulas", description: "Quick reference sheet for formulas", type: "Sheet" as const, icon: "Calculator", img: doc4, tags: ["reference", "theory", "supplement"], field: "Mathematics" },
-    { title: "Python Signal Processing", description: "Python implementation examples", type: "Exercises" as const, icon: "Code", img: doc1, tags: ["python", "programming", "practical"], field: "Software Development" },
-    { title: "Exam Preparation Guide", description: "Study guide with practice problems", type: "Notes" as const, icon: "GraduationCap", img: doc2, tags: ["exercise", "course", "theory"], field: "Signal Processing" },
-    { title: "Advanced Topics", description: "Deep dive into complex concepts", type: "Exercises" as const, icon: "FileText", img: doc3, tags: ["advanced", "theory", "supplement"], field: "Signal Processing" },
-    { title: "Problem Sets", description: "Comprehensive exercise collection", type: "Sheet" as const, icon: "Calculator", img: doc4, tags: ["exercise", "practical", "theory"], field: "Mathematics" },
-    { title: "Audio Signal Dataset", description: "Collection of audio files for processing", type: "Exercises" as const, icon: "Music", img: doc1, tags: ["audio", "practical", "supplement"], field: "Audio Processing" },
-    { title: "Biomedical Signals", description: "ECG, EEG, and EMG signals", type: "Exercises" as const, icon: "Activity", img: doc2, tags: ["biomedical", "practical", "supplement"], field: "Biomedical Engineering" },
-    { title: "Communication Signals", description: "Modulated signals and noise samples", type: "Exercises" as const, icon: "Radio", img: doc3, tags: ["communication", "practical", "supplement"], field: "Digital Communications" },
-    { title: "Image Processing Dataset", description: "Sample images for 2D processing", type: "Exercises" as const, icon: "Image", img: doc4, tags: ["image", "practical", "supplement"], field: "Image Processing" },
-    { title: "Radar Signal Data", description: "Synthetic aperture radar examples", type: "Exercises" as const, icon: "Radar", img: doc1, tags: ["radar", "practical", "supplement"], field: "Radar Systems" },
-    { title: "Sensor Network Data", description: "Multi-sensor array data", type: "Sheet" as const, icon: "Sensors", img: doc2, tags: ["sensors", "practical", "supplement"], field: "Signal Processing" },
-    { title: "Speech Processing Data", description: "Voice recognition datasets", type: "Exercises" as const, icon: "Mic", img: doc3, tags: ["speech", "practical", "supplement"], field: "Audio Processing" },
-    { title: "Wireless Communications", description: "Channel modeling datasets", type: "Sheet" as const, icon: "Wifi", img: doc4, tags: ["wireless", "communication", "supplement"], field: "Digital Communications" }
+    { 
+      title: "Classification (Part 1)", 
+      description: "Introduction to classification techniques", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc1, 
+      tags: ["classification", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Classification (part 1).pptx.pdf" 
+    },
+    { 
+      title: "Classification (Part 2)", 
+      description: "Advanced classification methods", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc2, 
+      tags: ["classification", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Classification (part 2).pdf" 
+    },
+    { 
+      title: "Clustering (Part 1)", 
+      description: "Basics of clustering algorithms", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc3, 
+      tags: ["clustering", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Clustering (part 1).pdf" 
+    },
+    { 
+      title: "Clustering (Part 2)", 
+      description: "Intermediate clustering techniques", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc4, 
+      tags: ["clustering", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Clustering (part 2).pptx.pdf" 
+    },
+    { 
+      title: "Clustering (Part 3)", 
+      description: "Advanced clustering methods", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc1, 
+      tags: ["clustering", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Clustering (part 3).pdf" 
+    },
+    { 
+      title: "Clustering (Part 4)", 
+      description: "Applications of clustering algorithms", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc2, 
+      tags: ["clustering", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Clustering (part 4).pdf" 
+    },
+    { 
+      title: "Data (Part 1)", 
+      description: "Understanding data preprocessing", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc3, 
+      tags: ["data", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Data - Part 1.pdf" 
+    },
+    { 
+      title: "Data (Part 2)", 
+      description: "Advanced data preprocessing techniques", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc4, 
+      tags: ["data", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Data - Part 2.pdf" 
+    },
+    { 
+      title: "Dimensionality Reduction (Part 1)", 
+      description: "Introduction to dimensionality reduction", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc1, 
+      tags: ["dimensionality reduction", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Dimensionality Reduction (part 1).pdf" 
+    },
+    { 
+      title: "Dimensionality Reduction (Part 2)", 
+      description: "Advanced dimensionality reduction techniques", 
+      type: "Notes", 
+      icon: "FileText", 
+      img: doc2, 
+      tags: ["dimensionality reduction", "machine learning", "AI"], 
+      field: "Machine Learning", 
+      href: "D:\\Programming\\Projects\\Tauri\\haru\\school\\AI\\machine learning\\Dimensionality Reduction (part 2).pdf" 
+    }
   ];
 
   // Video data with tags and fields
@@ -159,7 +243,7 @@ export default function Resources() {
               description={doc.description}
               type={doc.type}
               icon={doc.icon}
-              img={doc.img}
+              href={doc.href}
               tags={doc.tags}
             />
           ))}

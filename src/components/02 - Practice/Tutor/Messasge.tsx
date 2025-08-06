@@ -33,7 +33,7 @@ export default function Message(props: MessageProps) {
         <div
           class={`p-4 max-w-full prose whitespace-pre-wrap hyphens-auto rounded-lg text-lg break-words ${
             props.user
-              ? 'bg-gray-800 text-white'
+              ? 'bg-gray-800 text-text'
               : 'border-1 border-gray-600 bg-gray-900 text-text/90'
           }`}
         >
@@ -65,7 +65,7 @@ export default function Message(props: MessageProps) {
                   </span>
 
                   {/* Tooltip that appears on hover */}
-                  <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 shadow-lg w-64">
+                  <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-text text-xs rounded p-2 shadow-lg w-64">
                     <p class="font-bold truncate" title={source.title || source.path}>
                       {source.title || source.path}
                     </p>

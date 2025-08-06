@@ -42,10 +42,6 @@ export default function UpperNavigation(props: Props) {
             setInternalActiveTab(defaultIsValid ? props.defaultActiveTab : tabs[0]);
         }
     });
-    
-    createEffect(() => {
-        const active = currentTab();
-    });
 
     const handleTabClick = (tab: string) => {
         if (!isControlled()) {
@@ -63,7 +59,7 @@ export default function UpperNavigation(props: Props) {
                 <For each={props.tabs || []}>
                     {(tab) => (
                         <li
-                            class={`upper cursor-pointer w-full text-center px-4 py-2 m-0 p text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-white' : 'hover:text-accent-dark-1'}`}
+                            class={`upper cursor-pointer w-full text-center px-4 py-2 m-0 p text-sm font-semibold ${currentTab() === tab ? 'bg-gradient-to-t from-accent/40 text-text' : 'hover:text-accent-dark-1'}`}
                             onClick={() => handleTabClick(tab)}
                         >
                             {tab}

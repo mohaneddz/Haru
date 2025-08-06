@@ -8,7 +8,7 @@ export default function Plugins() {
     <main class="flex flex-col items-center justify-center w-[90%] h-full">
 
       <div class="my-4 mx-auto mt-16 z-50 flex flex-col items-center gap-2">
-        <h1 class="text-2xl font-bold text-white">Plugins</h1>
+        <h1 class="text-2xl font-bold text-text">Plugins</h1>
         <p class="text-gray-400 text-center">Manage and configure your plugins here.</p>
       </div>
 

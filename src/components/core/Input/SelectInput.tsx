@@ -1,10 +1,10 @@
 import { For } from "solid-js";
 
 interface Props {
-    options?: Array<{ value: string; label: string }>;
+    options?: Array<{ value: string | number; label: string }>;
     class?: string;
-    selected?: string;
-    onChange?: (value: string) => void;
+    selected?: string | number;
+    onChange?: (value: string | number) => void;
     id?: string;
     background?: string;
 }

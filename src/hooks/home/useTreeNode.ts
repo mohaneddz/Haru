@@ -1,6 +1,6 @@
 import { useFiles } from '@/hooks/home/useFiles';
 import { createSignal, onCleanup, createEffect } from 'solid-js';
-import { moveApi } from '@/utils/filesManip';
+import { moveApi } from '@/utils/home/files/filesManip';
 
 export const useTreeNode = (props: TreeNodeProps) => {
 	const { restoreFiles, dir, setLastTouched } = useFiles();

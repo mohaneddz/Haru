@@ -2,8 +2,8 @@ import { createSignal } from 'solid-js';
 import { ChevronDown } from 'lucide-solid';
 
 interface SyllabusCardProps {
-  type: 'outer' | 'inner';
   title?: string;
+  type: 'outer' | 'inner';
   children?: any;
   defaultOpen?: boolean;
 }
@@ -20,7 +20,7 @@ export default function SyllabusCard(props: SyllabusCardProps) {
           onClick={() => setIsOpen(!isOpen())}
           class="w-full px-4 py-3 text-left rounded-t-lg flex items-center justify-between focus:outline-none hover:bg-black/10 transition-colors duration-200"
         >
-          <span class="font-medium text-white">{title()}</span>
+          <span class="font-medium text-text">{title()}</span>
           <ChevronDown
             class={`w-5 h-5 text-gray-500 transform transition-transform duration-300 ${
               isOpen() ? 'rotate-180' : ''

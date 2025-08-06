@@ -77,8 +77,8 @@ export default function FlashCardsDashboard() {
             <input type="text" placeholder="Deck Title" class="p-2 border border-gray-500 rounded-md" />
             <textarea placeholder="Deck Description" class="p-2 border border-gray-500 rounded-md h-24"></textarea>
             <div class="center">
-              <button class="bg-accent text-white px-4 py-2 rounded-md" onClick={() => addDeck()}>Add Deck</button>
-              <button class="bg-gray-500 text-white px-4 py-2 rounded-md ml-2" onClick={() => setShowAddModal(false)}>Cancel</button>
+              <button class="bg-accent text-text px-4 py-2 rounded-md" onClick={() => addDeck()}>Add Deck</button>
+              <button class="bg-gray-500 text-text px-4 py-2 rounded-md ml-2" onClick={() => setShowAddModal(false)}>Cancel</button>
             </div>
           </div>
         </Modal>
@@ -88,8 +88,8 @@ export default function FlashCardsDashboard() {
             <h2 class="text-2xl font-bold text-red-500 text-center">Delete Deck</h2>
             <p class="text-gray-400 text-center text-wrap">Are you sure you want to delete this deck? This action cannot be undone.</p>
             <div class="center space-x-4 w-full">
-              <button class="bg-red-500 text-white px-4 py-2 rounded-md center" onClick={() => deleteDeck()}>Delete</button>
-              <button class="bg-gray-500 text-white px-4 py-2 rounded-md center" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button class="bg-red-500 text-text px-4 py-2 rounded-md center" onClick={() => deleteDeck()}>Delete</button>
+              <button class="bg-gray-500 text-text px-4 py-2 rounded-md center" onClick={() => setShowDeleteModal(false)}>Cancel</button>
             </div>
           </div>
         </Modal>
@@ -117,7 +117,7 @@ export default function FlashCardsDashboard() {
 
         <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-12 bg-accent-dark-2 rounded-full p-2
                           hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowAddModal.bind(null, true)}>
-          <Pen class="w-6 h-6 text-white " />
+          <Pen class="w-6 h-6 text-text " />
         </div>
 
       </div>

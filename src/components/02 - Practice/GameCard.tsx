@@ -35,9 +35,9 @@ export default function GameCard(props: Props) {
         <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1">
           <div class="flex items-center gap-2">
             {IconComponent && (
-              <IconComponent class="text-accent w-5 h-5 group-hover:text-white transition-colors duration-200" />
+              <IconComponent class="text-accent w-5 h-5 group-hover:text-text transition-colors duration-200" />
             )}
-            <span class="text-accent text-sm font-semibold group-hover:text-white transition-colors duration-200">
+            <span class="text-accent text-sm font-semibold group-hover:text-text transition-colors duration-200">
               {props.title}
             </span>
           </div>

@@ -87,7 +87,7 @@ export default function Time() {
         <div class="p-4 center flex-col w-[20vw]">
           <h2 class="text-lg font-semibold mb-4">Confirm Delete</h2>
           <p class="mb-4">Are you sure you want to delete all events?</p>
-          <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer" onClick={async () => {
+          <button class="bg-red-600 text-text px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer" onClick={async () => {
             await emptyDb();
             setShowDeleteModal(false);
             fetchEvents();
@@ -116,12 +116,12 @@ export default function Time() {
 
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-12 bg-accent-dark-2 rounded-full p-2
                         hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowDeleteModal.bind(null, true)}>
-        <Trash class="w-6 h-6 text-white " />
+        <Trash class="w-6 h-6 text-text " />
       </div>
 
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
                               hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={refreshEvents}>
-        <Pen class="w-6 h-6 text-white " />
+        <Pen class="w-6 h-6 text-text " />
       </div>
 
     </main>

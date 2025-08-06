@@ -40,14 +40,8 @@ const CalculatorButton: Component<CalculatorButtonProps> = (props) => {
 
   return (
     <button
-      class={`
-        h-full max-h-20 py-2 rounded-lg border transition-all duration-150 
-        hover:scale-105 active:scale-95 font-medium
-        flex items-center justify-center text-sm
-        ${getVariantClasses()} ${getSizeClasses()} ${props.class || ''}
-      `}
-      onClick={props.onClick}
-    >
+      class={`h-full max-h-20 py-2 rounded-lg border transition-all duration-150 hover:scale-105 active:scale-95 font-medium flex items-center justify-center text-sm ${getVariantClasses()} ${getSizeClasses()} ${props.class || ''}`}
+      onClick={props.onClick}>
       {props.children}
     </button>
   );

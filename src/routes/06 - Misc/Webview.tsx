@@ -27,7 +27,7 @@ export default function Webview() {
             <div class="bg-gray-800 border-b border-gray-700 p-4 flex items-center gap-4 pt-8 z-30">
                 <button 
                     onClick={() => window.history.back()} 
-                    class="text-white hover:text-gray-300 transition-colors"
+                    class="text-text hover:text-gray-300 transition-colors"
                 >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -44,7 +44,7 @@ export default function Webview() {
                     <div class="absolute inset-0 bg-gray-900 flex items-center justify-center z-10">
                         <div class="text-center">
                             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-                            <p class="text-white">Loading website...</p>
+                            <p class="text-text">Loading website...</p>
                         </div>
                     </div>
                 )}

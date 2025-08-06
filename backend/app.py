@@ -5,11 +5,10 @@ import threading
 from pathlib import Path
 import time
 import asyncio
-from constants import LLAMA_SERVER_URL
+from constants import LLAMA_SERVER_URL, store_path
 from classes import client
 from llm import create_llm_payload, stream_unified_response, handle_non_streaming_llm_response, voice_create_llm_payload, voice_stream_unified_response
 import sys
-
 # --- New Imports for Voice Functionality ---
 
 import subprocess
@@ -248,9 +247,11 @@ def voice_chat_endpoint():
     if action == "on":
         client.run()
     elif action == "off":
-        client.stop()
+        client.cleanup()
     else:
         return jsonify({"error": "Invalid 'action' parameter"}), 400
+
+    return jsonify({"message": f"Voice client action '{action}' executed successfully."}), 200
 
 @app.route('/voice', methods=['POST'])
 def voice_endpoint():
@@ -373,9 +374,19 @@ def persist_index_endpoint():
     rag_system.persist_index()
     return jsonify({"message": "Index has been persisted to disk."}), 200
 
+@app.route("/store")
+def read_store():
+    try:
+        with open(store_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 # ======================================================================================
 # --- APPLICATION STARTUP ---
 # ======================================================================================
+
 
 def warmup_llm_server():
     """Sends a dummy request to the LLM server to trigger model loading."""

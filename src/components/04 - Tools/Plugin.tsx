@@ -19,7 +19,7 @@ export default function Plugin(props: Props) {
   return (
     <div class="flex items-center gap-4 p-6 rounded-lg border transition-all duration-200" 
          classList={{
-           "border-gray-600 text-white": enabled(),
+           "border-gray-600 text-text": enabled(),
            "bg-sidebar-light-1/40 border-gray-300 text-gray-500": !enabled(),
            "opacity-50": !enabled()
          }}>
@@ -41,7 +41,7 @@ export default function Plugin(props: Props) {
       <div class="flex-1">
         <h3 class="text-lg font-semibold transition-colors" 
             classList={{
-              "text-white": enabled(),
+              "text-text": enabled(),
               "text-gray-600": !enabled()
             }}>
           {props.title}

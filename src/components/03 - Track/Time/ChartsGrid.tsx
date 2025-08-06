@@ -49,7 +49,7 @@ export default function ChartsGrid(props: Props) {
             {/* Daily Time Distribution */}
             <LayoutCard hoverable={false} border class="bg-sidebar h-full">
                 <div class="h-full aspect-square w-full p-6">
-                    <Show when={dailyData()} fallback={<div class="text-white">Loading Chart...</div>}>
+                    <Show when={dailyData()} fallback={<div class="text-text">Loading Chart...</div>}>
                         <PlotlyChart data={dailyData()} layout={dailyLayout} class="h-full" />
                     </Show>
                 </div>
@@ -59,7 +59,7 @@ export default function ChartsGrid(props: Props) {
             <LayoutCard hoverable={false} border class="bg-sidebar h-full">
                 <div class="h-full aspect-square w-full p-6">
                     {/* This Show/PlotlyChart will now update correctly */}
-                    <Show when={productivityData()} fallback={<div class="text-white">Loading Chart...</div>}>
+                    <Show when={productivityData()} fallback={<div class="text-text">Loading Chart...</div>}>
                         <PlotlyChart data={productivityData()} layout={productivityLayout} class="h-full" />
                     </Show>
                 </div>
@@ -68,7 +68,7 @@ export default function ChartsGrid(props: Props) {
             {/* Category Breakdown */}
             <LayoutCard hoverable={false} border class="bg-sidebar h-full">
                 <div class="h-full aspect-square w-full p-6">
-                    <Show when={categoryData() && categoryData().length > 0 && categoryData()[0] && (categoryData()[0] as any).values?.length > 0} fallback={<div class="text-white">Loading Chart...</div>}>
+                    <Show when={categoryData() && categoryData().length > 0 && categoryData()[0] && (categoryData()[0] as any).values?.length > 0} fallback={<div class="text-text">Loading Chart...</div>}>
                         <PlotlyChart
                             data={categoryData()}
                             layout={categoryLayout}
@@ -81,7 +81,7 @@ export default function ChartsGrid(props: Props) {
             {/* Weekly Trend */}
             <LayoutCard hoverable={false} border class="bg-sidebar h-full">
                 <div class="h-full aspect-square w-full p-6">
-                    <Show when={weeklyTrendData()} fallback={<div class="text-white">Loading Chart...</div>}>
+                    <Show when={weeklyTrendData()} fallback={<div class="text-text">Loading Chart...</div>}>
                         <PlotlyChart data={weeklyTrendData()} layout={weeklyLayout} class="h-full" />
                     </Show>
                 </div>

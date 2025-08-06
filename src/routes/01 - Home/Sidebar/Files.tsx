@@ -37,7 +37,7 @@ export default function Files(props: Props) {
 
     return (
         <div
-            class={`z-50 relative transition-[width] duration-75 ease-out h-full flex flex-col bg-cyan-dark-2 border-r border-border text-white overflow-x-clip ${props?.class || ""}`}
+            class={`z-50 relative transition-[width] duration-75 ease-out h-full flex flex-col bg-cyan-dark-2 border-r border-border text-text overflow-x-clip ${props?.class || ""}`}
             style={{ width: `${size()}px` }}
             id="sidebar"
             onContextMenu={e => handleContextMenu(e)}
@@ -97,7 +97,7 @@ export default function Files(props: Props) {
             </ul>
 
 
-            <div onClick={loadFiles} class="absolute bottom-4 w-full text-white px-4 py-2 cursor-pointer text-center border-t-1 bg-background hover:brightness-120 border-border-light-1 select-none">
+            <div onClick={loadFiles} class="absolute bottom-4 w-full text-text px-4 py-2 cursor-pointer text-center border-t-1 bg-background hover:brightness-120 border-border-light-1 select-none">
                 Select Folder
             </div>
 

@@ -1,6 +1,6 @@
 import CodeMirrorEditor from "@/components/01 - Home/Notes/NoteEditor";
 import { Accessor } from "solid-js/types/reactive/signal.js";
-import { saveApi } from "@/utils/filesManip";
+import { saveApi } from "@/utils/home/files/filesManip";
 import { createSignal } from "solid-js";
 import Checkbox from "@/components/core/Input/Checkbox";
 

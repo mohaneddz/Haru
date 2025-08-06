@@ -11,7 +11,7 @@ export default function Insights() {
 
       <div class="flex flex-col w-full h-max gap-4 p-4 max-w-[90%] mx-auto overflow-y-scroll">
 
-        <LayoutCard border hoverable={false} class="w-full bg-sidebar-light-1 flex items-center justify-between px-6 rounded-lg text-xl font-semibold text-white ">
+        <LayoutCard border hoverable={false} class="w-full bg-sidebar-light-1 flex items-center justify-between px-6 rounded-lg text-xl font-semibold text-text ">
           <span>Brain Training Progress</span>
           <span class="text-sm font-normal text-gray-400">Visualize how your brain is learning</span>
         </LayoutCard>
@@ -19,7 +19,7 @@ export default function Insights() {
 
         <BrainCanvas class="h-full " />
 
-        <LayoutCard border hoverable={false} class="w-full bg-sidebar-light-1 flex items-center justify-between px-6 rounded-lg text-xl font-semibold text-white">
+        <LayoutCard border hoverable={false} class="w-full bg-sidebar-light-1 flex items-center justify-between px-6 rounded-lg text-xl font-semibold text-text">
           <span>Advanced Analytics</span>
           <span class="text-sm font-normal text-gray-400">Deep insights into your learning patterns</span>
         </LayoutCard>

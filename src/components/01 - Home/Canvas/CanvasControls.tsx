@@ -15,7 +15,7 @@ export default function CanvasControls(props: CanvasControlsProps) {
 
 
   return (
-    <div class="absolute top-8 left-4 bg-black bg-opacity-50 text-white p-3 rounded-lg text-sm z-10" id='canvas-controls'>
+    <div class="absolute top-8 left-4 bg-black bg-opacity-50 text-text p-3 rounded-lg text-sm z-10" id='canvas-controls'>
       <div class="font-semibold mb-2">Canvas Controls:</div>
       <div>• Left click + drag: Pan canvas or Drag nodes</div>
       <div>• Mouse wheel: Zoom in/out</div>

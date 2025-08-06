@@ -31,6 +31,24 @@
 - Built-in dashboards.
 - All features tracked for improvement insights.
 
+## 🎨 Appearance Settings
+- Theme selection (Light, Dark, System).
+- Font size customization.
+- Accent color selection.
+- Layout style adjustments.
+
+## 📂 Paths Settings
+- Configure paths for various features:
+  - Default Notes Location
+  - Quick Notes Location
+  - Multiple RAG Entries
+  - Default Modules Folder
+  - Default Folder Creation Template
+
+## ⚙️ Advanced Features
+- Configurable via the Advanced Settings page.
+- Includes Local AI Tools, Data & Analytics, Intelligence Games, and Course Manager.
+
 ## Future Ideas
 - Plugin system for community modules.
 

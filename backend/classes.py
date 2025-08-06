@@ -38,7 +38,6 @@ import threading
 import os
 import torch
 import soundfile as sf
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 from kokoro import KPipeline
 from llm import strip_markdown_and_emojis
 import threading
@@ -643,7 +642,7 @@ class VoiceClient:
         self.is_recording = False
         self.is_playing = False
         self.is_thinking = False
-        self.running = True
+        self.running = False  # Set to False initially
         self.transcription = ""
         self.response = ""
         
@@ -651,15 +650,9 @@ class VoiceClient:
         self.stt_model, self.stt_processor = self._load_stt_model()
         self.tts_pipeline, self.voice_tensor = self._load_tts_model()
 
-        # --- Audio System Initialization ---
-        self.p = pyaudio.PyAudio()
-        pygame.mixer.init(frequency=24000, size=-16, channels=1, buffer=512)
-        
-        self.stream = self.p.open(
-            format=self.FORMAT, channels=self.CHANNELS, rate=self.RATE,
-            input=True, frames_per_buffer=self.CHUNK, stream_callback=self.audio_callback
-        )
-        self.stream.start_stream()
+        # Audio system components will be initialized in `run()`
+        self.p = None
+        self.stream = None
 
     def _load_stt_model(self):
         """Loads the Whisper STT model and processor without forcing redownload."""
@@ -843,22 +836,37 @@ class VoiceClient:
                 print(f"Could not delete temp file {file_path}: {e}")
 
     def cleanup(self):
+        """Stops the audio system and cleans up resources."""
         print("🛑 Shutting down...")
         self.running = False
-        if self.stream.is_active():
+        if self.stream and self.stream.is_active():
             self.stream.stop_stream()
-        self.stream.close()
-        self.p.terminate()
+        if self.stream:
+            self.stream.close()
+        if self.p:
+            self.p.terminate()
         pygame.mixer.quit()
         print("✅ Cleanup complete")
 
     def run(self):
+        """Starts the voice client and initializes the audio system."""
         print("\n🎤 Voice Client Ready!")
         print("   - Speak and pause for 2 seconds to send a message.")
         print("   - Type a message and press Enter to send it as text.")
         print("   - Type 'quit' to exit.\n")
         print("🎤 Listening...")
+
+        # Initialize audio system
+        self.p = pyaudio.PyAudio()
+        pygame.mixer.init(frequency=24000, size=-16, channels=1, buffer=512)
         
+        self.stream = self.p.open(
+            format=self.FORMAT, channels=self.CHANNELS, rate=self.RATE,
+            input=True, frames_per_buffer=self.CHUNK, stream_callback=self.audio_callback
+        )
+        self.stream.start_stream()
+
+        self.running = True  
         try:
             while self.running:
                 user_input = input()
@@ -874,11 +882,6 @@ class VoiceClient:
             pass
         finally:
             self.cleanup()
-
-    def stop(self):
-        """Stops the voice client gracefully."""
-        self.running = False
-        self.cleanup()
 
 def start_watcher(rag_system: RAGSystem):
     """Initializes and starts the file system observer."""

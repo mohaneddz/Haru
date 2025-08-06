@@ -3776,7 +3776,9 @@
     background-color: var(--color-surface-low);
     width: auto;
     height: var(--lg-button-size);
-    display: flex;
+    display: none !important;
+    opacity: 0;
+    z-index: 0;
     align-items: center;
     gap: .5rem;
     line-height: 0;
@@ -3824,11 +3826,11 @@
 
 .excalidraw .sidebar-trigger__label-element {
     align-self: flex-start;
-    display: hidden;
+    display: none;
 }
 
 .excalidraw .default-sidebar-trigger .sidebar-trigger__label {
-    display: block;
+    display: none;
     white-space: nowrap
 }
 
@@ -3850,7 +3852,7 @@
     background-color: var(--sidebar-bg-color);
     box-shadow: var(--sidebar-shadow);
     pointer-events: var(--ui-pointerEvents);
-    overflow: hidden;
+    overflow: none;
     border-radius: 0;
     width: calc(var(--right-sidebar-width) - var(--space-factor) * 2);
     border-left: 1px solid var(--sidebar-border-color)
@@ -5814,7 +5816,7 @@
 }
 
 .excalidraw .layer-ui__wrapper__top-right {
-    display: flex;
+    display: none;
     width: 100%;
     justify-content: flex-end;
     gap: .75rem;
@@ -5822,6 +5824,7 @@
 }
 
 .excalidraw .layer-ui__wrapper__top-right>* {
+    display: none;
     pointer-events: var(--ui-pointerEvents)
 }
 
@@ -7358,7 +7361,8 @@ body.excalidraw-cursor-resize * {
 }
 
 .excalidraw .mobile-misc-tools-container .default-sidebar-trigger {
-    border: 0
+    border: 0;
+    display: none;
 }
 
 .excalidraw .App-toolbar--mobile {

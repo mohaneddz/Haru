@@ -2,9 +2,36 @@ import asyncio
 import os
 import tiktoken
 import logging
+import json
 
 LLAMA_SERVER_URL = "http://localhost:8080/completion"
 CRAWL_SEMAPHORE = asyncio.Semaphore(16)
+
+APPDATA = os.getenv("APPDATA")  
+store_path = os.path.join(APPDATA, "com.haru.app", "store.json")
+
+# get values from reading the json of the store :
+def get_store_value(key, default=None):
+    """Retrieve a value from the store JSON file."""
+    try:
+        with open(store_path, 'r') as f:
+            store = json.load(f)
+        return store.get(key, default)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return default
+    
+MODEL_NAME = get_store_value("MODEL_NAME", "gpt-3.5-turbo")
+EMBEDDING_MODEL_NAME = get_store_value("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
+PERSIST_DIRECTORY = get_store_value("PERSIST_DIRECTORY", "chroma_db")
+COLLECTION_NAME = get_store_value("COLLECTION_NAME", "local_docs")
+RAG_DIRECTORIES = get_store_value("RAG_DIRECTORIES", ["documents"])
+SUPPORTED_EXTS = get_store_value("SUPPORTED_EXTS", [".md", ".txt", ".pdf", ".docx", ".doc", ".csv"])
+CHUNK_SIZE = get_store_value("CHUNK_SIZE", 1000)
+EMBEDDING_BATCH_SIZE = get_store_value("EMBEDDING_BATCH_SIZE", 32)
+RETRIEVAL_TOP_K = get_store_value("RETRIEVAL_TOP_K", 10)
+WATCHER_DEBOUNCE_SECONDS = get_store_value("WATCHER_DEBOUNCE_SECONDS", 2.0)
+VOICE_MODEL_NAME = get_store_value("VOICE_MODEL_NAME", "gpt-3.5-turbo")
+
 
 # NEW: Token budget configuration
 MAX_CONTEXT_TOKENS = 3500  # Leave room for system prompt and response

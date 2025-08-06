@@ -68,6 +68,9 @@ importers:
       '@tauri-apps/plugin-sql':
         specifier: ~2
         version: 2.2.0
+      '@tauri-apps/plugin-store':
+        specifier: ~2
+        version: 2.3.0
       '@tauri-apps/plugin-stronghold':
         specifier: ~2.3.0
         version: 2.3.0
@@ -98,6 +101,9 @@ importers:
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1
+      i18n-iso-countries:
+        specifier: ^7.14.0
+        version: 7.14.0
       katex:
         specifier: ^0.16.22
         version: 0.16.22
@@ -1254,6 +1260,9 @@ packages:
   '@tauri-apps/plugin-sql@2.2.0':
     resolution: {integrity: sha512-yGdybpaMENe/p6lTXslvDHYNNvD9qB7palaBBF5fJHdYSkwd3vrLiYU9dFfLwUAwnsBylND55EiivWsjhazejA==}
 
+  '@tauri-apps/plugin-store@2.3.0':
+    resolution: {integrity: sha512-mre8er0nXPhyEWQzWCpUd+UnEoBQYcoA5JYlwpwOV9wcxKqlXTGfminpKsE37ic8NUb2BIZqf0QQ9/U3ib2+/A==}
+
   '@tauri-apps/plugin-stronghold@2.3.0':
     resolution: {integrity: sha512-RU3p6OQqEs1B0D67HAm6SFtIlOv8Pmjocm32Oz6dywmfsjCY74/P2bUAv7SGqVSzBLwz8ODaavCGeS2s6yXqcg==}
 
@@ -2277,6 +2286,9 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
+  diacritics@1.3.0:
+    resolution: {integrity: sha512-wlwEkqcsaxvPJML+rDh/2iS824jbREk6DUMUKkEaSlxdYHeS43cClJtsWglvw2RfeXGm6ohKDqsXteJ5sP5enA==}
+
   diff@5.2.0:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
@@ -3018,6 +3030,10 @@ packages:
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
+
+  i18n-iso-countries@7.14.0:
+    resolution: {integrity: sha512-nXHJZYtNrfsi1UQbyRqm3Gou431elgLjKl//CYlnBGt5aTWdRPH1PiS2T/p/n8Q8LnqYqzQJik3Q7mkwvLokeg==}
+    engines: {node: '>= 12'}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -6631,6 +6647,10 @@ snapshots:
     dependencies:
       '@tauri-apps/api': 2.5.0
 
+  '@tauri-apps/plugin-store@2.3.0':
+    dependencies:
+      '@tauri-apps/api': 2.7.0
+
   '@tauri-apps/plugin-stronghold@2.3.0':
     dependencies:
       '@tauri-apps/api': 2.7.0
@@ -7803,6 +7823,8 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
+  diacritics@1.3.0: {}
+
   diff@5.2.0: {}
 
   dir-glob@3.0.1:
@@ -8707,6 +8729,10 @@ snapshots:
   human-signals@1.1.1: {}
 
   human-signals@2.1.0: {}
+
+  i18n-iso-countries@7.14.0:
+    dependencies:
+      diacritics: 1.3.0
 
   iconv-lite@0.4.24:
     dependencies:

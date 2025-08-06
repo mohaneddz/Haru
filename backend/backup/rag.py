@@ -5,7 +5,7 @@ from pathlib import Path
 
 import requests
 from flask import Flask, jsonify, request
-from flask_cors import CORS # Added for Cross-Origin Resource Sharing
+from flask_cors import CORS
 
 from classes import Config, RAGSystem, start_watcher
 

@@ -3,6 +3,6 @@
 
 fn main() {
     dotenvy::dotenv().ok(); // Loads .env file
-    // Now you can use std::env::var("API_URL") etc.
+                            // Now you can use std::env::var("API_URL") etc.
     haru_lib::run()
 }

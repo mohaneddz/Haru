@@ -3,6 +3,60 @@
   "icon": "Fractal",
   "img": "icon.png",
   "description": "Study of systems that exhibit unpredictable yet deterministic behavior",
+  "overview": "Chaos theory explores how small changes in initial conditions can lead to vastly different outcomes in complex systems. It is applicable in various fields such as mathematics, physics, and engineering.",
+  "duration": "8 weeks",
+  "prerequisites": ["Basic Calculus", "Linear Algebra"],
+  "topics": [
+    { 
+      "Introduction to Chaos Theory": [
+        "Basic Concepts of Chaos Theory",
+        "Deterministic Systems",
+        "Sensitivity to Initial Conditions"
+      ]
+    },
+    { 
+      "Fractals and Self-Similarity": [
+        "Definition of Fractals",
+        "Properties of Fractals",
+        "Applications of Fractals"
+      ]
+    },
+    { 
+      "Bifurcation Theory": [
+        "Definition of Bifurcation",
+        "Types of Bifurcations",
+        "Applications in Dynamical Systems"
+      ]
+    },
+    { 
+      "Strange Attractors": [
+        "Definition of Strange Attractors",
+        "Examples of Strange Attractors",
+        "Applications in Physics"
+      ]
+    },
+    { 
+      "Lyapunov Exponents": [
+        "Definition of Lyapunov Exponents",
+        "Calculation Methods",
+        "Applications in Chaos Theory"
+      ]
+    },
+    { 
+      "Chaos in Dynamical Systems": [
+        "Definition of Dynamical Systems",
+        "Chaotic Behavior",
+        "Applications in Engineering"
+      ]
+    },
+    { 
+      "Applications of Chaos Theory": [
+        "Chaos Theory in Mathematics",
+        "Chaos Theory in Physics",
+        "Chaos Theory in Engineering"
+      ]
+    }
+  ],
   "tags": ["chaos-theory", "mathematics", "complex-systems", "course"],
   "field": "Mathematics",
   "difficulty": "Intermediate"

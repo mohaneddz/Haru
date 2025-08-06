@@ -1,0 +1,63 @@
+{
+  "title": "Machine Learning",
+  "icon": "Neural Network",
+  "img": "icon.png",
+  "description": "Study of algorithms and statistical models that enable computers to perform tasks without explicit instructions",
+  "overview": "Machine learning focuses on developing systems that can learn and adapt from data. It is widely used in fields such as artificial intelligence, data science, and robotics.",
+  "duration": "12 weeks",
+  "prerequisites": ["Basic Statistics", "Linear Algebra", "Programming Fundamentals"],
+  "topics": [
+    { 
+      "Introduction to Machine Learning": [
+        "Definition of Machine Learning",
+        "Types of Machine Learning",
+        "Applications of Machine Learning"
+      ]
+    },
+    { 
+      "Supervised Learning": [
+        "Definition of Supervised Learning",
+        "Regression Techniques",
+        "Classification Techniques"
+      ]
+    },
+    { 
+      "Unsupervised Learning": [
+        "Definition of Unsupervised Learning",
+        "Clustering Techniques",
+        "Dimensionality Reduction"
+      ]
+    },
+    { 
+      "Neural Networks": [
+        "Definition of Neural Networks",
+        "Training Neural Networks",
+        "Applications in AI"
+      ]
+    },
+    { 
+      "Support Vector Machines": [
+        "Definition of SVMs",
+        "Kernel Methods",
+        "Applications in Classification"
+      ]
+    },
+    { 
+      "Decision Trees and Random Forests": [
+        "Definition of Decision Trees",
+        "Random Forests",
+        "Applications in Prediction"
+      ]
+    },
+    { 
+      "Applications of Machine Learning": [
+        "ML in Data Science",
+        "ML in Robotics",
+        "ML in Artificial Intelligence"
+      ]
+    }
+  ],
+  "tags": ["machine-learning", "artificial-intelligence", "data-science", "course"],
+  "field": "Computer Science",
+  "difficulty": "Intermediate"
+}

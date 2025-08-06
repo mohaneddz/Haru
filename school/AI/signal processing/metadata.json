@@ -1,0 +1,63 @@
+{
+  "title": "Signal Processing",
+  "icon": "Waveform",
+  "img": "icon.png",
+  "description": "Study of techniques to analyze, modify, and synthesize signals",
+  "overview": "Signal processing involves the analysis and manipulation of signals to extract useful information, improve quality, or enable efficient transmission. It is widely used in fields such as telecommunications, audio engineering, and medical imaging.",
+  "duration": "10 weeks",
+  "prerequisites": ["Basic Calculus", "Linear Algebra", "Probability and Statistics"],
+  "topics": [
+    { 
+      "Introduction to Signal Processing": [
+        "Definition of Signal Processing",
+        "Types of Signals",
+        "Applications of Signal Processing"
+      ]
+    },
+    { 
+      "Time and Frequency Domain Analysis": [
+        "Time Domain Analysis",
+        "Frequency Domain Analysis",
+        "Applications in Engineering"
+      ]
+    },
+    { 
+      "Digital Filters": [
+        "Definition of Digital Filters",
+        "Types of Filters",
+        "Design of Filters"
+      ]
+    },
+    { 
+      "Fourier Transform": [
+        "Definition of Fourier Transform",
+        "Properties of Fourier Transform",
+        "Applications in Signal Processing"
+      ]
+    },
+    { 
+      "Sampling and Quantization": [
+        "Definition of Sampling",
+        "Quantization Techniques",
+        "Applications in Digital Systems"
+      ]
+    },
+    { 
+      "Noise Reduction Techniques": [
+        "Types of Noise",
+        "Noise Reduction Methods",
+        "Applications in Audio Processing"
+      ]
+    },
+    { 
+      "Applications in Audio and Image Processing": [
+        "Signal Processing in Audio",
+        "Signal Processing in Images",
+        "Applications in Telecommunications"
+      ]
+    }
+  ],
+  "tags": ["signal-processing", "engineering", "telecommunications", "course"],
+  "field": "Engineering",
+  "difficulty": "Intermediate"
+}

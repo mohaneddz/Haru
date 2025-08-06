@@ -21,7 +21,7 @@ export default function Statebar() {
 
   return (
 
-    <div class="relative bottom-0 w-full flex justify-between items-center px-6 opacity-75 text-white overflow-hidden z-50">
+    <div class="relative bottom-0 w-full flex justify-between items-center px-6 opacity-75 text-text overflow-hidden z-50">
 
       {/* left side */}
 

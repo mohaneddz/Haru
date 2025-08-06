@@ -1,10 +1,10 @@
 export const entries = [
+  { title: 'Tutor', icon: 'GraduationCap', section: 'home', slug: 'tutor' },
   { title: 'Library', icon: 'Library', section: 'home', slug: 'library' },
-  { title: 'Quicknotes', icon: 'StickyNote', section: 'home', slug: 'quicknotes' },
   { title: 'Notes', icon: 'FileText', section: 'home', slug: 'notes' },
+  { title: 'Quicknotes', icon: 'StickyNote', section: 'home', slug: 'quicknotes' },
   { title: 'Dictionary', icon: 'Book', section: 'home', slug: 'dictionary' },
 
-  { title: 'Tutor', icon: 'GraduationCap', section: 'practice', slug: 'tutor' },
   { title: 'Flashcards', icon: 'WalletCards', section: 'practice', slug: 'flashcards' },
   { title: 'Training', icon: 'Swords', section: 'practice', slug: 'training' },
   { title: 'Games', icon: 'Gamepad2', section: 'practice', slug: 'games' },

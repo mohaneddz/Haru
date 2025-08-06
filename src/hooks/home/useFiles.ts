@@ -2,7 +2,7 @@ import { onMount } from 'solid-js';
 import { createSignal } from 'solid-js';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { createFileApi, createFolderApi, renameApi, deleteApi, saveApi } from '@/utils/filesManip';
+import { createFileApi, createFolderApi, renameApi, deleteApi, saveApi } from '@/utils/home/files/filesManip';
 
 export function useFiles() {
 	const [size, setSize] = createSignal(240);

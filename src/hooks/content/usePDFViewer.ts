@@ -1,6 +1,7 @@
 import { createSignal, createEffect, onCleanup } from 'solid-js';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { invoke } from '@tauri-apps/api/core';
 
 interface UsePDFViewerReturn {
   loading: () => boolean;
@@ -25,7 +26,8 @@ interface UsePDFViewerReturn {
   toggleFullscreen: () => void;
 }
 
-export function usePDFViewer(getContainer: () => HTMLDivElement): UsePDFViewerReturn {
+export function usePDFViewer(getContainer: () => HTMLDivElement, path: string): UsePDFViewerReturn {
+  
   const [loading, setLoading] = createSignal(true);
   const [numPages, setNumPages] = createSignal(0);
   const [currentPage, setCurrentPage] = createSignal(1);
@@ -322,14 +324,16 @@ export function usePDFViewer(getContainer: () => HTMLDivElement): UsePDFViewerRe
     setIsFullscreen(prev => !prev);
   };
 
-  // Load PDF when component mounts
+  // Load PDF when path changes
   createEffect(() => {
     const loadPDF = async () => {
+      if (!path) return;
+      
       try {
         setLoading(true);
-        // Use the PDF from the public folder
-        const pdfUrl = '/pdf/example.pdf';
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        // Use Tauri command to read PDF file
+        const pdfData = await invoke<string>('read_pdf', { path });
+        const loadingTask = pdfjsLib.getDocument(pdfData);
         pdfDocument = await loadingTask.promise;
         setNumPages(pdfDocument.numPages);
         setLoading(false);
@@ -338,7 +342,7 @@ export function usePDFViewer(getContainer: () => HTMLDivElement): UsePDFViewerRe
         setLoading(false);
       }
     };
-    
+
     loadPDF();
   });
 

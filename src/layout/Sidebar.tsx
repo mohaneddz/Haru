@@ -12,30 +12,30 @@ export default function Sidebar() {
     return (
         <>
             {isOpen() ? (
-                <div class='relative h-full min-w-max w-64 bg-sidebar text-white flex flex-col items-center justify-center '>
+                <div class='relative h-full min-w-max w-64 bg-sidebar text-text flex flex-col items-center justify-center '>
 
                     <TopSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
-                    <img src={Seperator} class='w-[80%] mb-8' />
+                    <div class='h-0.5 bg-primary w-[80%] mb-8' />
 
                     <MiddleSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
-                    <img src={Seperator} class='w-[80%] mt-8' />
+                    <div class='h-0.5 bg-primary w-[80%] mt-8' />
 
                     <BottomSection isOpen={isOpen()} setIsOpen={setIsOpen} />
                     
                 </div>
             ) : (
-                <div class='relative h-full min-w-max w-24 bg-sidebar text-white flex flex-col items-center justify-start '>
+                <div class='relative h-full min-w-max w-24 bg-sidebar text-text flex flex-col items-center justify-start '>
 
                     <TopSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
 
-                    <img src={Seperator} class='w-12 h-0.5 mb-8' />
+                    <div class='h-0.5 bg-primary w-12 mb-8' />
 
                     <MiddleSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
-                    <img src={Seperator} class='w-12 h-0.5 ' />
+                    <div class='h-0.5 bg-primary w-12 ' />
 
                     <BottomSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
@@ -44,7 +44,7 @@ export default function Sidebar() {
             }
             {/*
                 <div class='absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 p-4'>
-                    <span class='text-xs text-white'>Powered by</span>
+                    <span class='text-xs text-text'>Powered by</span>
                     <img src={logo} alt="Logo" class="w-8 h-8" />
                 </div>
             */

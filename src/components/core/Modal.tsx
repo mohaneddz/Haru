@@ -27,7 +27,7 @@ export default function Modal(props: Props) {
       <div ref={modalRef} class="relative bg-sidebar rounded-lg p-4 shadow-lg border border-gray-600 z-101">
         <button
           onClick={props.onClose}
-          class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors"
+          class="absolute top-2 right-2 text-gray-400 hover:text-text transition-colors"
         >
           <X size={18} />
         </button>

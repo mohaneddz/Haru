@@ -1,5 +1,13 @@
 import { createSignal } from 'solid-js';
-import { store } from '@/config/stronghold';
+import { setStoreValue, getStoreValue } from '@/config/store';
+
+// Define an interface for the settings object
+interface PomodoroSettings {
+	pomodoroTimeSeconds: number;
+	shortBreakTimeSeconds: number;
+	longBreakTimeSeconds: number;
+	audioEnabled: boolean;
+}
 
 // Global state for the Pomodoro timer
 const [pomodoroTime, setPomodoroTime] = createSignal(25 * 60);
@@ -106,32 +114,30 @@ export default function usePomodoro() {
 		resetTimer();
 	};
 
-const handlePlay = () => {
-	if (isActive()) {
-		// Pause the timer
-		setIsActive(false);
-		if (intervalId()) {
-			clearInterval(intervalId()!);
-			setIntervalId(null);
+	const handlePlay = () => {
+		if (isActive()) {
+			// Pause the timer
+			setIsActive(false);
+			if (intervalId()) {
+				clearInterval(intervalId()!);
+				setIntervalId(null);
+			}
+		} else {
+			// Start the timer
+			setIsActive(true);
+			setIntervalId(
+				setInterval(() => {
+					setTimeLeft((prev) => {
+						if (prev <= 1) {
+							// Timer finished
+							return handleTimerComplete();
+						}
+						return prev - 1;
+					});
+				}, 1000)
+			);
 		}
-	} else {
-		// Start the timer
-		setIsActive(true);
-		setIntervalId(
-			setInterval(() => {
-				setTimeLeft((prev) => {
-					if (prev <= 1) {
-						// Timer finished
-						// Instead of clearing the interval, just update the phase and time
-						// and let the interval keep running
-						return handleTimerComplete();
-					}
-					return prev - 1;
-				});
-			}, 1000)
-		);
-	}
-};
+	};
 
 	const handleSkip = () => {
 		if (isActive()) {
@@ -152,15 +158,14 @@ const handlePlay = () => {
 	};
 
 	async function saveSettings() {
-		const settings = {
+		const settings: PomodoroSettings = {
 			pomodoroTimeSeconds: pomodoroTime(),
 			shortBreakTimeSeconds: shortBreakTime(),
 			longBreakTimeSeconds: longBreakTime(),
 			audioEnabled: audioEnabled(),
 		};
 		try {
-			const data = Array.from(new TextEncoder().encode(JSON.stringify(settings)));
-			await store.insert('pomodoro-settings', data);
+			await setStoreValue('pomodoro-settings', settings);
 			console.log('Settings saved:', settings);
 		} catch (error) {
 			console.error('Failed to save settings:', error);
@@ -169,12 +174,13 @@ const handlePlay = () => {
 
 	async function getSettings() {
 		try {
-			const data = await store.get('pomodoro-settings');
-			if (data) {
-				const settings = JSON.parse(new TextDecoder().decode(new Uint8Array(data)));
+			// Use the <PomodoroSettings> generic to type the return value
+			const settings = await getStoreValue<PomodoroSettings>('pomodoro-settings');
 
+			if (settings) {
 				console.log('Settings loaded:', settings);
 
+				// No more errors here!
 				setPomodoroTime(settings.pomodoroTimeSeconds);
 				setShortBreakTime(settings.shortBreakTimeSeconds);
 				setLongBreakTime(settings.longBreakTimeSeconds);
@@ -234,4 +240,4 @@ const handlePlay = () => {
 		setNumberOfRounds,
 		pomodorosCompleted,
 	};
-}
+};

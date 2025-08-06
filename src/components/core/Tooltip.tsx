@@ -82,7 +82,7 @@ export default function Tooltip(props: Props) {
   });
 
   const getTooltipClasses = () => {
-    const baseClasses = "fixed z-50 px-4 py-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg border border-gray-700 max-w-xs pointer-events-none transition-opacity duration-200";
+    const baseClasses = "fixed z-50 px-4 py-3 bg-gray-800 text-text text-sm rounded-lg shadow-lg border border-gray-700 max-w-xs pointer-events-none transition-opacity duration-200";
     
     if (!props.position) {
       return `${baseClasses} transform -translate-x-2 -translate-y-full`;

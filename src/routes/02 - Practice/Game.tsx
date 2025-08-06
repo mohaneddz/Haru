@@ -1,7 +1,7 @@
 import { useLocation } from '@solidjs/router';
 import { createMemo, createResource } from 'solid-js';
 import overlay from '@/assets/overlay.png';
-import { loadCourseData as loadGameData, CourseInfo as GameInfo } from '@/utils/courses/loadCourse';
+import { loadCourseData as loadGameData, CourseInfo as GameInfo } from '@/utils/home/courses/loadCourse';
 
 import { PlayCircle } from 'lucide-solid';
 
@@ -86,9 +86,9 @@ export default function Game() {
               <img src={overlay} alt="" class="absolute inset-0 w-full h-full object-cover opacity-70 z-10 pointer-events-none" />
             </div>
             <div class="absolute inset-0 bg-black/40 z-20" />
-            <h1 class='absolute bottom-4 left-4 text-7xl font-black text-white drop-shadow-lg z-30'>{displayName()}</h1>
+            <h1 class='absolute bottom-4 left-4 text-7xl font-black text-text drop-shadow-lg z-30'>{displayName()}</h1>
             <a class='absolute px-6 py-2 bottom-4 rounded-md right-4 bg-accent z-30 clickable' href={`/practice/games/play/${gameName()}`}>
-              <PlayCircle class="inline-block mr-2 text-white" />
+              <PlayCircle class="inline-block mr-2 text-text" />
               Play
             </a>
           </div>
@@ -107,7 +107,7 @@ export default function Game() {
               <h3 class="text-xl font-semibold text-sidebar-light-3 pb-4">Fields</h3>
               <div class="flex flex-wrap gap-3">
                 {currentGame().prerequisites.map((prereq: string) => (
-                  <span class="px-4 py-2 bg-accent-dark-2 text-accent-light-1 rounded-full text-sm transition-all duration-300 hover:bg-accent-dark-1 hover:text-white hover:scale-110 hover:shadow-lg cursor-pointer transform">
+                  <span class="px-4 py-2 bg-accent-dark-2 text-accent-light-1 rounded-full text-sm transition-all duration-300 hover:bg-accent-dark-1 hover:text-text hover:scale-110 hover:shadow-lg cursor-pointer transform">
                     {prereq}
                   </span>
                 ))}
@@ -123,7 +123,7 @@ export default function Game() {
                     <span class="flex-shrink-0 w-6 h-6 bg-accent-light-1 text-accent-dark-3 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 group-hover:bg-white group-hover:scale-110">
                       {index + 1}
                     </span>
-                    <span class="text-text/80 group-hover:text-white transition-colors duration-300">{topic}</span>
+                    <span class="text-text/80 group-hover:text-text transition-colors duration-300">{topic}</span>
                   </div>
                 ))}
               </div>

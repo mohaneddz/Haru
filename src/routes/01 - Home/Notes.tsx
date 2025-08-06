@@ -6,7 +6,7 @@ import { Link } from "lucide-solid";
 import NoteTopBar from "@/components/01 - Home/Notes/NoteTopBar";
 import NotesToolBar from "@/components/01 - Home/Notes/NotesToolBar";
 import { useNotes } from "@/hooks/home/useNotes";
-import { saveApi } from "@/utils/filesManip";
+import { saveApi } from "@/utils/home/files/filesManip";
 
 export default function Notes() {
   // @ts-ignore

@@ -64,11 +64,11 @@ export default function FlashCardsDeck() {
                                 setNewCardQuestion("");
                                 setNewCardAnswer("");
                             }}
-                            class="clickable bg-accent text-white px-4 py-2 rounded-lg"
+                            class="clickable bg-accent text-text px-4 py-2 rounded-lg"
                         >
                             Add
                         </button>
-                        <button onClick={cancelAdd} class="clickable bg-gray-500 text-white px-4 py-2 rounded-lg ml-2">Cancel</button>
+                        <button onClick={cancelAdd} class="clickable bg-gray-500 text-text px-4 py-2 rounded-lg ml-2">Cancel</button>
                     </div>
                 </div>
             </Modal>
@@ -97,11 +97,11 @@ export default function FlashCardsDeck() {
                                 setNewCardQuestion("");
                                 setNewCardAnswer("");
                             }}
-                            class="clickable bg-accent text-white px-4 py-2 rounded-lg"
+                            class="clickable bg-accent text-text px-4 py-2 rounded-lg"
                         >
                             Save
                         </button>
-                        <button onClick={() => setIsEditModalOpen(false)} class="clickable bg-gray-500 text-white px-4 py-2 rounded-lg ml-2">Cancel</button>
+                        <button onClick={() => setIsEditModalOpen(false)} class="clickable bg-gray-500 text-text px-4 py-2 rounded-lg ml-2">Cancel</button>
                     </div>
                 </div>
             </Modal>
@@ -114,8 +114,8 @@ export default function FlashCardsDeck() {
                         Are you sure you want to delete the selected flashcards? This action cannot be undone.
                     </p>
                     <div class="space-x-2 center w-full">
-                        <button onClick={confirmDeleteSelected} class="clickable bg-error text-white px-4 py-2 rounded-lg">Delete</button>
-                        <button onClick={cancelDelete} class="clickable bg-gray-500 text-white px-4 py-2 rounded-lg ml-2">Cancel</button>
+                        <button onClick={confirmDeleteSelected} class="clickable bg-error text-text px-4 py-2 rounded-lg">Delete</button>
+                        <button onClick={cancelDelete} class="clickable bg-gray-500 text-text px-4 py-2 rounded-lg ml-2">Cancel</button>
                     </div>
                 </div>
             </Modal>
@@ -128,8 +128,8 @@ export default function FlashCardsDeck() {
                         Are you sure you want to delete this flashcard? This action cannot be undone.
                     </p>
                     <div class="space-x-2 center w-full">
-                        <button onClick={confirmSingleDelete} class="clickable bg-error text-white px-4 py-2 rounded-lg">Delete</button>
-                        <button onClick={() => setSingleDeleteCardId(null)} class="clickable bg-gray-500 text-white px-4 py-2 rounded-lg ml-2">Cancel</button>
+                        <button onClick={confirmSingleDelete} class="clickable bg-error text-text px-4 py-2 rounded-lg">Delete</button>
+                        <button onClick={() => setSingleDeleteCardId(null)} class="clickable bg-gray-500 text-text px-4 py-2 rounded-lg ml-2">Cancel</button>
                     </div>
                 </div>
             </Modal>
@@ -143,7 +143,7 @@ export default function FlashCardsDeck() {
 
                 <div class="flex-shrink-0">
                     <div class="flex-shrink-0 mb-6">
-                        <h1 class="text-2xl font-bold text-white mb-4">Flashcard Deck Title</h1>
+                        <h1 class="text-2xl font-bold text-text mb-4">Flashcard Deck Title</h1>
                         <p class="text-gray-300">This is a detailed view of the flashcard deck. Here you can see all the cards, edit them, or delete the deck.</p>
                     </div>
 
@@ -189,13 +189,13 @@ export default function FlashCardsDeck() {
                 <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-12 bg-accent-dark-2 rounded-full p-2
                                   hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
                     onClick={() => setIsDeleteModalOpen(true)}>
-                    <Trash2 class="w-6 h-6 text-white " />
+                    <Trash2 class="w-6 h-6 text-text " />
                 </div>
 
                 <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
                                   hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
                     onClick={() => setIsAddModalOpen(true)}>
-                    <Pen class="w-6 h-6 text-white " />
+                    <Pen class="w-6 h-6 text-text " />
                 </div>
 
             </div>

@@ -4,7 +4,7 @@ import { dropDummy, testDummy, testInert, testUpdate, testDelete, testGetAll, te
 function Button(props: { onClick: () => void; children: any }) {
   return (
     <button
-      class="px-2 py-3 hover:brightness-95 cursor-pointer hover:scale-95 active:scale-100 bg-accent text-white rounded-sm"
+      class="px-2 py-3 hover:brightness-95 cursor-pointer hover:scale-95 active:scale-100 bg-accent text-text rounded-sm"
       onClick={props.onClick}
     >
       {props.children}

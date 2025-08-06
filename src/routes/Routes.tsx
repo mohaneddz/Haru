@@ -4,7 +4,7 @@ import Layout from "@/layout/Layout";
 export const routes = [
   {
     path: "/",
-    component: (props:any) => <Layout>{props.children}</Layout>,
+    component: (props: any) => <Layout>{props.children}</Layout>,
     children: [
 
       // 01 - Home
@@ -13,16 +13,16 @@ export const routes = [
       { path: "/home/quicknotes", component: lazy(() => import("@/routes/01 - Home/Quicknotes")) },
       { path: "/home/notes", component: lazy(() => import("@/routes/01 - Home/Notes")) },
       { path: "/home/dictionary", component: lazy(() => import("@/routes/01 - Home/Dictionary")) },
+      { path: "/home/tutor", component: lazy(() => import("@/routes/01 - Home/Tutor")) },
 
       { path: "/home/library/*", component: lazy(() => import("@/routes/01 - Home/Course")) },
-      
+
       // 02 - Practice
       // { path: "/practice/", component: lazy(() => import("@/routes/02 - Practice/Practice")) },
       { path: "/practice/training", component: lazy(() => import("@/routes/02 - Practice/Training")) },
       { path: "/practice/games", component: lazy(() => import("@/routes/02 - Practice/Games")) },
       { path: "/practice/flashcards", component: lazy(() => import("@/routes/02 - Practice/Flashcards")) },
-      { path: "/practice/tutor", component: lazy(() => import("@/routes/02 - Practice/Tutor")) },
-      
+
       { path: "/practice/games/*", component: lazy(() => import("@/routes/02 - Practice/Game")) },
       { path: "/practice/games/play/*", component: lazy(() => import("@/routes/02 - Practice/Play")) },
       { path: "/practice/flashcards/*", component: lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsDeck")) },
@@ -41,7 +41,7 @@ export const routes = [
       { path: "/tools/plugins", component: lazy(() => import("@/routes/04 - Tools/Plugins")) },
       { path: "/tools/pomodoro", component: lazy(() => import("@/routes/04 - Tools/Pomodoro")) },
       { path: "/tools/whiteboard", component: lazy(() => import("@/routes/04 - Tools/Whiteboard")) },
-      
+
       // 05 - Auth
       { path: "/auth/login", component: lazy(() => import("@/routes/05 - Auth/Login")) },
       { path: "/auth/profile", component: lazy(() => import("@/routes/05 - Auth/Profile")) },

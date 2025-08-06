@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
+:root {
+  --font-scale: 1;
+}
+
 html{
-  font-size: 8px;
+  font-size: calc(8px * var(--font-scale));
 }
 
 body {
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale));
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: sans-serif;
@@ -142,28 +146,30 @@ body {
   --color-shadow-dark-1: #111420;
   --color-shadow-dark-2: rgba(0, 0, 0, 0.4);
   --color-shadow-dark-3: rgba(0, 0, 0, 0.5);
+
+  --color-border: #364153;
 }
 
 @media screen and (min-width: 640px) {
   html{
-    font-size: 10px;
+    font-size: calc(10px * var(--font-scale));
   }
 }
 
 @media screen and (min-width: 1024px) {
   html{
-    font-size: 12px;
+    font-size: calc(12px * var(--font-scale));
   }
 }
 
 @media screen and (min-width: 1400px) {
   html{
-    font-size: 14px;
+    font-size: calc(14px * var(--font-scale));
   }
 }
 
 @media screen and (min-width: 1800px) {
   html{
-    font-size: 16px;
+    font-size: calc(16px * var(--font-scale));
   }
 }

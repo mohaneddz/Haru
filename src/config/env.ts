@@ -1,1 +1,0 @@
-export const TODOIST_KEY = import.meta.env.VITE_TODOIST_KEY || 'default_todoist_key';

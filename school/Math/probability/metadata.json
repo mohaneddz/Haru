@@ -1,0 +1,67 @@
+{
+  "title": "Probability Theory",
+  "icon": "Dice",
+  "img": "probability.png",
+  "description": "Study of randomness and uncertainty in mathematical systems",
+  "overview": "Probability theory provides the foundation for analyzing random events and quantifying uncertainty. It is widely used in statistics, finance, science, and engineering.",
+  "duration": "6 weeks",
+  "prerequisites": ["Basic Calculus", "Statistics"],
+  "topics": [
+    { 
+      "Introduction to Probability": [
+        "Basic Concepts of Probability",
+        "Sample Space and Events",
+        "Conditional Probability",
+        "Bayes' Theorem"
+      ]
+    },
+    { 
+      "Random Variables": [
+        "Definition of Random Variables",
+        "Discrete Random Variables",
+        "Continuous Random Variables",
+        "Functions of Random Variables"
+      ]
+    },
+    { 
+      "Probability Distributions": [
+        "Discrete Probability Distributions",
+        "Continuous Probability Distributions",
+        "Binomial Distribution",
+        "Normal Distribution"
+      ]
+    },
+    { 
+      "Expected Value and Variance": [
+        "Definition of Expected Value",
+        "Variance and Standard Deviation",
+        "Properties of Expectation",
+        "Covariance and Correlation"
+      ]
+    },
+    { 
+      "Law of Large Numbers": [
+        "Weak Law of Large Numbers",
+        "Strong Law of Large Numbers",
+        "Applications of the Law of Large Numbers"
+      ]
+    },
+    { 
+      "Central Limit Theorem": [
+        "Statement of the Central Limit Theorem",
+        "Applications of the Central Limit Theorem",
+        "Limitations of the Central Limit Theorem"
+      ]
+    },
+    { 
+      "Applications of Probability": [
+        "Probability in Statistics",
+        "Probability in Finance",
+        "Probability in Science and Engineering"
+      ]
+    }
+  ],
+  "tags": ["probability-theory", "mathematics", "statistics", "course"],
+  "field": "Mathematics",
+  "difficulty": "Intermediate"
+}

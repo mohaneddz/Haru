@@ -1,0 +1,11 @@
+title,description,link,thumbnailUrl,tags
+"NLTK (Natural Language Toolkit)","Comprehensive Python library for tokenization, tagging, parsing, classification and semantic reasoning","https://www.nltk.org/","https://www.nltk.org/images/nltk_logo.png","NLP,Python,Text Processing,Tokenization,Parsing"
+"spaCy","High‑performance industrial‑grade NLP in Python: tokenization, NER, parsing, text classification","https://spacy.io/","https://spacy.io/static/img/logo.svg","NLP,Python,Production,NER,Dependency Parsing"
+"Hugging Face Transformers","Library of transformer‑based models and Hub of pre‑trained NLP models","https://huggingface.co/","https://huggingface.co/front/assets/huggingface_logo.svg","Transformers,NLP,Pretrained Models,Hub"
+"Gensim","Efficient topic modelling, word2vec/doc2vec and document similarity toolkit","https://radimrehurek.com/gensim/","https://radimrehurek.com/gensim/images/gensim_logo.png","Topic Modeling,Vector Space,Similarity,Gensim"
+"Spark NLP","Scalable NLP built on Apache Spark: sentiment, NER, embeddings & pipelines","https://sparknlp.org/","https://sparknlp.org/assets/spark-nlp-logo.svg","NLP,Scalable,Apache Spark,Embeddings,Enterprise"
+"Stanford CoreNLP","Java‑based suite for tokenization, parsing, NER, coreference, sentiment analysis","https://stanfordnlp.github.io/CoreNLP/","https://stanfordnlp.github.io/CoreNLP/images/corenlp.svg","Java,NLP,Coreference,Parsing,NER"
+"Rasa NLU & Core","Open‑source framework for building conversational agents and dialogue management","https://rasa.com/","https://rasa.com/assets/images/logos/rasa-logo.svg","Conversational AI,Chatbots,Dialogue,NLU"
+"TextBlob","Beginner‑friendly Python NLP library for sentiment, part‑of‑speech tagging, translation","https://textblob.readthedocs.io/","https://textblob.readthedocs.io/en/latest/_static/textblob-logo.png","TextBlob,NLP,Python,Sentiment,Translation"
+"Apache OpenNLP","Java toolkit for sentence detection, tokenization, POS tagging, parsing and coreference","https://opennlp.apache.org/","https://opennlp.apache.org/images/OpenNLPLogo.png","OpenNLP,Java,NLP,Parsing,NER"
+"LangChain","Framework for LLM‑based apps: document summarization, chatbots, retrieval‑augmented generation","https://langchain.com/","https://langchain.com/assets/langchain-logo.svg","LLM,Retrieval,Chains,Chatbots,Prompting"

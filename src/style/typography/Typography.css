@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'Zen Dots';
+  font-style: normal;
+  src: url('/fonts/ZenDots-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+/* All headings at once: */
+
+b,
+strong {
+  font-weight: 600;
+  color: #67728e;
+  user-select: text;
+}
+
+i, em{
+  font-style: italic;
+  color: #67728e;
+  user-select: text;
+}
+
+p {
+  user-select: text;
+
+  * {
+    user-select: text;
+  }
+}
+
+.non-selectable {
+  user-select: none;
+}

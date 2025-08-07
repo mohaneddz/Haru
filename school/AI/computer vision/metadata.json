@@ -1,0 +1,63 @@
+{
+  "title": "Computer Vision",
+  "icon": "Camera",
+  "img": "icon.png",
+  "description": "Study of enabling computers to interpret and process visual data",
+  "overview": "Computer vision focuses on how machines can gain high-level understanding from digital images or videos. It is widely used in fields such as artificial intelligence, robotics, and automation.",
+  "duration": "10 weeks",
+  "prerequisites": ["Linear Algebra", "Probability and Statistics"],
+  "topics": [
+    { 
+      "Introduction to Computer Vision": [
+        "Definition of Computer Vision",
+        "Applications of Computer Vision",
+        "Challenges in Computer Vision"
+      ]
+    },
+    { 
+      "Image Processing Basics": [
+        "Image Representation",
+        "Image Filtering",
+        "Edge Detection"
+      ]
+    },
+    { 
+      "Feature Detection and Matching": [
+        "Keypoint Detection",
+        "Feature Matching",
+        "Applications in Object Recognition"
+      ]
+    },
+    { 
+      "Object Recognition": [
+        "Definition of Object Recognition",
+        "Techniques for Object Recognition",
+        "Applications in AI"
+      ]
+    },
+    { 
+      "Deep Learning for Vision": [
+        "Neural Networks in Vision",
+        "CNNs for Image Processing",
+        "Applications in Computer Vision"
+      ]
+    },
+    { 
+      "Convolutional Neural Networks": [
+        "Definition of CNNs",
+        "Advanced Architectures",
+        "Applications in Image Classification"
+      ]
+    },
+    { 
+      "Applications of Computer Vision": [
+        "Computer Vision in Robotics",
+        "Computer Vision in Automation",
+        "Computer Vision in Healthcare"
+      ]
+    }
+  ],
+  "tags": ["computer-vision", "artificial-intelligence", "image-processing", "course"],
+  "field": "Artificial Intelligence",
+  "difficulty": "Intermediate"
+}

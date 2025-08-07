@@ -1,0 +1,56 @@
+import { Router, Route } from "@solidjs/router";
+
+// import { invoke } from "@tauri-apps/api/core";
+// import { onMount } from "solid-js";
+
+import Titlebar from "@/layout/Titlebar";
+import Sidebar from "@/layout/Sidebar";
+import Statebar from "@/layout/Statebar";
+
+import { routes } from "@/routes/Routes";
+
+function App() {
+
+  // onMount(async () => {
+  //   await invoke("run_app");
+  //   console.log("App started successfully");
+  //   await invoke("run_llm");
+  //   console.log("LLM started successfully");
+  // });
+
+
+  return (
+    <Router
+      root={(props) => (
+        <section class="h-screen w-screen overflow-hidden flex">
+
+          <Titlebar />
+          <Sidebar />
+          <div class="relative overflow-hidden w-full h-full flex flex-col">
+
+            {/* Upper Fade */}
+            <div class="absolute bg-background w-full h-4 pointer-events-none" />
+            <div class="absolute top-0 left-0 w-full h-min bg-gradient-to-b from-background via-90% to-background/20 z-40 pointer-events-none" />
+
+            {props.children}
+
+            {/* Lower Fade */}
+            <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40 pointer-events-none" />
+
+            <Statebar />
+          </div>
+        </section>
+      )}
+    >
+      {routes.map(({ path, component: C, children }) => (
+        <Route path={path} component={C}>
+          {children?.map(({ path, component }) => (
+            <Route path={path} component={component} />
+          ))}
+        </Route>
+      ))}
+    </Router>
+  );
+}
+
+export default App;

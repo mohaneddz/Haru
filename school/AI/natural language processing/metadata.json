@@ -1,0 +1,21 @@
+{
+  "title": "Machine Learning",
+  "icon": "Neural Network",
+  "img": "icon.png",
+  "description": "Study of algorithms that improve automatically through experience",
+  "overview": "Machine learning focuses on developing systems that can learn and adapt from data. It is widely used in fields such as artificial intelligence, data science, and robotics.",
+  "duration": "10 weeks",
+  "prerequisites": ["Basic Statistics", "Linear Algebra", "Programming Fundamentals"],
+  "topics": [
+    "Introduction to Machine Learning",
+    "Supervised Learning",
+    "Unsupervised Learning",
+    "Neural Networks",
+    "Support Vector Machines",
+    "Decision Trees and Random Forests",
+    "Applications of Machine Learning"
+  ],
+  "tags": ["machine-learning", "artificial-intelligence", "data-science", "course"],
+  "field": "Computer Science",
+  "difficulty": "Intermediate"
+}

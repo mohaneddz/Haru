@@ -1,0 +1,29 @@
+export const entries = [
+  { title: 'Tutor', icon: 'GraduationCap', section: 'home', slug: 'tutor' },
+  { title: 'Library', icon: 'Library', section: 'home', slug: 'library' },
+  { title: 'Notes', icon: 'FileText', section: 'home', slug: 'notes' },
+  { title: 'Quicknotes', icon: 'StickyNote', section: 'home', slug: 'quicknotes' },
+  { title: 'Dictionary', icon: 'Book', section: 'home', slug: 'dictionary' },
+
+  { title: 'Flashcards', icon: 'WalletCards', section: 'practice', slug: 'flashcards' },
+  { title: 'Training', icon: 'Swords', section: 'practice', slug: 'training' },
+  { title: 'Games', icon: 'Gamepad2', section: 'practice', slug: 'games' },
+
+  // { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },
+  { title: 'Achievements', icon: 'Trophy', section: 'track', slug: 'achievements' },
+  { title: 'Insights', icon: 'BarChart', section: 'track', slug: 'insights' },
+  { title: 'Goals', icon: 'Target', section: 'track', slug: 'goals' },
+  { title: 'Time', icon: 'Clock', section: 'track', slug: 'time' },
+
+  { title: 'Plugins', icon: 'Puzzle', section: 'tools', slug: 'plugins' },
+  { title: 'Whiteboard', icon: 'LayoutDashboard', section: 'tools', slug: 'whiteboard' },
+  { title: 'Calculators', icon: 'Calculator', section: 'tools', slug: 'calculators' },
+  { title: 'Pomodoro', icon: 'AlarmClock', section: 'tools', slug: 'pomodoro' },
+];
+
+export const sections = [
+  { title: 'Home', icon: 'Home', section: 'home', slug: 'home' },
+  { title: 'Practice', icon: 'PenLine', section: 'practice', slug: 'practice' },
+  { title: 'Track', icon: 'Activity', section: 'track', slug: 'track' },
+  { title: 'Tools', icon: 'PencilRuler', section: 'tools', slug: 'tools' },
+];

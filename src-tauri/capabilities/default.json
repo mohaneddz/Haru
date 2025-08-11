@@ -14,7 +14,9 @@
 		"core:window:allow-toggle-maximize",
 		"core:window:allow-internal-toggle-maximize",
 		"core:window:allow-set-fullscreen",
+		
 		"opener:default",
+		
 		"fs:default",
 		"fs:allow-exists",
 		"fs:allow-read",
@@ -33,13 +35,15 @@
 		"fs:allow-mkdir",
 		"fs:allow-runtime-read-recursive",
 		"fs:scope-runtime-recursive",
+
 		"shell:allow-execute",
 		"shell:allow-open",
 		"shell:allow-spawn",
+		
 		"sql:default",
 		"sql:allow-load",
 		"sql:allow-execute",
-		"stronghold:default",
+
 		"dialog:default",
 		"http:default",
 		"store:default",

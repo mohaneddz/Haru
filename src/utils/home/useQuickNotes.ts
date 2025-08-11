@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 export async function loadQuickNotes(): Promise<string[]> {
 	const response = (await invoke('read_dir_recursive', {
-		path: 'D:\\Programming\\Projects\\Tauri\\haru\\notes',
+		path: 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Notes',
 	})) as string[];
 	const files = response.filter((item: string) => item.endsWith('.md'));
 	let notes: string[] = [];
@@ -41,7 +41,7 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 
 	// Delete all selected files first
 	for (const index of indicesToDelete) {
-		const filePath = `D:\\Programming\\Projects\\Tauri\\haru\\notes\\note_${index}.md`;
+		const filePath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Notes\\note_${index}.md`;
 		try {
 			await invoke('delete_path', { path: filePath });
 			console.log(`Deleted note_${index}.md`);
@@ -60,7 +60,7 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 			currentIndex++;
 		}
 		
-		const currentFilePath = `D:\\Programming\\Projects\\Tauri\\haru\\notes\\note_${currentIndex}.md`;
+		const currentFilePath = `D:\Programming\Projects\Tauri\haru\src-tauri\documents\Notes\\note_${currentIndex}.md`;
 		
 		// Check if file exists
 		try {
@@ -72,7 +72,7 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 		
 		// If current index doesn't match new index, rename the file
 		if (currentIndex !== newIndex) {
-			const newFilePath = `D:\\Programming\\Projects\\Tauri\\haru\\notes\\note_${newIndex}.md`;
+			const newFilePath = `D:\Programming\Projects\Tauri\haru\src-tauri\documents\Notes\\note_${newIndex}.md`;
 			try {
 				await invoke('rename_path', { oldPath: currentFilePath, newPath: newFilePath });
 				console.log(`Renamed note_${currentIndex}.md to note_${newIndex}.md`);
@@ -87,6 +87,6 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 }
 
 export async function createQuicknote(number: number): Promise<void> {
-	const path = 'D:\\Programming\\Projects\\Tauri\\haru\\notes' + `\\note_${number}.md`;
+	const path = 'D:\Programming\Projects\Tauri\haru\src-tauri\documents\Notes' + `\\note_${number}.md`;
 	await invoke('save_file', { path, content: '' });
 }

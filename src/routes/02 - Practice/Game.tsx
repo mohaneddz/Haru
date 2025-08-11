@@ -1,7 +1,7 @@
 import { useLocation } from '@solidjs/router';
 import { createMemo, createResource } from 'solid-js';
 import overlay from '@/assets/overlay.png';
-import { loadCourseData as loadGameData, CourseInfo as GameInfo } from '@/utils/home/courses/loadCourse';
+import { loadCourseData as loadGameData, CourseInfo as GameInfo } from '@/utils/home/courses/courseUtils';
 
 import { PlayCircle } from 'lucide-solid';
 

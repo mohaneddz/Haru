@@ -1,6 +1,6 @@
 import { Trash, Pen, Folder } from "lucide-solid";
-import { loadTools } from "@/utils/home/courses/loadResources";
-import { CourseInfo, loadCourses, loadCoursesSections } from "@/utils/home/courses/loadCourse";
+import { loadTools } from "@/utils/home/courses/resourcessUtils";
+import { CourseInfo, loadCourses, loadCoursesSections } from "@/utils/home/courses/courseUtils";
 
 import { createSignal, For, onMount } from "solid-js";
 import CourseCard from "@/components/01 - Home/Cards/CourseCard";
@@ -51,7 +51,7 @@ export default function Library() {
       }
       setSections(allSections);
 
-      console.log('Sections Data:', sections());
+      // console.log('Sections Data:', sections());
     } catch (error) {
       console.error('Error loading sections:', error);
     }

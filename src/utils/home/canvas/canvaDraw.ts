@@ -1,4 +1,4 @@
-import { Node, Connection, Transform } from '@/types/roadmap';
+import { Node, Connection, Transform } from '@/types/home/roadmap';
 
 export class CanvasRenderer {
   private ctx: CanvasRenderingContext2D;

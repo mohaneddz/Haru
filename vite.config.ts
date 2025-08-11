@@ -1,8 +1,8 @@
+import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
 import { defineConfig } from 'vite';
 import solid from 'vite-plugin-solid';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
-import { viteCommonjs } from '@originjs/vite-plugin-commonjs'; 
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -19,11 +19,10 @@ export default defineConfig(async () => ({
 		},
 	},
 
-	// We can now simplify this. The plugin is more reliable.
 	optimizeDeps: {
 		include: ['solid-markdown', 'remark-math', 'rehype-katex'],
 	},
-	
+
 	server: {
 		port: 1234,
 		strictPort: true,
@@ -38,11 +37,7 @@ export default defineConfig(async () => ({
 		watch: {
 			ignored: [
 				'**/src-tauri/**',
-				'**/models/**',
-				'**/notes/**',
-				'**/backend/**',
 				'**/node_modules/**',
-				'src-tauri/chroma_db/chroma.sqlite3', // Ignore changes to this file
 			],
 		},
 	},

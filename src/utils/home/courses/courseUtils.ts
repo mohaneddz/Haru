@@ -18,7 +18,7 @@ export interface GameInfo extends CourseInfo {
 
 export async function loadCourseData(parent: string, course: string): Promise<CourseInfo> {
 	try {
-		const path = `D:\\Programming\\Projects\\Tauri\\haru\\school\\${parent}\\${course}`;
+		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent}\\${course}`;
 		const fullpath = `${path}\\metadata.json`;
 		// console.log('Path:', fullpath);
 		const metadataResponse = await invoke('read_file', { path: fullpath });
@@ -52,7 +52,7 @@ export async function loadCourseData(parent: string, course: string): Promise<Co
 
 export async function loadCourses(folder: string): Promise<CourseInfo[]> {
 	const title = folder.toLocaleLowerCase();
-	const path = `D:\\Programming\\Projects\\Tauri\\haru\\school\\${title}`;
+	const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${title}`;
 	try {
 		const response: string[] = await invoke('read_dir_recursive', { path });
 
@@ -84,7 +84,7 @@ export async function loadCourses(folder: string): Promise<CourseInfo[]> {
 				}
 			}
 		}
-		console.log(`Loaded courses from ${path}:`, courses);
+		// console.log(`Loaded courses from ${path}:`, courses);
 		return courses;
 	} catch (error) {
 		console.error('Failed to load courses:', error);
@@ -93,7 +93,7 @@ export async function loadCourses(folder: string): Promise<CourseInfo[]> {
 }
 
 export async function loadCoursesSections(): Promise<string[]> {
-	const path = `D:\\Programming\\Projects\\Tauri\\haru\\school`;
+	const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules`;
 
 	try {
 		const response: string[] = await invoke('read_dir_recursive', { path, depth: 2 });
@@ -101,7 +101,7 @@ export async function loadCoursesSections(): Promise<string[]> {
 			.filter((item: string) => item.endsWith('/'))
 			.map((item) => item.replace(path, '').replace(/\/$/, '').replace(/\\/g, ''))
 			.filter((item) => item !== '');
-		console.log(`Loaded sections from ${path}:`, sections);
+		// console.log(`Loaded sections from ${path}:`, sections);
 		return sections;
 	} catch (error) {
 		console.error('Failed to load course sections:', error);

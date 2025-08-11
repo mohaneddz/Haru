@@ -1,3 +1,0 @@
-lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf -ngl 99 -c 8192 -t 6
-
-uvicorn app:app --host 0.0.0.0 --port 5000 --workers 4

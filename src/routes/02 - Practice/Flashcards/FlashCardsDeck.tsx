@@ -4,6 +4,7 @@ import { Flame, ArrowLeft, Pen, Trash2 } from 'lucide-solid';
 import { For } from "solid-js";
 import Modal from "@/components/core/Modal";
 import useFlashcards from "@/hooks/training/useFlashcards";
+import SelectInput from "@/components/core/Input/SelectInput";
 
 export default function FlashCardsDeck() {
     const {
@@ -42,10 +43,16 @@ export default function FlashCardsDeck() {
 
             {/* Add Card Modal */}
             <Modal onClose={() => setIsAddModalOpen(false)} show={isAddModalOpen()}>
-                <div class="flex flex-col justify-between mb-4 w-[20vw] gap-8">
-                    <p class="text-3xl font-bold w-full text-accent text-center">Add New Card</p>
-                    <input
-                        type="text"
+                <div class="flex flex-col justify-between mb-4 w-[20vw] gap-4">
+                    <p class="text-3xl font-bold w-full text-accent text-center mb-8">Add New Card</p>
+                    <SelectInput
+                        options={[
+                            { value: 'input', label: 'Input' },
+                            { value: 'tf', label: 'True/False' },
+                            { value: 'multi-choice', label: 'Multi-Choice' }
+                        ]}
+                    />
+                    <textarea
                         placeholder="Question"
                         class="w-full p-2 border border-gray-500 rounded-md"
                         value={newCardQuestion()}
@@ -136,16 +143,11 @@ export default function FlashCardsDeck() {
 
             <div class="absolute top-0 px-6 py-8 h-12 w-full flex items-center justify-start gap-8 border-b border-gray-500 flex-shrink-0 z-50">
                 <a href="/practice/flashcards" class="text-accent clickable"><ArrowLeft class="w-8 h-8" /></a>
-                <p class="text-sm text-gray-400">Flashcard Deck Details</p>
             </div>
 
-            <div class="max-w-[80%] flex-1 flex flex-col overflow-hidden mt-24">
+            <div class="w-[80%] flex-1 flex flex-col overflow-hidden mt-24">
 
                 <div class="flex-shrink-0">
-                    <div class="flex-shrink-0 mb-6">
-                        <h1 class="text-2xl font-bold text-text mb-4">Flashcard Deck Title</h1>
-                        <p class="text-gray-300">This is a detailed view of the flashcard deck. Here you can see all the cards, edit them, or delete the deck.</p>
-                    </div>
 
                     <UniversalFilter icon={Flame} title="Search Flashcards" onFilterChange={() => { }} class="w-full" />
                 </div>
@@ -174,8 +176,8 @@ export default function FlashCardsDeck() {
                                         attempts={item.attempts}
                                         onDelete={() => setSingleDeleteCardId(item.id)}
                                         onPlay={handlePlayCard}
-                                        selected={selected} 
-                                        onCheck={() => { select(item.id) }} 
+                                        selected={selected}
+                                        onCheck={() => { select(item.id) }}
                                         onEdit={() => edit(item.id)}
                                     />
                                 )}

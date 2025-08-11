@@ -1,5 +1,5 @@
 import { Component, Accessor } from 'solid-js';
-import { AngleMode } from '@/types/calculator';
+import { AngleMode } from '@/types/tools/calculator';
 
 interface InfoPanelsProps {
   displayValue: Accessor<string>;

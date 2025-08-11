@@ -1,0 +1,6 @@
+lib/
+backend/
+weights/
+models/
+voices/
+documents/

@@ -1,4 +1,4 @@
-import { Operation } from '../../types/calculator';
+import { Operation } from '../../types/tools/calculator';
 
 export const getOperationSymbol = (op: Operation): string => {
   const symbols: Record<Operation, string> = {

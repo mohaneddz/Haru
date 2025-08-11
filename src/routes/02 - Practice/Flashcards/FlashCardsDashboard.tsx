@@ -1,61 +1,44 @@
 import UniversalFilter from "@/components/01 - Home/Filters/ComposableFilter";
 import FlashDeck from "@/components/02 - Practice/training/Flashcards/FlashDeckCard";
 import Modal from "@/components/core/Modal";
-import { Pen } from 'lucide-solid';
-import { Flame } from 'lucide-solid';
+
+import { onMount } from "solid-js";
+import { loadFlashDecks } from "@/utils/training/flashcardUtils";
+
+import Pen from 'lucide-solid/icons/pen';
+import Flame from 'lucide-solid/icons/flame';
+
 
 import { createSignal, For } from "solid-js";
 
+interface Deck {
+  title: string;
+  description: string;
+  id: number;
+}
+
 export default function FlashCardsDashboard() {
 
+  onMount(async () => {
+    const decks = await loadFlashDecks();
+    setDecks(decks);
+  });
 
   const [showAddModal, setShowAddModal] = createSignal(false);
   const [showDeleteModal, setShowDeleteModal] = createSignal(false);
   const [_, setFilters] = createSignal({});
   const [deckToDelete, setDeckToDelete] = createSignal<number | null>(null); // Track the deck to delete
-  const [decks, setDecks] = createSignal([
-    {
-      title: "React Native",
-      description: "This is the first deck of flashcards.",
-      id: 1
-    }, {
-      title: "Calculus",
-      description: "This is the second deck of flashcards.",
-      id: 2
-    }, {
-      title: "Flutter",
-      description: "This is the third deck of flashcards.",
-      id: 3
-    },
-    {
-      title: "Flutter",
-      description: "This is the third deck of flashcards.",
-      id: 3
-    },
-    {
-      title: "React Native",
-      description: "This is the first deck of flashcards.",
-      id: 1
-    }, {
-      title: "Calculus",
-      description: "This is the second deck of flashcards.",
-      id: 2
-    }, {
-      title: "Flutter",
-      description: "This is the third deck of flashcards.",
-      id: 3
-    },
-  ]);
+  const [decks, setDecks] = createSignal<Deck[]>([]);
 
   const addDeck = () => {
-    const newDeck = {
+    const newDeck: Deck = {
       title: "New Deck",
       description: "This is a new deck of flashcards.",
       id: decks().length + 1
     };
     setDecks([...decks(), newDeck]);
     setShowAddModal(false);
-  }
+  };
 
   const deleteDeck = () => {
     const deckId = deckToDelete();
@@ -96,8 +79,8 @@ export default function FlashCardsDashboard() {
 
         <UniversalFilter icon={Flame} title="Search Decks" onFilterChange={setFilters} />
 
-        <div class="bg-sidebar w-full flex-1 overflow-hidden rounded-md border-1 border-gray-500 shadow-inner">
-          <div class="grid grid-cols-4 gap-4 p-4 overflow-y-auto ">
+        <div class="bg-sidebar w-full flex-1 overflow-y-auto rounded-md border-1 border-gray-500 shadow-inner">
+          <div class="grid grid-cols-4 gap-4 p-4">
             <For each={decks()}>
               {(deck) => (
                 <FlashDeck

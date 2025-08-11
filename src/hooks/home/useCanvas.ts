@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup } from 'solid-js';
-import { Transform, MousePosition } from '@/types/roadmap';
+import { Transform, MousePosition } from '@/types/home/roadmap';
 
 export function useCanvas() {
   let canvasRef: HTMLCanvasElement | undefined;

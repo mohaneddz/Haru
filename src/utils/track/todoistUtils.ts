@@ -1,5 +1,5 @@
 import { TODOIST_KEY } from '@/config/env';
-import { TodoistTask, CreateTaskArgs, FetchTasksOptions } from '@/types/tracking/todoist';
+import { TodoistTask, CreateTaskArgs, FetchTasksOptions } from '@/types/track/todoist';
 
 const BASE = 'https://api.todoist.com/rest/v2';
 const HDRS = (requestId?: string): HeadersInit => ({

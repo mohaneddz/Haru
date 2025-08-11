@@ -1,3 +1,5 @@
+@import 'tailwindcss';
+
 .clickable {
   @apply cursor-pointer hover:brightness-105 active:brightness-95 hover:scale-105 active:scale-95 transition-all duration-100;
 }
@@ -16,7 +18,7 @@
 
 input[type="time"],
 input[type="number"] {
-  @apply bg-sidebar-light-2 
+  /* @apply bg-sidebar-light-2;  */
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: textfield;

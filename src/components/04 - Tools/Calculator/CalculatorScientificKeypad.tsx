@@ -1,6 +1,6 @@
 import { Component } from 'solid-js';
 import CalculatorButton from '@/components/04 - Tools/Calculator/CalculatorButton';
-import { ScientificFunction, Constant, Operation } from '@/types/calculator';
+import { ScientificFunction, Constant, Operation } from '@/types/tools/calculator';
 
 interface ScientificKeypadProps {
   handleScientificFunction: (func: ScientificFunction) => void;

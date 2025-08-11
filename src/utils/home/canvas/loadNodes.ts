@@ -1,4 +1,4 @@
-import { Node, Connection } from '@/types/roadmap';
+import { Node, Connection } from '@/types/home/roadmap';
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];

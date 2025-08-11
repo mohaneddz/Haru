@@ -8,7 +8,6 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_stronghold::Builder::new(|_password| vec![0u8; 32]).build())
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
@@ -28,8 +27,6 @@ pub fn run() {
             utilities::read_image,
             
             utilities::read_pdf,
-            // utilities::get_stronghold_value,
-            // utilities::set_stronghold_value,
             // utilities::get_pdf_first_page,
             models::run_voice,
             models::run_fasttext,

@@ -1,4 +1,4 @@
-import { loadDefinitions } from '@/utils/home/dictionary/loadDefinitions';
+import { loadDefinitions } from '@/utils/home/dictionary/definitionUtils';
 import { createSignal, onMount, For } from 'solid-js';
 import DefinitionRow from '@/components/01 - Home/Dictionary/DefinitionRow';
 import Modal from '@/components/core/Modal';

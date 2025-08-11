@@ -1,4 +1,4 @@
-import { Transform } from '@/types/roadmap';
+import { Transform } from '@/types/home/roadmap';
 
 interface CanvasControlsProps {
   transform: Transform;

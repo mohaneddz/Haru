@@ -1,7 +1,7 @@
 import { createSignal, onMount, createMemo } from 'solid-js';
 // import { TODOIST_KEY } from '@/config/env';
 import { TodoistCreateTask, TodoistFetchTodayTasks } from '@/utils/track/todoistUtils';
-import { SortOption, FilterOption, TaskPriority, TaskPriorityNumber } from '@/types/tracking/todoist';
+import { SortOption, FilterOption, TaskPriority, TaskPriorityNumber } from '@/types/track/todoist';
 import { marked } from 'marked';
 import { createTable, loadFromTable, replaceTable, 
 	// removeTable 

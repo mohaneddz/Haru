@@ -1,5 +1,5 @@
 import { createSignal, onMount } from 'solid-js';
-import { Node, Connection, Transform, MousePosition } from '@/types/roadmap';
+import { Node, Connection, Transform, MousePosition } from '@/types/home/roadmap';
 import { loadNodesFromCSV } from '@/utils/home/canvas/loadNodes';
 
 export function useNodes() {

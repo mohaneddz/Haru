@@ -1,6 +1,6 @@
 import SyllabusCard from "@/components/01 - Home/Cards/SyllabusCard";
 import { createSignal, For, onMount } from 'solid-js';
-import { CourseInfo, loadCourseData } from "@/utils/home/courses/loadCourse";
+import { CourseInfo, loadCourseData } from "@/utils/home/courses/courseUtils";
 import { useLocation } from '@solidjs/router';
 
 export default function Syllabus() {

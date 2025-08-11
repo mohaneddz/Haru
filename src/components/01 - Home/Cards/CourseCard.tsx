@@ -19,7 +19,7 @@ export default function CourseCard(props: Props) {
 
   onMount(async () => {
     if (props.img) {
-      console.log(`Using provided image for ${props.title}:`, props.img);
+      // console.log(`Using provided image for ${props.title}:`, props.img);
       const img = await invoke<string>('read_image', { path: props.img });
       setImage(img);
       // console.log(`Image for ${props.title}:`, img);

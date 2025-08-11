@@ -7,14 +7,15 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from constants import (CHUNK_SIZE,CHUNK_OVERLAP, PERSIST_DIRECTORY, COLLECTION_NAME, EMBEDDING_BATCH_SIZE, DOCUMENTS_DIR, SUPPORTED_EXTS, RETRIEVAL_TOP_K, EMBEDDING_DEVICE, EMBEDDING_MODEL_NAME, MAX_WORKERS)
+
 import os
 os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
 import chromadb
 
 class RAGSystem:
     """Fast RAG for school notes/docs with improved similarity + batch indexing."""
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
         logging.info("Initializing RAG System...")
         
         # Embedding model
@@ -23,14 +24,14 @@ class RAGSystem:
         
         # Text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.config.CHUNK_SIZE,
-            chunk_overlap=self.config.CHUNK_OVERLAP
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=CHUNK_OVERLAP
         )
         
         # Persistent ChromaDB
-        self.client = chromadb.PersistentClient(path=self.config.PERSIST_DIRECTORY)
+        self.client = chromadb.PersistentClient(path=PERSIST_DIRECTORY)
         self.collection = self.client.get_or_create_collection(
-            name=self.config.COLLECTION_NAME,
+            name=COLLECTION_NAME,
             metadata={"hnsw:space": "ip"}  # dot-product similarity
         )
         logging.info("RAG System Ready.")
@@ -51,7 +52,7 @@ class RAGSystem:
             
             embeddings = self.embedding_model.encode(
                 chunks,
-                batch_size=self.config.EMBEDDING_BATCH_SIZE,
+                batch_size=EMBEDDING_BATCH_SIZE,
                 normalize_embeddings=True,
                 show_progress_bar=False
             ).tolist()
@@ -68,17 +69,17 @@ class RAGSystem:
 
     def build_index_from_directory(self, force_rebuild=False):
         if force_rebuild:
-            self.client.delete_collection(name=self.config.COLLECTION_NAME)
+            self.client.delete_collection(name=COLLECTION_NAME)
             self.collection = self.client.get_or_create_collection(
-                name=self.config.COLLECTION_NAME,
+                name=COLLECTION_NAME,
                 metadata={"hnsw:space": "ip"}
             )
-        
-        files = [f for f in Path(self.config.DOCUMENTS_DIR).rglob("*") 
-                 if f.suffix.lower() in self.config.SUPPORTED_EXTS]
-        
+
+        files = [f for f in Path(DOCUMENTS_DIR).rglob("*")
+                 if f.suffix.lower() in SUPPORTED_EXTS]
+
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=self.config.MAX_WORKERS) as executor:
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             executor.map(self.process_document, files)
         
         logging.info("Index build complete.")
@@ -89,7 +90,7 @@ class RAGSystem:
         ).tolist()
         results = self.collection.query(
             query_embeddings=query_emb,
-            n_results=self.config.RETRIEVAL_TOP_K,
+            n_results=RETRIEVAL_TOP_K,
             include=["metadatas", "documents", "distances"]
         )
         if not results["ids"]:
@@ -135,8 +136,8 @@ class RAGSystem:
         if not self.embedding_model:
             logging.info("Loading embedding model...")
             self.embedding_model = SentenceTransformer(
-                self.config.EMBEDDING_MODEL_NAME,
-                device=self.config.EMBEDDING_DEVICE
+                EMBEDDING_MODEL_NAME,
+                device=EMBEDDING_DEVICE
             )
             self.is_running = True
 
@@ -168,7 +169,7 @@ class DocumentHandler(FileSystemEventHandler):
             self._debounce(e.src_path, lambda: self.rag_system.process_document(Path(e.src_path)))
 
 def start_watcher(rag_system):
-    handler = DocumentHandler(rag_system, rag_system.config.WATCHER_DEBOUNCE_SECONDS)
+    handler = DocumentHandler(rag_system, rag_system.WATCHER_DEBOUNCE_SECONDS)
     obs = Observer()
-    obs.schedule(handler, path=rag_system.config.DOCUMENTS_DIR, recursive=True)
+    obs.schedule(handler, path=rag_system.DOCUMENTS_DIR, recursive=True)
     obs.start()

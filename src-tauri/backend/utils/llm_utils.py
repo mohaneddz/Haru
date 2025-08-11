@@ -5,7 +5,6 @@ import subprocess
 import sys
 import time
 import emoji
-from web import detect_dynamic_stop_tokens
 from constants import LLAMA_SERVER_URL
 import requests
 from fastapi.responses import StreamingResponse
@@ -85,6 +84,7 @@ def strip_markdown_and_emojis(text: str) -> str:
 # ------------------------------
 
 async def build_llm_payload(search_context, query, data):
+    from utils.web_utils import detect_dynamic_stop_tokens
     combined_prompt = (
         "You are a helpful research assistant. Answer the user's question based *only* on the information provided in the context below. "
         "Synthesize the information from the Primary Source and Supporting Evidence into a single, coherent answer. Be concise.\n\n"

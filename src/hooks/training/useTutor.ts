@@ -93,35 +93,35 @@ export default function useTutor() {
 		});
 	});
 
-	createEffect(() => {
-		let responseSource: EventSource | null = null;
+	// createEffect(() => {
+	// 	let responseSource: EventSource | null = null;
 
-		const connectResponse = () => {
-			responseSource = new EventSource("http://127.0.0.1:5000/response");
+	// 	const connectResponse = () => {
+	// 		responseSource = new EventSource("http://127.0.0.1:5000/response");
 
-			responseSource.onmessage = (event) => {
-				try {
-					console.log('Response received:', event);
-					const parsedData = JSON.parse(event.data); // Ensure the content is parsed correctly
-					setResponse(parsedData.content || event.data); // Extract the content or fallback to raw data
-				} catch {
-					setResponse(event.data); // Fallback in case parsing fails
-				}
-			};
+	// 		responseSource.onmessage = (event) => {
+	// 			try {
+	// 				console.log('Response received:', event);
+	// 				const parsedData = JSON.parse(event.data); // Ensure the content is parsed correctly
+	// 				setResponse(parsedData.content || event.data); // Extract the content or fallback to raw data
+	// 			} catch {
+	// 				setResponse(event.data); // Fallback in case parsing fails
+	// 			}
+	// 		};
 
-			responseSource.onerror = (err) => {
-				console.error('SSE error:', err);
-				responseSource?.close();
-				setTimeout(connectResponse, 1000); // Retry after 1s
-			};
-		};
+	// 		responseSource.onerror = (err) => {
+	// 			console.error('SSE error:', err);
+	// 			responseSource?.close();
+	// 			setTimeout(connectResponse, 1000); // Retry after 1s
+	// 		};
+	// 	};
 
-		connectResponse();
+	// 	connectResponse();
 
-		onCleanup(() => {
-			responseSource?.close();
-		});
-	});
+	// 	onCleanup(() => {
+	// 		responseSource?.close();
+	// 	});
+	// });
 
 	onCleanup(() => {
 		abortController.abort();

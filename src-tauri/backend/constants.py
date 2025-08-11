@@ -2,7 +2,20 @@ import asyncio
 import os
 import tiktoken
 import json
-import sentencepiece as spm
+
+# Utils =======================================================
+
+def get_env(variable_name, default_value):
+    return os.environ.get(variable_name, default_value)
+
+def get_store_value(key, default=None):
+    """Retrieve a value from the store JSON file."""
+    try:
+        with open(STORE_PATH, 'r') as f:
+            store = json.load(f)
+        return store.get(key, default)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return default
 
 # CONSTANTS =======================================================
 
@@ -12,6 +25,23 @@ APPDATA = os.getenv("APPDATA")
 STORE_PATH = os.path.join(APPDATA, "com.haru.app", "store.json")
 MAX_CONTEXT_TOKENS = 3500
 TOKEN_ENCODER = tiktoken.encoding_for_model("gpt-3.5-turbo") 
+EMBEDDING_MODEL_NAME = get_env("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
+EMBEDDING_DEVICE = get_env("EMBEDDING_DEVICE", "cuda" if get_env("USE_GPU", "false").lower() in ("true", "1", "yes") else "cpu")
+MAX_WORKERS = int(get_env("MAX_WORKERS", 8))
+
+# --- RAG System Settings ---
+PERSIST_DIRECTORY = get_env("PERSIST_DIRECTORY", "chroma_db")
+COLLECTION_NAME = get_env("COLLECTION_NAME", "local_docs")
+DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "documents")
+SUPPORTED_EXTS = {".md", ".txt", ".pdf", ".docx", ".doc", ".csv"}
+CHUNK_SIZE = int(get_env("CHUNK_SIZE", 1000))
+CHUNK_OVERLAP = int(get_env("CHUNK_OVERLAP", 200))
+EMBEDDING_BATCH_SIZE = int(get_env("EMBEDDING_BATCH_SIZE", 32))
+RETRIEVAL_TOP_K = int(get_env("RETRIEVAL_TOP_K", 10))
+USE_GPU = get_env("USE_GPU", "false").lower() in ("true", "1", "yes")
+WATCHER_DEBOUNCE_SECONDS = float(get_env("WATCHER_DEBOUNCE_SECONDS", 2.0))
+
+# --- WEB Scraper Settings ---
 TRUSTED_DOMAINS = {
     'imdb.com': 1.5,
     'wikipedia.org': 1.5,
@@ -44,60 +74,28 @@ TRUSTED_DOMAINS = {
     'quora.com': 0.8,
 }
 
-def get_env(variable_name, default_value):
-    return os.environ.get(variable_name, default_value)
+# --- LLM Prompt Templates for RAG ---
+LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant. Based ONLY on the context provided below, answer the user's question.
+You MUST cite the specific sources you use. At the end of each sentence that uses context, add the citation in brackets, like [Source 1], [Source 2], etc.
+If the context does not contain the answer, state that you cannot answer based on the provided documents. Do not use any external knowledge.
 
-def get_store_value(key, default=None):
-    """Retrieve a value from the store JSON file."""
-    try:
-        with open(STORE_PATH, 'r') as f:
-            store = json.load(f)
-        return store.get(key, default)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return default
+Context:
+{context}
 
-class Config:
-    """Centralized configuration for the entire application."""
-    # --- Server and Model Settings ---
-    LLAMA_SERVER_URL = get_env("LLAMA_SERVER_URL", "http://localhost:8080/completion")
-    EMBEDDING_MODEL_NAME = get_env("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
-    
-    # --- RAG System Settings ---
-    PERSIST_DIRECTORY = get_env("PERSIST_DIRECTORY", "chroma_db")
-    COLLECTION_NAME = get_env("COLLECTION_NAME", "local_docs")
-    DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "documents")
-    SUPPORTED_EXTS = {".md", ".txt", ".pdf", ".docx", ".doc", ".csv"}
-    CHUNK_SIZE = int(get_env("CHUNK_SIZE", 1000))
-    CHUNK_OVERLAP = int(get_env("CHUNK_OVERLAP", 200))
-    EMBEDDING_BATCH_SIZE = int(get_env("EMBEDDING_BATCH_SIZE", 32))
-    RETRIEVAL_TOP_K = int(get_env("RETRIEVAL_TOP_K", 10))
-    USE_GPU = get_env("USE_GPU", "false").lower() in ("true", "1", "yes")
+Question: {query}
+Answer:"""
 
-    # --- Watchdog Settings ---
-    WATCHER_DEBOUNCE_SECONDS = float(get_env("WATCHER_DEBOUNCE_SECONDS", 2.0))
+LLM_PROMPT_TEMPLATE_ADVANCED = """### INSTRUCTIONS FOR AI ASSISTANT ###
+You are an expert technical writer. Your task is to synthesize the information from the 'Context' section to provide a clear, comprehensive, and well-structured answer to the 'Question'.
+1.  **Synthesize, Don't Summarize**: Weave the information together into a cohesive narrative.
+2.  **Cite Correctly**: At the end of a sentence or paragraph that relies on context, group all relevant sources in a single block, like `[Source 1, 3]`.
+3.  **Handle Missing Information**: If the context does not contain the answer, state that you cannot provide an answer based on the available documents.
 
-    # --- LLM Prompt Templates for RAG ---
-    LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant. Based ONLY on the context provided below, answer the user's question.
-    You MUST cite the specific sources you use. At the end of each sentence that uses context, add the citation in brackets, like [Source 1], [Source 2], etc.
-    If the context does not contain the answer, state that you cannot answer based on the provided documents. Do not use any external knowledge.
+### Context ###
+{context}
 
-    Context:
-    {context}
+### Question ###
+{query}
 
-    Question: {query}
-    Answer:"""
-
-    LLM_PROMPT_TEMPLATE_ADVANCED = """### INSTRUCTIONS FOR AI ASSISTANT ###
-    You are an expert technical writer. Your task is to synthesize the information from the 'Context' section to provide a clear, comprehensive, and well-structured answer to the 'Question'.
-    1.  **Synthesize, Don't Summarize**: Weave the information together into a cohesive narrative.
-    2.  **Cite Correctly**: At the end of a sentence or paragraph that relies on context, group all relevant sources in a single block, like `[Source 1, 3]`.
-    3.  **Handle Missing Information**: If the context does not contain the answer, state that you cannot provide an answer based on the available documents.
-
-    ### Context ###
-    {context}
-
-    ### Question ###
-    {query}
-
-    ### Answer ###
-    """
+### Answer ###
+"""

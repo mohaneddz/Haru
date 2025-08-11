@@ -1,7 +1,7 @@
 import { useLocation } from '@solidjs/router';
 import { createSignal, onMount, Show } from 'solid-js';
 import overlay from '@/assets/overlay.png';
-import { CourseInfo, loadCourseData } from '@/utils/home/courses/loadCourse';
+import { CourseInfo, loadCourseData } from '@/utils/home/courses/courseUtils';
 import CourseInfoTopCard from '@/components/01 - Home/Cards/CourseInfoTopCard';
 import { invoke } from '@tauri-apps/api/core';
 

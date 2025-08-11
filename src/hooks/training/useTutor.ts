@@ -97,7 +97,7 @@ export default function useTutor() {
 		let responseSource: EventSource | null = null;
 
 		const connectResponse = () => {
-			responseSource = new EventSource('http://localhost:5000/response');
+			responseSource = new EventSource("http://127.0.0.1:5000/response");
 
 			responseSource.onmessage = (event) => {
 				try {

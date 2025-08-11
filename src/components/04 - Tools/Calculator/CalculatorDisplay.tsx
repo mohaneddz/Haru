@@ -1,5 +1,5 @@
 import { Component, Accessor } from 'solid-js';
-import { Operation } from '@/types/calculator';
+import { Operation } from '@/types/tools/calculator';
 
 interface DisplayProps {
   displayValue: Accessor<string>;

@@ -23,3 +23,4 @@ export default function SelectInput(props: Props) {
         </select>
     );
 };
+

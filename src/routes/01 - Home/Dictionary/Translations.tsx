@@ -1,4 +1,4 @@
-import { loadTranslations } from '@/utils/home/dictionary/loadTranslations';
+import { loadTranslations } from '@/utils/home/dictionary/translationUtils';
 import { createSignal, onMount, For } from 'solid-js';
 import TranslationRow from '@/components/01 - Home/Dictionary/TranslationRow';
 import Modal from '@/components/core/Modal';

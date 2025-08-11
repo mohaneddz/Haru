@@ -1,6 +1,6 @@
 import { Component } from 'solid-js';
 import CalculatorButton from './CalculatorButton';
-import { Operation } from '@/types/calculator';
+import { Operation } from '@/types/tools/calculator';
 
 interface KeypadProps {
   handleNumberClick: (num: string) => void;

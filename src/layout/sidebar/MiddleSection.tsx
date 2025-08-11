@@ -2,7 +2,7 @@ import { sections, entries } from '@/layout/sidebar/Entries';
 import { For, createSignal, onMount } from 'solid-js'; // Added Component and JSX
 import { invoke } from "@tauri-apps/api/core";
 import * as icons from 'lucide-solid';
-import type { LucideIconComponent } from '@/types/sidebar';
+import type { LucideIconComponent } from '@/types/misc/sidebar';
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;

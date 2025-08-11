@@ -1,5 +1,7 @@
-import { createSignal } from 'solid-js';
+import { createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import { loadFlashcards } from '@/utils/training/flashcardUtils';
+import { Flashcard } from '@/types/home/flashcard';
 
 export default function useFlashcards() {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
@@ -15,7 +17,7 @@ export default function useFlashcards() {
 
 	const navigate = useNavigate();
 
-	const [flashcards, setFlashcards] = createSignal([
+	const [flashcards, setFlashcards] = createSignal<Flashcard[]>([
 		{
 			id: 1,
 			question: 'What is React?',
@@ -23,49 +25,30 @@ export default function useFlashcards() {
 			lastModified: '2023-10-01',
 			accuracy: '85%',
 			attempts: '10',
-		},
-		{
-			id: 2,
-			question: 'What is SolidJS?',
-			answer: 'A declarative JavaScript library for building user interfaces.',
-			lastModified: '2023-10-02',
-			accuracy: '90%',
-			attempts: '5',
-		},
-		{
-			id: 3,
-			question: 'What is Tauri?',
-			answer: 'A framework for building native applications using web technologies.',
-			lastModified: '2023-10-03',
-			accuracy: '80%',
-			attempts: '8',
-		},
-		{
-			id: 4,
-			question: 'What is TypeScript?',
-			answer: 'A typed superset of JavaScript that compiles to plain JavaScript.',
-			lastModified: '2023-10-04',
-			accuracy: '95%',
-			attempts: '12',
-		},
-		{
-			id: 5,
-			question: 'What is Node.js?',
-			answer: "A JavaScript runtime built on Chrome's V8 JavaScript engine.",
-			lastModified: '2023-10-05',
-			accuracy: '88%',
-			attempts: '7',
-		},
-		{
-			id: 6,
-			question: 'What is WebAssembly?',
-			answer: 'A binary instruction format for a stack-based virtual machine.',
-			lastModified: '2023-10-06',
-			accuracy: '92%',
-			attempts: '9',
+			type: 'input',
 		},
 	]);
 	const [cardToDelete, setCardToDelete] = createSignal<number | null>(null);
+
+	onMount(() => {
+		loadFlashcards(1)
+			.then((cards) => {
+				const processedCards = cards.map((card) => ({
+					...card,
+					question: card.question.slice(1, -1),
+					type: card.type as "input" | "tf" | "multi-choice",
+					answer: card.answer.slice(1, -1),
+					accuracy: `${Math.round((card.numCorr / (card.numCorr + card.numWrong)) * 100)}%`,
+					attempts: `${card.numCorr + card.numWrong}`,
+					lastDone: new Date(card.lastDone).toISOString().split('T')[0],
+					lastModified: new Date().toISOString().split('T')[0], // YYYY-MM-DD-HH:mm:ss
+				}));
+				setFlashcards(processedCards);
+			})
+			.catch((error) => {
+				console.error('Error loading flashcards:', error);
+			});
+	});
 
 	const confirmDeleteSelected = () => {
 		setFlashcards((prev) => prev.filter((card) => !selected().includes(card.id)));
@@ -135,6 +118,7 @@ export default function useFlashcards() {
 				lastModified: new Date().toISOString().split('T')[0],
 				accuracy: '0%',
 				attempts: '0',
+				type: 'input',
 			},
 		]);
 		setIsAddModalOpen(false);

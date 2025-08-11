@@ -1,4 +1,4 @@
-import { Node, Transform } from '@/types/roadmap';
+import { Node, Transform } from '@/types/home/roadmap';
 
 interface Props {
     node: Node;

@@ -1,5 +1,5 @@
 import { createSignal, onCleanup } from 'solid-js';
-import { Node, Transform } from '@/types/roadmap';
+import { Node, Transform } from '@/types/home/roadmap';
 import ConceptTooltip from '@/components/01 - Home/Canvas/ConceptTooltip';
 
 interface Props extends Node {

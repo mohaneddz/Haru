@@ -4,12 +4,13 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "start": "tauri dev",
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
     "tauri": "tauri",
     "excalidraw": "npx serve public/excalidraw-app -p 3001 -s",
-    "start": "concurrently \"npm run tauri dev\" \"npm run excalidraw\""
+    "both": "concurrently \"npm run tauri dev\" \"npm run excalidraw\""
   },
   "license": "MIT",
   "dependencies": {

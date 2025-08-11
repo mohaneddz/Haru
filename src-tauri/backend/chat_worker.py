@@ -3,58 +3,28 @@ import logging
 import re
 import asyncio
 
-import requests
-import httpx  # Replaced 'requests' with the async-capable 'httpx'
+import httpx 
 from contextlib import asynccontextmanager
 import traceback # For more detailed logging
 
-from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from constants import LLAMA_SERVER_URL
-from inits import (
-    init_config_threaded,
-    init_http_session_threaded,
-    init_rag_system_threaded,
-    init_client_threaded,
-)
-from rag import *
-from llm import (
-    create_llm_payload,
-    # Assuming these functions will be adapted to be async and use httpx
-    handle_non_streaming_llm_response,
-    stream_unified_response,
-    voice_create_llm_payload,
-    voice_stream_unified_response,
-    run_llama_server,
-    kill_llama_server,
-    build_llm_payload,
-)
-from web import get_web_urls, crawl_webpages_hybrid, ContentExtractor, process_crawled_results, build_search_context
+from utils.inits import (init_config_threaded,init_http_session_threaded,init_rag_system_threaded,init_client_threaded)
+from utils.llm_utils import (create_llm_payload,handle_non_streaming_llm_response,stream_unified_response,voice_create_llm_payload,voice_stream_unified_response,run_llama_server,kill_llama_server,build_llm_payload)
+from utils.web_utils import get_web_urls, crawl_webpages_hybrid, ContentExtractor, process_crawled_results, build_search_context
 
 # ======================================================================================
 # --- CONFIGURATION (via Environment Variables with Defaults) ---
 # ======================================================================================
 
-content_extractor = None
-http_client: httpx.AsyncClient = None
-http_session = None
-main_process = None
-voice_client_task = None
-config = None
-rag_system = None
-client = None
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-# ======================================================================================
-# --- APPLICATION LIFESPAN HANDLER ---
-# ======================================================================================
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global content_extractor, http_client, main_process, voice_client_task, http_session
+    global content_extractor, http_client, main_process, http_session
     global config, rag_system, client
 
     logging.info("Starting app components...")
@@ -95,14 +65,9 @@ async def lifespan(app: FastAPI):
 
     logging.info("Cleaning up app components...")
 
-    if voice_client_task and not voice_client_task.done():
-        voice_client_task.cancel()
-        try:
-            await voice_client_task
-        except asyncio.CancelledError:
-            pass
-
     await http_client.aclose()
+
+    client.cleanup()  # Ensure client cleanup is called
 
     if http_session:
         await asyncio.to_thread(http_session.close)

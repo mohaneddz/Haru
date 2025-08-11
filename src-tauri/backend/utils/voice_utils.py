@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 from kokoro import KPipeline
-from llm import strip_markdown_and_emojis # Assuming this utility exists
+from llm_utils import strip_markdown_and_emojis 
 import base64
 import pyaudio
 import soundfile as sf
@@ -12,9 +12,6 @@ import requests
 import json
 import threading
 import os
-import io
-import logging
-from contextlib import closing
 import wave
 
 class VoiceAssistant:

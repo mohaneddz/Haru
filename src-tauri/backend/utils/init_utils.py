@@ -1,8 +1,8 @@
 import threading
 import requests
 from constants import Config
-from rag import RAGSystem
-from voice import VoiceAssistant
+from rag_utils import RAGSystem
+from voice_utils import VoiceAssistant
 
 class ThreadWithResult(threading.Thread):
     def __init__(self, target, *args, **kwargs):

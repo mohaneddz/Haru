@@ -5,11 +5,10 @@ import subprocess
 import sys
 import time
 import emoji
-import httpx
-from fastapi.responses import StreamingResponse
 from web import detect_dynamic_stop_tokens
 from constants import LLAMA_SERVER_URL
 import requests
+from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 
 # ------------------------------

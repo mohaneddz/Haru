@@ -10,13 +10,12 @@ import html
 import trafilatura
 from readability import Document
 from datetime import datetime
-from constants import TRUSTED_DOMAINS, TOKEN_ENCODER
+from constants import TRUSTED_DOMAINS, TOKEN_ENCODER, MAX_CONTEXT_TOKENS
 import json
 import logging
 import torch 
 from urllib.parse import urlparse
 import asyncio
-from constants import MAX_CONTEXT_TOKENS, TRUSTED_DOMAINS
 
 class StructuredDataExtractor:
     """Extract structured data from JSON-LD, meta tags, and microdata."""
@@ -109,8 +108,9 @@ class ContentExtractor:
     def __init__(self, model_name='all-MiniLM-L6-v2'):
         """Initializes the extractor by loading the sentence transformer model."""
         try:
-            logging.info(f"Loading sentence transformer model: {model_name}...")
-            self.model = SentenceTransformer(model_name)
+            # self.model = SentenceTransformer(model_name)
+            self.model = None
+            self.model_name = model_name
             logging.info("Model loaded successfully.")
         except Exception as e:
             logging.error(f"Failed to load sentence transformer model: {e}", exc_info=True)
@@ -193,8 +193,6 @@ class ContentExtractor:
             logging.error(f"Tokenizer error: {e}", exc_info=True)
             return text[:max_tokens * 4] + " […continued]"
 
-    # def extract_text()
-
     def count_tokens(self, text: str) -> int:
         """Count the number of tokens in a given text."""
         try:
@@ -203,7 +201,6 @@ class ContentExtractor:
         except Exception as e:
             logging.error(f"Token counting error: {e}", exc_info=True)
             return text // 4
-        
 
     def extract_relevant_sections(self, content: str, query: str, top_k: int = 8, min_chunk_len: int = 30, html_content: str = None, url: str = None, max_tokens: int = 500) -> tuple[str, float, dict]:
         """
@@ -281,6 +278,10 @@ class ContentExtractor:
             logging.error(f"Error during semantic extraction: {e}", exc_info=True)
             truncated = self.intelligent_truncate(content, 500)
             return truncated, 0.0, full_fields
+
+    def run(self):
+        logging.info(f"Loading sentence transformer model: {self.model_name}...")
+        self.model = SentenceTransformer(self.model_name)
 
 # ==============================================================================
 # WEB SEARCH FUNCTIONS

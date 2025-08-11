@@ -7,6 +7,8 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import os
+os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
 import chromadb
 
 class RAGSystem:

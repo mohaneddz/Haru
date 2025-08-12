@@ -2,7 +2,6 @@ from pathlib import Path
 import logging
 import re
 import asyncio
-import os
 
 import httpx 
 from contextlib import asynccontextmanager

@@ -27,33 +27,29 @@ async def create_llm_payload(messages: list, stream: bool, llm_config: dict = No
     }
     return payload
 
-async def create_llm_payload_with_image(messages: list, image_path: str, stream: bool, llm_config: dict = None) -> dict:
-    """
-    Insert image into the last user message in `messages` (openai-chat style).
-    - If last user message content is a string, it will be converted into:
-        [{"type":"text","text": "<original string>"}, {"type":"image_url", "image_url": {"url": "data:...;base64,..."}}]
-    - If last user content is already a list, the image part will be appended.
-    """
+async def create_llm_payload_with_images(messages: list, image_paths: list, stream: bool, llm_config: dict = None) -> dict:
     if llm_config is None:
         llm_config = {}
 
-    mime_type, _ = mimetypes.guess_type(image_path)
-    if mime_type is None:
-        mime_type = "image/jpeg"
+    image_parts = []
+    for image_path in image_paths:
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if mime_type is None:
+            mime_type = "image/jpeg"
 
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image not found: {image_path}")
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image not found: {image_path}")
 
-    with open(image_path, "rb") as f:
-        image_b64 = base64.b64encode(f.read()).decode("utf-8")
+        with open(image_path, "rb") as f:
+            image_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-    data_url = f"data:{mime_type};base64,{image_b64}"
-    image_part = {
-        "type": "image_url",
-        "image_url": {"url": data_url}
-    }
+        data_url = f"data:{mime_type};base64,{image_b64}"
+        image_parts.append({
+            "type": "image_url",
+            "image_url": {"url": data_url}
+        })
 
-    # Modify last user message (prefer last occurrence of a user role)
+    # Find last user message index
     last_user_idx = None
     for i in range(len(messages) - 1, -1, -1):
         if messages[i].get("role") == "user":
@@ -61,20 +57,17 @@ async def create_llm_payload_with_image(messages: list, image_path: str, stream:
             break
 
     if last_user_idx is None:
-        # No user message found — add one
-        messages.append({"role": "user", "content": [{"type": "text", "text": ""}, image_part]})
+        # No user message found — add one with all images
+        messages.append({"role": "user", "content": [{"type": "text", "text": ""}] + image_parts})
     else:
         last = messages[last_user_idx]
         content = last.get("content", "")
         if isinstance(content, str):
-            # convert to content array
-            last["content"] = [{"type": "text", "text": content}, image_part]
+            last["content"] = [{"type": "text", "text": content}] + image_parts
         elif isinstance(content, list):
-            # append image object
-            last["content"].append(image_part)
+            last["content"].extend(image_parts)
         else:
-            # fallback: replace with array
-            last["content"] = [{"type": "text", "text": ""}, image_part]
+            last["content"] = [{"type": "text", "text": ""}] + image_parts
 
     payload = {
         "model": llm_config.get("model", "your-model-name"),

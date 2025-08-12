@@ -1,5 +1,6 @@
 import { Accessor, For, Setter } from "solid-js";
 import Message from "@/components/02 - Practice/Tutor/Messasge";
+import { MessageData } from "@/types/home/tutor";
 
 interface Props {
     messages: Accessor<MessageData[]>
@@ -32,7 +33,7 @@ export default function Chat(props: Props) {
                 class="max-h-full mt-8 flex-col w-full px-[10%] flex flex-nowrap items-center justify-start relative rounded-md mb-4 overflow-y-auto overflow-x-hidden"
             >
                 <For each={props.messages()}>
-                    {(message) => <Message text={message.text} user={message.user} id={message.id} sources={message.sources} showSources={!props.isLoading() || message.id < props.messages().length} />}
+                    {(message) => <Message text={message.text} user={message.user} id={message.id} sources={message.sources} showSources={!props.isLoading() || message.id < props.messages().length} images={message?.images || []} />}
                 </For>
 
             </div>

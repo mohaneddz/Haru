@@ -1,4 +1,3 @@
-
 # @app.route("/health", methods=["GET"])
 # def health_check_endpoint():
 #     """Performs a health check on the service and its dependencies."""
@@ -36,18 +35,6 @@
 #         logging.error(f"Failed to list documents: {e}", exc_info=True)
 #         return jsonify({"error": "Failed to retrieve document list"}), 500
 
-# @app.route("/rebuild-index", methods=["POST"])
-# def rebuild_index_endpoint():
-#     """Triggers a full rebuild of the vector index in a background thread."""
-#     thread = threading.Thread(target=rag_system.build_index_from_directory, kwargs={"force_rebuild": True})
-#     thread.start()
-#     return jsonify({"message": "Index rebuild process started in the background."}), 202
-
-# @app.route("/persist-index", methods=["POST"])
-# def persist_index_endpoint():
-#     """Forces the vector database to save its current state to disk."""
-#     rag_system.persist_index()
-#     return jsonify({"message": "Index has been persisted to disk."}), 200
 
 # @app.route("/store")
 # def read_store():

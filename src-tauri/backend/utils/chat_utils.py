@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
 
-def create_llm_payload(messages: list, stream: bool, llm_config: dict = None) -> dict:
+async def create_llm_payload(messages: list, stream: bool, llm_config: dict = None) -> dict:
     """
     Create OpenAI-compatible payload for text-only or already-constructed messages.
     messages: list of dicts: {"role": "user"/"assistant"/"system", "content": <string or content-list>}
@@ -27,7 +27,7 @@ def create_llm_payload(messages: list, stream: bool, llm_config: dict = None) ->
     }
     return payload
 
-def create_llm_payload_with_image(messages: list, image_path: str, stream: bool, llm_config: dict = None) -> dict:
+async def create_llm_payload_with_image(messages: list, image_path: str, stream: bool, llm_config: dict = None) -> dict:
     """
     Insert image into the last user message in `messages` (openai-chat style).
     - If last user message content is a string, it will be converted into:

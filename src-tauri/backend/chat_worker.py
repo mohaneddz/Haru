@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import httpx
 from constants import LLAMA_SERVER_URL, DEFAULT_MODEL
-from utils.chat_utils import create_llm_payload, create_llm_payload_with_image, handle_non_streaming_llm_response, stream_unified_response 
+from utils.chat_utils import create_llm_payload, create_llm_payload_with_images, handle_non_streaming_llm_response, stream_unified_response 
 
 # ======================================================================================
 # --- CONFIGURATION (via Environment Variables with Defaults) ---
@@ -51,7 +51,7 @@ async def chat_endpoint(request: Request):
         user_message = data.get('message')
         chat_history = data.get('history', [])
         stream = bool(data.get("stream", False))
-        image_path = data.get("img")
+        image_paths = data.get("imgs", [])
         model = data.get("model", DEFAULT_MODEL)
         llm_config = {
             "model": model,
@@ -59,18 +59,20 @@ async def chat_endpoint(request: Request):
             "max_tokens": data.get("max_tokens", 512)
         }
 
-        if not user_message and not image_path:
-            raise HTTPException(status_code=400, detail="No message or image provided")
+        if not user_message and not image_paths:
+            raise HTTPException(status_code=400, detail="No message or images provided")
 
         # Build messages in OpenAI chat format
         messages = [{"role": turn.get('role', 'user'), "content": turn.get('content', '')} for turn in chat_history]
         messages.append({"role": "user", "content": user_message or ""})
 
-        # Create the appropriate payload based on the presence of an image
-        if image_path:
-            if not os.path.exists(image_path):
-                raise HTTPException(status_code=400, detail=f"Image not found: {image_path}")
-            llama_payload = await create_llm_payload_with_image(messages, image_path, stream, llm_config=llm_config)
+        # Create the appropriate payload based on the presence of images
+        if image_paths:
+            # Check if all image paths exist
+            for img_path in image_paths:
+                if not os.path.exists(img_path):
+                    raise HTTPException(status_code=400, detail=f"Image not found: {img_path}")
+            llama_payload = await create_llm_payload_with_images(messages, image_paths, stream, llm_config=llm_config)
         else:
             llama_payload = await create_llm_payload(messages, stream, llm_config=llm_config)
 

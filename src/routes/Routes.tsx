@@ -41,6 +41,7 @@ export const routes = [
       { path: "/tools/plugins", component: lazy(() => import("@/routes/04 - Tools/Plugins")) },
       { path: "/tools/pomodoro", component: lazy(() => import("@/routes/04 - Tools/Pomodoro")) },
       { path: "/tools/whiteboard", component: lazy(() => import("@/routes/04 - Tools/Whiteboard")) },
+      { path: "/tools/transcription", component: lazy(() => import("@/routes/04 - Tools/AudioTranscribe")) },
 
       // 05 - Auth
       { path: "/auth/login", component: lazy(() => import("@/routes/05 - Auth/Login")) },

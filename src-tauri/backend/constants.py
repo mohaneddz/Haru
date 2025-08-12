@@ -19,7 +19,7 @@ def get_store_value(key, default=None):
 
 # CONSTANTS =======================================================
 
-LLAMA_SERVER_URL = "http://localhost:8080/completion"
+LLAMA_SERVER_URL = "http://localhost:8080/v1/chat/completions"
 CRAWL_SEMAPHORE = asyncio.Semaphore(16)
 APPDATA = os.getenv("APPDATA")  
 STORE_PATH = os.path.join(APPDATA, "com.haru.app", "store.json")
@@ -28,11 +28,12 @@ TOKEN_ENCODER = tiktoken.encoding_for_model("gpt-3.5-turbo")
 EMBEDDING_MODEL_NAME = get_env("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
 EMBEDDING_DEVICE = get_env("EMBEDDING_DEVICE", "cuda" if get_env("USE_GPU", "false").lower() in ("true", "1", "yes") else "cpu")
 MAX_WORKERS = int(get_env("MAX_WORKERS", 8))
+DEFAULT_MODEL = os.environ.get("LLAMA_MODEL", "your-model-name")
 
 # --- RAG System Settings ---
 PERSIST_DIRECTORY = get_env("PERSIST_DIRECTORY", "chroma_db")
 COLLECTION_NAME = get_env("COLLECTION_NAME", "local_docs")
-DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "documents")
+DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents")
 SUPPORTED_EXTS = {".md", ".txt", ".pdf", ".docx", ".doc", ".csv"}
 CHUNK_SIZE = int(get_env("CHUNK_SIZE", 1000))
 CHUNK_OVERLAP = int(get_env("CHUNK_OVERLAP", 200))

@@ -163,7 +163,7 @@ async def ask_with_search(payload: dict):
         final_sources = [{"title": s.get("title", "No Title"), "url": s.get("url"), "score": round(s.get("score", 0.0), 4), "path": "", "section": ""} for s in processed_results]
 
         search_context, _, _, _, supporting_sources = await asyncio.to_thread(build_search_context, processed_results, query, content_extractor)
-        llm_payload = build_llm_payload(search_context, query, payload, supporting_sources)
+        llm_payload = await build_llm_payload(search_context, query, payload, supporting_sources)
         llm_payload["stream"] = stream
 
         if stream:

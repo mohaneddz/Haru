@@ -192,3 +192,50 @@ async def stream_unified_response(client: httpx.AsyncClient, payload: dict, url:
             yield "event: end\ndata: {}\n\n"
 
     return StreamingResponse(generate_sse(), media_type='text/event-stream')
+
+async def build_llm_payload(search_context: str, query: str, original_payload: dict, supporting_sources: list) -> dict:
+    user_prompt_parts = []
+    system_prompt = "You are a helpful assistant that provides accurate and concise answers based on the provided context."
+
+    # Add the primary source (highest-ranked search result)
+    primary_source = supporting_sources[0] if supporting_sources else {"url": "N/A"}
+    user_prompt_parts.append(
+        f"**[1] Primary Source:** (URL: {primary_source.get('url')})\n"
+        f"```\n{search_context}\n```"
+    )
+
+    # Add the supporting evidence
+    if len(supporting_sources) > 1:
+        user_prompt_parts.append("\n**Supporting Evidence:**")
+        for i, source in enumerate(supporting_sources[1:], start=2):
+            user_prompt_parts.append(
+                f"\n**[{i}] Source:** (URL: {source.get('url')})\n"
+                f"```\n{source.get('content', 'Snippet not available.')}\n```"
+            )
+    
+    # Add the user's final query
+    user_prompt_parts.append(
+        "\n---"
+        "\n**User Query:**"
+        f"\nBased on the context provided above, please answer the following question: {query}"
+    )
+    
+    user_prompt = "\n".join(user_prompt_parts)
+
+    # 3. Assemble the final messages list
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+
+    # 4. Construct the final payload, respecting parameters from the original request
+    # This allows users to specify things like temperature, max_tokens, or a specific model.
+    llm_payload = {
+        "model": original_payload.get("model", "mistral-large-latest"), # Fallback to a default
+        "messages": messages,
+        "temperature": original_payload.get("temperature", 0.2), # Lower temp for more factual answers
+        "max_tokens": original_payload.get("max_tokens", 1500), # Allow for longer, detailed answers
+        "stream": original_payload.get("stream", False)
+    }
+
+    return llm_payload

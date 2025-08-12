@@ -1,31 +1,19 @@
 import { createSignal, createEffect, onCleanup, onMount } from 'solid-js';
-
-// --- TYPE DEFINITIONS ---
-interface SourceData {
-	path?: string;
-	title?: string;
-	url?: string;
-	score_range?: [number, number];
-	prompt_indices?: number[];
-}
-
-interface MessageData {
-	id: number;
-	text: string;
-	user: boolean;
-	sources?: SourceData[];
-	rawText?: string; // Temporary storage for streaming
-}
+import type { MessageData } from '@/types/home/tutor';
 
 export default function useTutor() {
+
 	let messageContainerRef: HTMLDivElement | null = null;
+
 	// --- STATE MANAGEMENT (Signals) ---
 	const [currText, setCurrText] = createSignal('');
 	const [isLoading, setIsLoading] = createSignal(false);
 	const [transcript, setTranscript] = createSignal('');
 	const [response, setResponse] = createSignal('');
 	const [eventSource, setEventSource] = createSignal<EventSource | null>(null);
-	const [voiceStatus, setVoiceStatus] = createSignal('Listening...');
+	const [voiceStatus, _] = createSignal('Listening...');
+	const [images, setImages] = createSignal<string[]>([]);
+	const [paths, setPaths] = createSignal<string[]>([]);
 
 	const [web, setWeb] = createSignal(false);
 	const [rag, setRag] = createSignal(false);
@@ -44,6 +32,7 @@ export default function useTutor() {
 			sources: [],
 		},
 	]);
+
 
 	// --- UTILITIES & REFS ---
 	let abortController = new AbortController();
@@ -359,7 +348,8 @@ export default function useTutor() {
 	async function sendStandardQuestion(
 		messageText: string,
 		history: { role: string; content: string }[],
-		signal: AbortSignal
+		signal: AbortSignal,
+		imagePaths: string[] = []
 	) {
 		const botMessageId = getNextId();
 		appendBotMessage(botMessageId);
@@ -367,7 +357,12 @@ export default function useTutor() {
 			const response = await fetch('http://localhost:5000/chat', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ message: messageText, history, stream: true }),
+				body: JSON.stringify({ 
+					message: messageText, 
+					history, 
+					stream: true,
+					imgs: imagePaths
+				}),
 				signal,
 			});
 			if (!response.ok || !response.body) {
@@ -382,8 +377,11 @@ export default function useTutor() {
 
 	// --- PRIMARY USER ACTION HANDLER (for text chat) ---
 	const handleSend = async () => {
+
 		const messageText = currText().trim();
-		if (!messageText || isLoading() || voice()) return;
+		const messageImages = images();
+		const messagePaths = paths();
+		if ((!messageText && messageImages.length === 0) || isLoading() || voice()) return;
 
 		abortController.abort();
 		const newAbortController = new AbortController();
@@ -392,8 +390,10 @@ export default function useTutor() {
 
 		setIsLoading(true);
 		setCurrText('');
+		setImages([]);
+		setPaths([]);
 
-		const newUserMessage: MessageData = { id: getNextId(), text: messageText, user: true };
+		const newUserMessage: MessageData = { id: getNextId(), text: messageText, user: true, images: messageImages };
 		const currentMessages = [...messages(), newUserMessage];
 		setMessages(currentMessages);
 
@@ -404,7 +404,7 @@ export default function useTutor() {
 				await sendQueryWithSources('/ask_search', messageText, signal);
 			} else {
 				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1)); // History before the new message
-				await sendStandardQuestion(messageText, historyForBackend, signal);
+				await sendStandardQuestion(messageText, historyForBackend, signal, messagePaths);
 			}
 		} catch (error: any) {
 			if (error.name === 'AbortError') console.log('Fetch aborted by a new request.');
@@ -426,9 +426,26 @@ export default function useTutor() {
 			},
 		]);
 		setCurrText('');
+		setImages([]);
+		setPaths([]);
 		setIsLoading(false);
 		if (voice()) stopVoice(); // Also stop voice mode if active
 	};
+
+	function addImage(image: string, path: string) {
+		setImages((prev) => [...prev, image]);
+		setPaths((prev) => [...prev, path || '']);
+	}
+
+	function removeImage(index: number) {
+		setImages((prev) => prev.filter((_, i) => i !== index));
+		setPaths((prev) => prev.filter((_, i) => i !== index));
+	}
+
+	function clearImages() {
+		setImages([]);
+		setPaths([]);
+	}
 
 	// --- RETURNED VALUES & FUNCTIONS ---
 	return {
@@ -437,10 +454,17 @@ export default function useTutor() {
 		currText,
 		setCurrText,
 		isLoading,
+		addImage,
+		images,
+		removeImage,
+		clearImages,
+		paths,
 
 		// Text chat actions
 		handleSend,
 		newChat,
+		setMessages,
+		getNextId,
 
 		// Mode state and toggles
 		mode,
@@ -449,8 +473,7 @@ export default function useTutor() {
 		rag,
 		toggleWeb,
 		toggleRag,
-		messageContainerRef: (ref: HTMLDivElement) => (messageContainerRef = ref),
-
+		messageContainerRef,
 		// Voice state and actions
 		voice,
 		toggleVoice,
@@ -458,5 +481,9 @@ export default function useTutor() {
 		response,
 		setResponse,
 		voiceStatus,
+
+		// aliases
+		deleteImage: removeImage,
+		deleteAllImages: clearImages,
 	};
 }

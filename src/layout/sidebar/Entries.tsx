@@ -19,6 +19,7 @@ export const entries = [
   { title: 'Whiteboard', icon: 'LayoutDashboard', section: 'tools', slug: 'whiteboard' },
   { title: 'Calculators', icon: 'Calculator', section: 'tools', slug: 'calculators' },
   { title: 'Pomodoro', icon: 'AlarmClock', section: 'tools', slug: 'pomodoro' },
+  { title: 'Transcription', icon: 'Mic', section: 'tools', slug: 'transcription' },
 ];
 
 export const sections = [

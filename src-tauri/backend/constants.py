@@ -19,28 +19,33 @@ def get_store_value(key, default=None):
 
 # CONSTANTS =======================================================
 
+# Environment variable template for future reference
 LLAMA_SERVER_URL = "http://localhost:8080/v1/chat/completions"
 CRAWL_SEMAPHORE = asyncio.Semaphore(16)
 APPDATA = os.getenv("APPDATA")  
 STORE_PATH = os.path.join(APPDATA, "com.haru.app", "store.json")
 MAX_CONTEXT_TOKENS = 3500
-TOKEN_ENCODER = tiktoken.encoding_for_model("gpt-3.5-turbo") 
-EMBEDDING_MODEL_NAME = get_env("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
-EMBEDDING_DEVICE = get_env("EMBEDDING_DEVICE", "cuda" if get_env("USE_GPU", "false").lower() in ("true", "1", "yes") else "cpu")
-MAX_WORKERS = int(get_env("MAX_WORKERS", 8))
+TOKEN_ENCODER = tiktoken.encoding_for_model("gpt-3.5-turbo")
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_DEVICE = "cuda" if os.getenv("USE_GPU", "false").lower() in ("true", "1", "yes") else "cpu"
+MAX_WORKERS = 8
 DEFAULT_MODEL = os.environ.get("LLAMA_MODEL", "your-model-name")
-
 # --- RAG System Settings ---
-PERSIST_DIRECTORY = get_env("PERSIST_DIRECTORY", "chroma_db")
-COLLECTION_NAME = get_env("COLLECTION_NAME", "local_docs")
-DOCUMENTS_DIR = get_env("DOCUMENTS_DIR", "D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents")
-SUPPORTED_EXTS = {".md", ".txt", ".pdf", ".docx", ".doc", ".csv"}
-CHUNK_SIZE = int(get_env("CHUNK_SIZE", 1000))
-CHUNK_OVERLAP = int(get_env("CHUNK_OVERLAP", 200))
-EMBEDDING_BATCH_SIZE = int(get_env("EMBEDDING_BATCH_SIZE", 32))
-RETRIEVAL_TOP_K = int(get_env("RETRIEVAL_TOP_K", 10))
-USE_GPU = get_env("USE_GPU", "false").lower() in ("true", "1", "yes")
-WATCHER_DEBOUNCE_SECONDS = float(get_env("WATCHER_DEBOUNCE_SECONDS", 2.0))
+MIN_RERANK_SCORE = 0.5
+PERSIST_DIRECTORY = "chroma_db"
+COLLECTION_NAME = "local_docs"
+DOCUMENTS_DIR = "D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents"
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 150
+EMBEDDING_BATCH_SIZE = 32
+USE_GPU = os.getenv("USE_GPU", "false").lower() in ("true", "1", "yes")
+USE_8BIT_QUANTIZATION = True
+RERANKER_MODEL_NAME = 'cross-encoder/ms-marco-MiniLM-L-6-v2'
+SUPPORTED_EXTS = {".pdf", ".docx", ".txt", ".md", ".csv"}
+RETRIEVAL_TOP_K = 20
+RERANK_TOP_K = 5
+WATCHER_DEBOUNCE_SECONDS = 2.0
+
 
 # --- WEB Scraper Settings ---
 TRUSTED_DOMAINS = {
@@ -75,10 +80,11 @@ TRUSTED_DOMAINS = {
     'quora.com': 0.8,
 }
 
-# --- LLM Prompt Templates for RAG ---
-LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant. Based ONLY on the context provided below, answer the user's question.
-You MUST cite the specific sources you use. At the end of each sentence that uses context, add the citation in brackets, like [Source 1], [Source 2], etc.
-If the context does not contain the answer, state that you cannot answer based on the provided documents. Do not use any external knowledge.
+LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant.  
+Based ONLY on the provided context, answer the user's question clearly and concisely.  
+Cite sources immediately after facts using brackets, e.g., [Source 1].  
+If the context does not contain the answer, say: "I cannot answer based on the provided documents."  
+Do NOT use any external knowledge.
 
 Context:
 {context}
@@ -87,10 +93,13 @@ Question: {query}
 Answer:"""
 
 LLM_PROMPT_TEMPLATE_ADVANCED = """### INSTRUCTIONS FOR AI ASSISTANT ###
-You are an expert technical writer. Your task is to synthesize the information from the 'Context' section to provide a clear, comprehensive, and well-structured answer to the 'Question'.
-1.  **Synthesize, Don't Summarize**: Weave the information together into a cohesive narrative.
-2.  **Cite Correctly**: At the end of a sentence or paragraph that relies on context, group all relevant sources in a single block, like `[Source 1, 3]`.
-3.  **Handle Missing Information**: If the context does not contain the answer, state that you cannot provide an answer based on the available documents.
+You are an expert technical writer. Provide a clear, concise, and well-structured answer synthesizing the information from the Context to address the Question.
+
+1. Keep answers brief and focused; avoid unnecessary details.  
+2. Synthesize information into a cohesive narrative—do NOT just summarize or repeat.  
+3. Cite all sources immediately after relevant facts or paragraphs as [Source 1, 3].  
+4. If the context lacks the necessary information, state clearly: "I cannot provide an answer based on the available documents."  
+5. Avoid adding any information not present in the context.
 
 ### Context ###
 {context}

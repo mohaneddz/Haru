@@ -1,17 +1,16 @@
-import logging, re, threading
-from pathlib import Path
-import pandas as pd
-import fitz, mammoth
-from docx import Document
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
-from sentence_transformers import SentenceTransformer
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from constants import (CHUNK_SIZE,CHUNK_OVERLAP, PERSIST_DIRECTORY, COLLECTION_NAME, EMBEDDING_BATCH_SIZE, DOCUMENTS_DIR, SUPPORTED_EXTS, RETRIEVAL_TOP_K, EMBEDDING_DEVICE, EMBEDDING_MODEL_NAME, MAX_WORKERS)
-
 import os
-os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
-import chromadb
+import re
+import gc
+import logging
+import threading
+from pathlib import Path
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from constants import (
+    CHUNK_SIZE, CHUNK_OVERLAP, PERSIST_DIRECTORY, COLLECTION_NAME,
+    EMBEDDING_BATCH_SIZE, DOCUMENTS_DIR, SUPPORTED_EXTS,
+    RETRIEVAL_TOP_K, EMBEDDING_DEVICE, EMBEDDING_MODEL_NAME, MAX_WORKERS
+)
 
 class RAGSystem:
     """Fast RAG for school notes/docs with improved similarity + batch indexing."""
@@ -27,14 +26,11 @@ class RAGSystem:
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP
         )
-        
-        # Persistent ChromaDB
-        self.client = chromadb.PersistentClient(path=PERSIST_DIRECTORY)
-        self.collection = self.client.get_or_create_collection(
-            name=COLLECTION_NAME,
-            metadata={"hnsw:space": "ip"}  # dot-product similarity
-        )
+        self.client = None
+        self.collection = None
         logging.info("RAG System Ready.")
+
+        self.run()
 
     def process_document(self, file_path: Path):
         try:
@@ -113,14 +109,18 @@ class RAGSystem:
         ext = path.suffix.lower()
         try:
             if ext == ".pdf":
+                import fitz
                 with fitz.open(path) as doc:
                     return "\n".join(p.get_text() for p in doc)
             elif ext == ".docx":
+                from docx import Document
                 return "\n".join(p.text for p in Document(path).paragraphs)
             elif ext == ".doc":
+                import mammoth
                 with open(path, "rb") as f:
                     return mammoth.extract_raw_text(f).value
             elif ext == ".csv":
+                import pandas as pd
                 df = pd.read_csv(path, encoding_errors="ignore").fillna("").astype(str)
                 return "\n".join("; ".join(f"{c}: {v}" for c, v in row.items()) for _, row in df.iterrows())
             return path.read_text(encoding="utf-8", errors="ignore")
@@ -132,22 +132,47 @@ class RAGSystem:
     def _clean_text(text: str):
         return re.sub(r"\s+", " ", text).strip()
 
-    def run(self):
+    def load_resources(self):
         if not self.embedding_model:
             logging.info("Loading embedding model...")
+            from sentence_transformers import SentenceTransformer
             self.embedding_model = SentenceTransformer(
                 EMBEDDING_MODEL_NAME,
                 device=EMBEDDING_DEVICE
             )
-            self.is_running = True
+        if not self.client:
+            os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
+            import chromadb
+            self.client = chromadb.PersistentClient(path=PERSIST_DIRECTORY)
+        if not self.collection or not self.client.get_collection(COLLECTION_NAME):
+            self.collection = self.client.get_or_create_collection(
+                name=COLLECTION_NAME,
+                metadata={"hnsw:space": "ip"}
+            )
+        self.is_running = True
 
-    def clean_up(self):
+    def run(self):
+        thread = threading.Thread(target=self.load_resources)
+        thread.start()
+
+    def cleanup(self):
         if self.embedding_model:
+            # If embedding_model has explicit cleanup/free methods, call them here
             self.embedding_model = None
+        
+        if hasattr(self, "client") and self.client:
+            try:
+                # Close persistent client if possible (check chromadb docs)
+                self.client._close()  # or self.client.close() if exists
+            except Exception:
+                pass
+            self.client = None
+            self.collection = None
+
         self.is_running = False
+        gc.collect()
 
-
-class DocumentHandler(FileSystemEventHandler):
+class DocumentHandler():
     def __init__(self, rag_system, debounce_seconds):
         self.rag_system = rag_system
         self.debounce_seconds = debounce_seconds
@@ -169,6 +194,7 @@ class DocumentHandler(FileSystemEventHandler):
             self._debounce(e.src_path, lambda: self.rag_system.process_document(Path(e.src_path)))
 
 def start_watcher(rag_system):
+    from watchdog.observers import Observer
     handler = DocumentHandler(rag_system, rag_system.WATCHER_DEBOUNCE_SECONDS)
     obs = Observer()
     obs.schedule(handler, path=rag_system.DOCUMENTS_DIR, recursive=True)

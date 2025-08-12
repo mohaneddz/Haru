@@ -1,22 +1,18 @@
 # main.py
 import logging
 import asyncio
-import traceback
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import ORJSONResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import httpx
+from constants import LLAMA_SERVER_URL, DEFAULT_MODEL
+from utils.chat_utils import create_llm_payload, create_llm_payload_with_image, handle_non_streaming_llm_response, stream_unified_response 
 
-from utils.chat_utils import (
-    create_llm_payload,
-    create_llm_payload_with_image,
-    handle_non_streaming_llm_response,
-    stream_unified_response
-)
-
-LLAMA_SERVER_URL = os.environ.get("LLAMA_SERVER_URL", "http://localhost:8080/v1/chat/completions")
-DEFAULT_MODEL = os.environ.get("LLAMA_MODEL", "your-model-name")
+# ======================================================================================
+# --- CONFIGURATION (via Environment Variables with Defaults) ---
+# ======================================================================================
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -27,7 +23,6 @@ main_process = None
 async def lifespan(app: FastAPI):
     global http_client
     logging.info("Starting up and creating a persistent httpx client...")
-    import httpx
     http_client = httpx.AsyncClient(timeout=120.0)
     yield
     logging.info("Shutting down and closing the httpx client...")
@@ -75,9 +70,9 @@ async def chat_endpoint(request: Request):
         if image_path:
             if not os.path.exists(image_path):
                 raise HTTPException(status_code=400, detail=f"Image not found: {image_path}")
-            llama_payload = create_llm_payload_with_image(messages, image_path, stream, llm_config=llm_config)
+            llama_payload = await create_llm_payload_with_image(messages, image_path, stream, llm_config=llm_config)
         else:
-            llama_payload = create_llm_payload(messages, stream, llm_config=llm_config)
+            llama_payload = await create_llm_payload(messages, stream, llm_config=llm_config)
 
         logging.info("Final payload prepared for LLM server.")
 

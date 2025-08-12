@@ -338,8 +338,9 @@ export default function useTutor() {
 			endpoint === '/rag'
 				? { query: messageText, stream: true }
 				: { prompt: messageText, stream: true };
+		const ports = endpoint === '/rag' ? 5001 : 5000; 
 		try {
-			const response = await fetch(`http://localhost:5000${endpoint}`, {
+			const response = await fetch(`http://localhost:${ports}${endpoint}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body),

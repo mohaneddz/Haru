@@ -1,6 +1,5 @@
 import threading
 import requests
-# from utils.rag_utils import RAGSystem
 # from utils.voice_utils import VoiceAssistant
 
 class ThreadWithResult(threading.Thread):
@@ -23,10 +22,6 @@ def init_http_session_threaded():
     t = ThreadWithResult(init_http_session)
     t.start()
     return t
-
-# def init_rag_system(config):
-#     return RAGSystem(config)
-
 
 # def init_client():
 #     return VoiceAssistant()

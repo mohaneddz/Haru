@@ -1,4 +1,4 @@
-# utils/chat_utils.py
+import json
 import orjson
 import httpx
 import logging
@@ -78,6 +78,69 @@ async def create_llm_payload_with_images(messages: list, image_paths: list, stre
     }
     return payload
 
+async def voice_create_llm_payload(
+    messages: list,
+    audio_paths: list = None,
+    stream: bool = False,
+    llm_config: dict = None
+) -> dict:
+    """
+    Create LLM payload for voice-based input (STT text + optional audio attachments).
+    messages: list of dicts: {"role": "user"/"assistant"/"system", "content": <string or content-list>}
+    audio_paths: list of local audio file paths to attach
+    """
+    if llm_config is None:
+        llm_config = {}
+    if audio_paths is None:
+        audio_paths = []
+
+    audio_parts = []
+    for audio_path in audio_paths:
+        if not os.path.exists(audio_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+
+        mime_type, _ = mimetypes.guess_type(audio_path)
+        if mime_type is None:
+            mime_type = "audio/wav"  # default
+
+        with open(audio_path, "rb") as f:
+            audio_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        data_url = f"data:{mime_type};base64,{audio_b64}"
+        audio_parts.append({
+            "type": "input_audio",
+            "audio_url": {"url": data_url}
+        })
+
+    # Find last user message index to attach audio
+    last_user_idx = None
+    for i in range(len(messages) - 1, -1, -1):
+        if messages[i].get("role") == "user":
+            last_user_idx = i
+            break
+
+    if last_user_idx is None:
+        # No user message found — add one with all audio
+        messages.append({"role": "user", "content": [{"type": "text", "text": ""}] + audio_parts})
+    else:
+        last = messages[last_user_idx]
+        content = last.get("content", "")
+        if isinstance(content, str):
+            last["content"] = [{"type": "text", "text": content}] + audio_parts
+        elif isinstance(content, list):
+            last["content"].extend(audio_parts)
+        else:
+            last["content"] = [{"type": "text", "text": ""}] + audio_parts
+
+    payload = {
+        "model": llm_config.get("model", "your-model-name"),
+        "messages": messages,
+        "temperature": llm_config.get("temperature", 0.7),
+        "max_tokens": llm_config.get("max_tokens", 512),
+        "stream": stream
+    }
+    return payload
+
 async def handle_non_streaming_llm_response(client: httpx.AsyncClient, payload: dict, url: str) -> dict:
     """
     Send non-streaming request to llama server and normalize response to {'content': str, ...}
@@ -133,54 +196,57 @@ async def stream_unified_response(client: httpx.AsyncClient, payload: dict, url:
         # send sources first
         try:
             yield f"event: sources\ndata: {orjson.dumps(sources).decode('utf-8')}\n\n"
-            async with client.stream("POST", url, json=payload, timeout=10) as response:
-                response.raise_for_status()
-                async for line in response.aiter_lines():
-                    if not line:
-                        continue
-                    # OpenAI-style stream: lines like "data: {json}" or "data: [DONE]"
-                    if line.startswith("data: "):
-                        data_str = line[len("data: "):].strip()
-                        if data_str == "[DONE]":
-                            break
-                        try:
-                            obj = orjson.loads(data_str)
-                        except Exception:
-                            logger.warning("Could not parse stream JSON chunk.")
+            local_client = None
+            _client = client
+            if _client is None:
+                local_client = httpx.AsyncClient(timeout=60.0)
+                _client = local_client
+            try:
+                async with _client.stream("POST", url, json=payload, timeout=60.0) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line:
                             continue
+                        # OpenAI-style stream: lines like "data: {json}" or "data: [DONE]"
+                        if line.startswith("data: "):
+                            data_str = line[len("data: "):].strip()
+                            if data_str == "[DONE]":
+                                break
+                            try:
+                                obj = orjson.loads(data_str)
+                            except Exception:
+                                logger.warning("Could not parse stream JSON chunk.")
+                                continue
 
-                        # Extract token(s) robustly
-                        token_piece = ""
-                        choices = obj.get("choices", [])
-                        if choices and isinstance(choices, list):
-                            # concatenate all choice delta/message parts
-                            parts = []
-                            for c in choices:
-                                delta = c.get("delta", {})
-                                if isinstance(delta, dict) and delta.get("content"):
-                                    parts.append(delta.get("content"))
-                                else:
-                                    # try choice.message.content (non-stream chunks)
-                                    msg = c.get("message", {})
-                                    if isinstance(msg, dict) and msg.get("content"):
-                                        parts.append(msg.get("content"))
-                                    elif c.get("text"):
-                                        parts.append(c.get("text"))
-                            token_piece = "".join([p for p in parts if p])
-                        else:
-                            # fallback shapes
-                            if isinstance(obj.get("content"), str):
-                                token_piece = obj.get("content")
-                            elif obj.get("text"):
-                                token_piece = obj.get("text")
+                            # Extract token(s) robustly
+                            token_piece = ""
+                            choices = obj.get("choices", [])
+                            if choices and isinstance(choices, list):
+                                parts = []
+                                for c in choices:
+                                    delta = c.get("delta", {})
+                                    if isinstance(delta, dict) and delta.get("content"):
+                                        parts.append(delta.get("content"))
+                                    else:
+                                        msg = c.get("message", {})
+                                        if isinstance(msg, dict) and msg.get("content"):
+                                            parts.append(msg.get("content"))
+                                        elif c.get("text"):
+                                            parts.append(c.get("text"))
+                                token_piece = "".join([p for p in parts if p])
+                            else:
+                                if isinstance(obj.get("content"), str):
+                                    token_piece = obj.get("content")
+                                elif obj.get("text"):
+                                    token_piece = obj.get("text")
 
-                        if token_piece:
-                            # send token event
-                            yield f"event: token\ndata: {orjson.dumps(token_piece).decode('utf-8')}\n\n"
-
+                            if token_piece:
+                                yield f"event: token\ndata: {orjson.dumps(token_piece).decode('utf-8')}\n\n"
                 # finished streaming
                 yield "event: end\ndata: {}\n\n"
-
+            finally:
+                if local_client is not None:
+                    await local_client.aclose()
         except httpx.RequestError as e:
             logger.error(f"Stream connection failed: {e}")
             err = {"error": "LLM connection failed."}
@@ -239,3 +305,47 @@ async def build_llm_payload(search_context: str, query: str, original_payload: d
     }
 
     return llm_payload
+
+async def voice_stream_unified_response(
+    stt,
+    tts,
+    llm_client,
+    audio_source,  # mic stream or audio file path
+    user_id=None
+):
+    """
+    Streams an LLM response from audio input to both text and TTS audio chunks over SSE.
+    """
+
+    async def event_generator():
+        try:
+            # 1️⃣ Start listening (STT)
+            await stt.start_listen(audio_source)
+            async for stt_chunk in stt.listen_stream():
+                yield f"data: {json.dumps({'event': 'stt_chunk', 'text': stt_chunk})}\n\n"
+
+            # Stop listening once STT done
+            await stt.stop_listen()
+
+            # 2️⃣ Get full transcription
+            user_text = await stt.get_full_transcription()
+            yield f"data: {json.dumps({'event': 'transcription', 'text': user_text})}\n\n"
+
+            # 3️⃣ Send to LLM
+            llm_payload = voice_create_llm_payload(user_text, user_id=user_id)
+            async for llm_chunk in llm_client.stream(llm_payload):
+                if "token" in llm_chunk:
+                    yield f"data: {json.dumps({'event': 'token', 'text': llm_chunk['token']})}\n\n"
+
+                    # 4️⃣ Stream TTS for each token
+                    async for audio_chunk in tts.stream(llm_chunk['token']):
+                        audio_b64 = base64.b64encode(audio_chunk).decode("utf-8")
+                        yield f"data: {json.dumps({'event': 'audio_chunk', 'audio': audio_b64})}\n\n"
+
+            # 5️⃣ End of stream
+            yield "data: {\"event\": \"end\"}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'event': 'error', 'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

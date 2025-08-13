@@ -31,16 +31,10 @@ pub fn run() {
             utilities::save_image_from_base64,
             clipboard::get_clipboard_files_command,
             // utilities::get_pdf_first_page,
-            models::run_voice,
+            models::is_running,
             models::run_fasttext,
             models::run_app,
-            models::run_llm,
-            models::stop_llm,
-            models::stop_voice,
-            models::stop_app,
-            models::is_llm_running,
-            models::is_app_running,
-            models::is_voice_running
+            models::shutdown_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

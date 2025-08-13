@@ -1,8 +1,6 @@
 import TopSection from "@/layout/sidebar/TopSection";
 import MiddleSection from "@/layout/sidebar/MiddleSection";
 import BottomSection from "@/layout/sidebar/BottomSection";
-
-import Seperator from '@/assets/sidebar-seperator.png';
 import { createSignal } from "solid-js";
 
 export default function Sidebar() {
@@ -20,7 +18,7 @@ export default function Sidebar() {
 
                     <MiddleSection isOpen={isOpen()} setIsOpen={setIsOpen} />
 
-                    <div class='h-0.5 bg-primary w-[80%] mt-8' />
+                    <div class='h-0.5 bg-primary w-[80%]' />
 
                     <BottomSection isOpen={isOpen()} setIsOpen={setIsOpen} />
                     

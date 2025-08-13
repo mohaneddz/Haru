@@ -46,6 +46,17 @@ RETRIEVAL_TOP_K = 20
 RERANK_TOP_K = 5
 WATCHER_DEBOUNCE_SECONDS = 2.0
 
+# --- Web Scraper Settings ---
+# Constants and configs
+MAX_CONCURRENCY = 24
+USER_AGENT = "Mozilla/5.0 (compatible; Bot/1.0; +https://example.com/bot)"  # Customize
+
+STT_MODEL_ID = "openai/whisper-large-v3-turbo"
+TTS_VOICE_PATH = "D:/Programming/Projects/Tauri/haru/src-tauri/voices/af_nicole.pt"
+STT_SAMPLE_RATE = 16000
+TTS_SAMPLE_RATE = 24000
+VAD_AGGRESSIVENESS = 3
+END_OF_SPEECH_SILENCE_MS = 2000
 
 # --- WEB Scraper Settings ---
 TRUSTED_DOMAINS = {
@@ -54,13 +65,13 @@ TRUSTED_DOMAINS = {
     'rottentomatoes.com': 1.2,
     'variety.com': 1.1,
     'hollywoodreporter.com': 1.1,
-    'bbc.com': 1.0,
-    'reuters.com': 1.0,
-    'nytimes.com': 1.0,
-    'theguardian.com': 1.0,
-    'cnn.com': 1.0,
-    'techcrunch.com': 1.0,
-    'engadget.com': 1.0,
+    'bbc.com': 1.2,
+    'reuters.com': 1.2,
+    'nytimes.com': 1.2,
+    'theguardian.com': 1.3,
+    'cnn.com': 1.1,
+    'techcrunch.com': 1.1,
+    'engadget.com': 1.2,
     'stackoverflow.com': 1.4,
     'arxiv.org': 1.3,
     'sciencedaily.com': 1.2,
@@ -76,8 +87,8 @@ TRUSTED_DOMAINS = {
     'coursera.org': 1.2,
     'stackoverflow.com': 1.4,
     'github.com': 1.3,
-    'medium.com': 0.9,
-    'quora.com': 0.8,
+    'medium.com': 1.2,
+    'quora.com': 1.2,
 }
 
 LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant.  

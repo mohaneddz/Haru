@@ -2,10 +2,8 @@ import { For, Show } from "solid-js";
 
 import Chat from "@/components/02 - Practice/Tutor/Chat";
 import Sphere from "@/components/02 - Practice/Tutor/Shpere";
-
 import useTutor from "@/hooks/training/useTutor";
 import useChat from "@/hooks/home/useChat";
-
 import Globe from "lucide-solid/icons/globe";
 import Mic from "lucide-solid/icons/mic";
 import Paperclip from "lucide-solid/icons/paperclip";
@@ -14,10 +12,18 @@ import XCircle from "lucide-solid/icons/x-circle";
 
 export default function Tutor() {
   const {
-    messages, currText, transcript, voice, toggleVoice, voiceStatus, response,
-    setCurrText, isLoading, handleSend, web, toggleWeb,
+    messages, currText, transcript, voice, toggleVoice, voiceStatus, setCurrText, isLoading, handleSend, web, toggleWeb,
     rag, toggleRag, mode, setMode, newChat, images, removeImage, addImage,
   } = useTutor();
+
+  // Helper to get the latest assistant message as the live response
+  const latestAssistantText = () => {
+    const arr = messages();
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (!arr[i].user) return arr[i].text || "";
+    }
+    return "";
+  };
 
   const { setTextareaRef, handlePastedContent } = useChat({ currText, setCurrText, addImage });
 
@@ -39,17 +45,12 @@ export default function Tutor() {
 
       <Show when={voice()}>
         <div class="flex-grow flex flex-col justify-center items-center w-[80%] text-center px-4">
-          <p
-            class="text-2xl text-text-light-2/60 transition-opacity duration-300"
-            classList={{ 'opacity-100': !!transcript(), 'opacity-0': !transcript() }}
-          >
-          </p>
 
           <p
-            class="mt-6 text-xl font-semibold text-text-light-2 transition-opacity duration-300 absolute bottom-[30%] w-full text-center max-w-[50%]"
-            classList={{ 'opacity-100': !!response(), 'opacity-0': !response() }}
+            class="mt-6 text-md font-semibold text-text-light-2 transition-opacity duration-300 absolute bottom-[30%] w-full text-center max-w-[50%] max-h-30 overflow-y-auto z-50"
+            classList={{ 'opacity-100': !!latestAssistantText(), 'opacity-0': !latestAssistantText() }}
           >
-            {response()}
+            {latestAssistantText()}
           </p>
         </div>
       </Show>

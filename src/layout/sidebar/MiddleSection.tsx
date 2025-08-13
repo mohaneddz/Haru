@@ -1,3 +1,4 @@
+import ModelsControl from "@/layout/sidebar/ModelsControl";
 import { sections, entries } from '@/layout/sidebar/Entries';
 import { For, createSignal, onMount } from 'solid-js'; // Added Component and JSX
 import { invoke } from "@tauri-apps/api/core";
@@ -16,7 +17,7 @@ export default function MiddleSection(props: Props) {
   const [app, setApp] = createSignal(false);
 
   onMount(() => {
-    invoke("is_app_running").then((isRunning) => setApp(isRunning as boolean));
+    invoke("is_running").then((isRunning) => setApp(isRunning as boolean));
   });
 
   const stopApp = async () => {
@@ -39,13 +40,6 @@ export default function MiddleSection(props: Props) {
     }
   };
 
-  const handleToggleApp = () => {
-    if (app()) {
-      stopApp();
-    } else {
-      startApp();
-    }
-  };
 
   return (
     <div class="h-full w-full flex flex-col items-center text-text gap-0 relative">
@@ -110,10 +104,7 @@ export default function MiddleSection(props: Props) {
 
       {/* user icon + username + settings button */}
       <div class="w-full gap-1 flex flex-col absolute bottom-0">
-        <div class="flex items-center justify-between w-full px-8 bg-sidebar text-text/40 text-xs">
-          <p>App ...</p>
-          <button onClick={handleToggleApp} class={`clickable rounded-full h-3 aspect-square ${app() ? 'bg-accent' : 'bg-gray-700'}`} />
-        </div>
+        <ModelsControl  />
       </div>
 
     </div>

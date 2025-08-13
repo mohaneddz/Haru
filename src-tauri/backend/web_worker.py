@@ -13,7 +13,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from constants import LLAMA_SERVER_URL
 from utils.chat_utils import handle_non_streaming_llm_response,stream_unified_response,build_llm_payload
-from utils.web_utils import get_web_urls, crawl_webpages_hybrid, ContentExtractor, process_crawled_results, build_search_context
+from utils.web_utils import (
+    full_search_pipeline,
+    ContentExtractor,
+    build_search_context,
+)
+
 
 # ======================================================================================
 # --- CONFIGURATION (via Environment Variables with Defaults) ---
@@ -65,25 +70,25 @@ async def ask_with_search(payload: dict):
     stream = payload.get("stream", False)
 
     try:
-        urls = await asyncio.to_thread(get_web_urls, query) 
-        if not urls:
-            return JSONResponse({"content": "Web search returned no results.", "sources": []})
-
-        crawled_data = await crawl_webpages_hybrid(urls, http_client)
-        if not crawled_data:
-            return JSONResponse({"content": "Crawling failed to retrieve any content.", "sources": []})
-
-        # Run CPU-bound processing in a thread pool to avoid blocking the event loop
-        processed_results = await asyncio.to_thread(process_crawled_results, crawled_data, query, content_extractor)
+        # Use the new full_search_pipeline which internally calls multi_seed_search and crawling
+        processed_results = await full_search_pipeline(query, content_extractor)
         if not processed_results:
-            return JSONResponse({
-                "content": "I found web pages, but they didn't contain relevant information.",
-                "sources": []
-            })
+            return JSONResponse({"content": "No relevant results found.", "sources": []})
 
-        final_sources = [{"title": s.get("title", "No Title"), "url": s.get("url"), "score": round(s.get("score", 0.0), 4), "path": "", "section": ""} for s in processed_results]
+        final_sources = [
+            {
+                "title": s.get("title", "No Title"),
+                "url": s.get("url"),
+                "score": round(s.get("score", 0.0), 4),
+                "path": "",
+                "section": ""
+            }
+            for s in processed_results
+        ]
 
-        search_context, _, _, _, supporting_sources = await asyncio.to_thread(build_search_context, processed_results, query, content_extractor)
+        search_context, _, _, _, supporting_sources = await asyncio.to_thread(
+            build_search_context, processed_results, query, content_extractor
+        )
         llm_payload = await build_llm_payload(search_context, query, payload, supporting_sources)
         llm_payload["stream"] = stream
 

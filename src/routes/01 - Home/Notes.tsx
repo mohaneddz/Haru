@@ -1,5 +1,5 @@
 import Files from "@/routes/01 - Home/Sidebar/Files";
-import CodeMirrorEditor from "@/components/01 - Home/Notes/NoteEditor";
+import CodeMirrorEditor from "@/components/01 - Home/Notes/CodeMirrorEditor";
 
 import { Link } from "lucide-solid";
 

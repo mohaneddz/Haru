@@ -1,0 +1,87 @@
+# --- Endpoints ---
+@app.post("/transcribe_file")
+async def transcribe_file(req: TranscribeRequest):
+    """
+    Transcribes any audio/video file.
+
+    Workflow:
+    1. Converts the input file to a standardized WAV format (16kHz, mono).
+    2. If the WAV is longer than `max_chunk_seconds`, it's split into smaller chunks.
+    3. Each chunk is transcribed sequentially.
+    4. The final transcript is returned.
+    """
+    if not stt.is_ready():
+        raise HTTPException(status_code=503, detail="STT model is not loaded or ready.")
+
+    if not Path(ffmpeg_path).exists():
+        raise HTTPException(status_code=500, detail=f"FFmpeg executable not found at '{ffmpeg_path}'")
+
+    input_path = Path(req.file_path)
+    if not input_path.exists():
+        raise HTTPException(status_code=404, detail=f"File not found at path: {req.file_path}")
+
+    # Use a temporary directory for all generated files (safer and auto-cleans)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir_path = Path(temp_dir)
+        standard_wav_path = temp_dir_path / "converted.wav"
+        
+        # 1. Convert input to a standard WAV file for processing
+        logging.info(f"Converting '{input_path.name}' to standard WAV format using '{ffmpeg_path}'...")
+        try:
+            cmd = [
+                ffmpeg_path, "-y", "-i", str(input_path),
+                "-ar", str(STT_SAMPLE_RATE),
+                "-ac", "1",
+                "-c:a", "pcm_s16le",
+                str(standard_wav_path)
+            ]
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            logging.info(f"Successfully converted to {standard_wav_path}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"FFmpeg conversion failed: {e.stderr}")
+            raise HTTPException(status_code=500, detail=f"Failed to convert file. FFmpeg error: {e.stderr}")
+
+        # 2. Check duration and split if necessary
+        info = sf.info(str(standard_wav_path))
+        duration = info.duration
+        total_seconds = float(duration)
+        chunk_files = []
+
+        if total_seconds <= req.max_chunk_seconds:
+            logging.info(f"Audio duration ({total_seconds:.1f}s) is within the limit. No splitting needed.")
+            chunk_files.append(standard_wav_path)
+        else:
+            num_chunks = math.ceil(total_seconds / req.max_chunk_seconds)
+            logging.info(f"Audio duration ({total_seconds:.1f}s) exceeds limit. Splitting into {num_chunks} chunks...")
+            try:
+                chunk_filename_pattern = temp_dir_path / "chunk_%03d.wav"
+                cmd_split = [
+                    ffmpeg_path, "-y", "-i", str(standard_wav_path),
+                    "-f", "segment",
+                    "-segment_time", str(req.max_chunk_seconds),
+                    "-c", "copy",
+                    str(chunk_filename_pattern)
+                ]
+                subprocess.run(cmd_split, check=True, capture_output=True, text=True)
+                chunk_files = sorted(list(temp_dir_path.glob("chunk_*.wav")))
+                logging.info(f"Successfully split audio into {len(chunk_files)} files.")
+            except subprocess.CalledProcessError as e:
+                logging.error(f"FFmpeg splitting failed: {e.stderr}")
+                raise HTTPException(status_code=500, detail=f"Failed to split audio file. FFmpeg error: {e.stderr}")
+
+        # 3. Transcribe each chunk
+        full_transcript = []
+        for i, chunk_path in enumerate(chunk_files):
+            logging.info(f"Transcribing chunk {i+1}/{len(chunk_files)}: {chunk_path.name}")
+            transcript_part = stt.transcribe_from_file(str(chunk_path))
+            if transcript_part:
+                full_transcript.append(transcript_part)
+        
+        logging.info("Transcription complete.")
+
+        return {
+            "status": "success",
+            "duration_sec": total_seconds,
+            "chunks_processed": len(chunk_files),
+            "transcription": "\n".join(full_transcript)
+        }

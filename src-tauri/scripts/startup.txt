@@ -1,9 +1,12 @@
-lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf -ngl 99 -c 8192 -t 6
-lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf --mmproj weights\mmproj-model-f16-4B.gguf -ngl 99 -c 8192 -t 6
+lib\llama-server.exe -m weights\Qwen3-4B-Thinking-2507-Q4_K_S.gguf -ngl 99 -c 12288 -t 6
+lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf -ngl 99 -c 24576 -t 6
+lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf --mmproj weights\mmproj-model-f16-4B.gguf -ngl 99 -c 32768 -t 6
 
 uvicorn chat_worker:app --host 0.0.0.0 --port 5000 --workers 1
 uvicorn rag_worker:app --host 0.0.0.0 --port 5001 --workers 1
 uvicorn web_worker:app --host 0.0.0.0 --port 5002 --workers 1
+
 uvicorn tts_worker:app --host 0.0.0.0 --port 5003 --workers 1
 uvicorn stt_worker:app --host 0.0.0.0 --port 5004 --workers 1
-uvicorn voice_worker:app --host 0.0.0.0 --port 5005 --workers 1
+
+uvicorn voice_worker:app --host 0.0.0.0 --port 5005 --workers 1 

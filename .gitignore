@@ -11,3 +11,4 @@ src-tauri/bin/*
 models/static/audio/*
 notes/*
 models/model.bin
+data/*

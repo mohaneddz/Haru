@@ -1,99 +1,101 @@
-import { createSignal, onCleanup, onMount, Show } from 'solid-js';
-import { getCurrentWebview } from '@tauri-apps/api/webview';
-import { readFile } from '@tauri-apps/plugin-fs';
+import { Show } from 'solid-js';
 
-function mimeFromPath(path: string): string {
-  const ext = path.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'mp3':
-      return 'audio/mpeg';
-    case 'wav':
-      return 'audio/wav';
-    case 'm4a':
-    case 'mp4':
-      return 'audio/mp4';
-    case 'ogg':
-      return 'audio/ogg';
-    case 'flac':
-      return 'audio/flac';
-    case 'aac':
-      return 'audio/aac';
-    case 'opus':
-      return 'audio/opus';
-    default:
-      return 'audio/*';
-  }
-}
+import CodeMirrorEditor from "@/components/01 - Home/Notes/CodeMirrorEditor";
+import Button from '@/components/core/Input/Button';
+import useTranscript from '@/hooks/plugins/useTranscript';
+
+import Download from 'lucide-solid/icons/download';
+import Stars from 'lucide-solid/icons/stars';
+import Pen from 'lucide-solid/icons/pen';
 
 export default function AudioTranscribe() {
-  const [filePath, setFilePath] = createSignal<string>('');
-  const [audioSrc, setAudioSrc] = createSignal<string | null>(null);
-  const [error, setError] = createSignal<string>('');
 
-  let revokeUrl: string | null = null;
-
-  async function loadAudioFromPath(path: string) {
-    try {
-      setError('');
-      // Revoke previous URL
-      if (revokeUrl) {
-        URL.revokeObjectURL(revokeUrl);
-        revokeUrl = null;
-      }
-
-      const bytes = await readFile(path);
-      const mime = mimeFromPath(path);
-      const blob = new Blob([new Uint8Array(bytes as any)], { type: mime });
-      const url = URL.createObjectURL(blob);
-      revokeUrl = url;
-      setAudioSrc(url);
-      setFilePath(path);
-    } catch (e: any) {
-      console.error('Error reading audio file:', e);
-      setError('Failed to read audio file');
-      setAudioSrc(null);
-    }
-  }
-
-  onMount(async () => {
-    const webview = getCurrentWebview();
-    const unlisten = await webview.onDragDropEvent(async (event) => {
-      if (event.payload.type === 'drop' && event.payload.paths?.length) {
-        const path = event.payload.paths[0];
-        if (path.match(/\.(mp3|wav|m4a|ogg|flac|aac|opus)$/i)) {
-          await loadAudioFromPath(path);
-        } else {
-          setError('Unsupported file type. Drop an audio file.');
-        }
-      }
-    });
-
-    onCleanup(() => {
-      unlisten();
-      if (revokeUrl) URL.revokeObjectURL(revokeUrl);
-    });
-  });
+  const {
+    transcription,
+    setTranscription,
+    filePath,
+    audioSrc,
+    error,
+    loadingTranscript,
+    loadingRefinement,
+    handleTranscribe,
+    saveTranscript,
+    refineTranscript,
+    dragging,
+    setDragging,
+  } = useTranscript();
 
   return (
-    <div class="p-4">
-      <div class="border-2 border-dashed border-gray-500/50 rounded-md p-6 text-center text-text-light-2/70">
-        <p class="mb-2">Drop your audio file here</p>
-        <p class="text-xs opacity-60">Supported: mp3, wav, m4a, ogg, flac, aac, opus</p>
-      </div>
+    <main
+      class="flex flex-col p-8 h-screen w-full max-w-6xl mx-auto relative items-center z-80"
+      onDragOver={(e) => e.preventDefault()}
+      onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        if (e.currentTarget === e.target) setDragging(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+      }}
+    >
+      <h1 class="text-3xl font-bold mb-2 text-center">Audio Transcription</h1>
+      <p class="text-center text-text-light-2/70 mb-8">
+        Drop an audio file anywhere on this page to start transcription
+      </p>
 
-      <div class="mt-4 text-sm text-text-light-2/70">
-        <p>Dropped File: {filePath() || '—'}</p>
+      <Show when={dragging()}>
+        <div class="absolute inset-0 bg-primary/20 border-4 border-dashed border-primary rounded-lg flex items-center justify-center text-primary text-xl font-bold pointer-events-none transition-all z-1000">
+          Drop your audio here
+        </div>
+      </Show>
+
+      <div class="mt-4 text-sm text-text-light-2 w-full">
+        <div>Dropped File:
+          <p class="text-accent">
+            {filePath() || '—'}
+          </p>
+        </div>
         <Show when={error()}>
           <p class="text-red-400 mt-2">{error()}</p>
         </Show>
       </div>
 
       <Show when={!!audioSrc()}>
-        <div class="mt-4">
-          <p class="mb-2 text-text-light-2">Preview:</p>
-          <audio src={audioSrc()!} controls preload="metadata" class="w-full" />
+        <div class="bg-sidebar p-4 rounded-md border border-sidebar-light-3 shadow-md flex justify-center items-center w-full">
+          <audio
+            src={audioSrc()!}
+            controls
+            preload="metadata"
+            class="w-full max-w-3xl rounded-lg bg-background-light-1 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary/60"
+          />
         </div>
       </Show>
-    </div>
+
+      <div class="bg-sidebar flex flex-col p-4 rounded-md border-1 border-sidebar-light-3 my-8 h-full w-full overflow-y-hidden">
+        <div class="flex justify-between items-center mb-2">
+          <p class="mb-2 text-text-light-2">Transcription:</p>
+          <div class="flex gap-4">
+            <Download class="text-primary cursor-pointer" onClick={saveTranscript} />
+          </div>
+        </div>
+        <div class="overflow-x-hidden justify-center items-center px-4 drop-shadow-lg h-full bg-background-light-1 rounded-md overflow-y-auto">
+          <CodeMirrorEditor content={transcription() || ''} onChange={setTranscription} class='h-full' />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 w-full max-w-lg">
+        <Button variant='primary' onClick={handleTranscribe} disabled={loadingTranscript() || loadingRefinement()} class='flex gap-4 center'>
+          <Pen class=" cursor-pointer ml-2" />
+          {loadingTranscript() ? 'Transcribing…' : 'Transcribe'}
+        </Button>
+        <Button variant='secondary' class="flex gap-4 center" disabled={loadingRefinement()} onClick={refineTranscript}>
+          <Stars class=" cursor-pointer ml-2" />
+          {loadingRefinement() ? 'Refining…' : 'Refine'}
+        </Button>
+
+      </div>
+
+    </main>
   );
 }

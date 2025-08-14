@@ -1,3 +1,4 @@
+# backend/utils/stt_utils.py
 import torch
 import numpy as np
 import webrtcvad
@@ -6,29 +7,31 @@ import threading
 import queue
 import logging
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
-from constants import STT_MODEL_ID, VAD_AGGRESSIVENESS, STT_SAMPLE_RATE, END_OF_SPEECH_SILENCE_MS
-import warnings
+import soundfile as sf
 
+import warnings
 warnings.filterwarnings("ignore", message="dropout option adds dropout after all but last recurrent layer")
 warnings.filterwarnings("ignore", message="torch.nn.utils.weight_norm")
+
+from constants import STT_SAMPLE_RATE, VAD_AGGRESSIVENESS, STT_MODEL_ID, END_OF_SPEECH_SILENCE_MS
 
 class STT:
     def __init__(self):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.float16 if self.device == "cuda:0" else torch.float32
-        
+
         self.model = None
         self.processor = None
         self.vad = webrtcvad.Vad(VAD_AGGRESSIVENESS)
-        
+
         self.listening = False
         self.stream_thread = None
         self._lock = threading.Lock()
-        
+
         # State for transcription and synchronization
         self.transcription = ""
         self.transcription_ready = threading.Event()
-        
+
         self.load_model()
 
     def load_model(self):
@@ -44,11 +47,6 @@ class STT:
                 use_safetensors=True
             ).to(self.device)
             self.processor = AutoProcessor.from_pretrained(STT_MODEL_ID)
-
-            # ✅ No forced_decoder_ids, set in config instead
-            self.model.generation_config.language = "en"
-            self.model.generation_config.task = "transcribe"
-
             logging.info("✅ STT model loaded successfully.")
         except Exception as e:
             logging.error(f"❌ Failed to load STT model: {e}")
@@ -110,11 +108,11 @@ class STT:
         silent_for_ms = 0
         min_utterance_duration_ms = 400
         min_utterance_size = int(STT_SAMPLE_RATE * 2 * (min_utterance_duration_ms / 1000))
-        
+
         for pcm_bytes in self._stream_generator():
             if not self.listening:
                 break
-            
+
             is_speech = self._is_speech(pcm_bytes)
 
             if is_speech and not speech_started:
@@ -142,10 +140,7 @@ class STT:
         else:
             logging.info("No speech detected or utterance too short.")
 
-        # --- CRITICAL CHANGE ---
-        # Signal that transcription is complete (or that we're done trying).
         self.transcription_ready.set()
-        
         with self._lock:
             self.listening = False
         logging.info("Audio processing loop finished.")
@@ -155,21 +150,26 @@ class STT:
         try:
             audio_float32 = np.frombuffer(buffer, dtype=np.int16).astype(np.float32) / 32768.0
             inputs = self.processor(
-            audio_float32,
-            sampling_rate=STT_SAMPLE_RATE,
-            return_tensors="pt",
-            return_attention_mask=True  # ✅ Fix attention mask warning
+                audio_float32,
+                sampling_rate=STT_SAMPLE_RATE,
+                return_tensors="pt",
+                return_attention_mask=True
             )
             inputs = inputs.to(self.device, dtype=self.torch_dtype)
 
+            # --- FIX: Explicitly generate and pass decoder_input_ids ---
+            # This ensures the model is always prompted for English transcription.
+            decoder_input_ids = torch.tensor([[1, 1]]) * self.model.config.decoder_start_token_id
+            decoder_input_ids = decoder_input_ids.to(self.device)
+            
             with torch.no_grad():
                 predicted_ids = self.model.generate(
                     input_features=inputs.input_features,
-                    attention_mask=inputs.attention_mask,  # ✅ Pass mask
-                    max_new_tokens=128,
-                    generation_config=self.model.generation_config
+                    attention_mask=inputs.attention_mask,
+                    decoder_input_ids=decoder_input_ids,
+                    max_new_tokens=128
                 )
-            
+
             new_text = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
 
             if new_text:
@@ -188,11 +188,7 @@ class STT:
         with self._lock:
             self.transcription = ""
             self.listening = True
-        
-        # --- CRITICAL CHANGE ---
-        # Clear the event flag for this new listening session.
         self.transcription_ready.clear()
-        
         self.stream_thread = threading.Thread(target=self._processing_loop, daemon=True)
         self.stream_thread.start()
         logging.info("🎤 Listening started...")
@@ -201,23 +197,15 @@ class STT:
         """Stops the listening thread forcefully."""
         if not self.listening:
             return
-            
         logging.info("🛑 Force stopping listener...")
         with self._lock:
             self.listening = False
-            
         if self.stream_thread and self.stream_thread.is_alive():
-            # Wait for the thread to finish, which it will do quickly
-            # now that self.listening is False.
-            self.stream_thread.join(timeout=1.0) 
+            self.stream_thread.join(timeout=1.0)
         logging.info("Listener stopped.")
 
-    # --- NEW METHOD ---
     def wait_for_transcript(self, timeout: float = 10.0) -> bool:
-        """
-        Waits for the transcription to be ready.
-        Returns True if the transcript is ready, False if it times out.
-        """
+        """Waits for the transcription to be ready."""
         logging.info("Waiting for transcript...")
         return self.transcription_ready.wait(timeout)
 
@@ -225,3 +213,87 @@ class STT:
         """Safely gets the current full transcription text."""
         with self._lock:
             return self.transcription
+
+    def process_long_audio(self, buffer: bytes, chunk_seconds: int = 30) -> str:
+        """
+        Processes long audio in chunks, transcribes each, and returns combined transcript.
+        Each chunk result is on a new line. Sample rate defaults to Windows 44.1 kHz.
+        """
+        audio_float32 = np.frombuffer(buffer, dtype=np.int16).astype(np.float32) / 32768.0
+        samples_per_chunk = STT_SAMPLE_RATE * chunk_seconds
+        total_samples = len(audio_float32)
+
+        full_transcript = []
+
+        # --- Prepare processor for English transcription ---
+        # Using task="transcribe" and language="en" instead of forced_decoder_ids
+        processor_args = {"language": "en", "task": "transcribe"}
+
+        for i in range(0, total_samples, samples_per_chunk):
+            chunk = audio_float32[i:i+samples_per_chunk]
+            if len(chunk) == 0:
+                continue
+
+            inputs = self.processor(
+                chunk,
+                sampling_rate=STT_SAMPLE_RATE,
+                return_tensors="pt",
+                return_attention_mask=True
+            ).to(self.device, dtype=self.torch_dtype)
+
+            with torch.no_grad():
+                # FIX: Reduced max_new_tokens to be within the model's 448 token limit
+                predicted_ids = self.model.generate(
+                    input_features=inputs.input_features,
+                    attention_mask=inputs.attention_mask,
+                    task="transcribe",
+                    language="en",
+                    max_new_tokens=440 # Reduced from 512 to prevent exceeding max length
+                )
+
+            text = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
+            if text:
+                full_transcript.append(text)
+
+        return "\n".join(full_transcript)
+    
+    def transcribe_from_file(self, file_path: str) -> str:
+        """
+        Transcribes a single, correctly formatted (16kHz, mono) WAV file.
+        This method assumes the file is short enough to be processed in one go.
+        """
+        if not self.is_ready():
+            logging.error("STT model not ready for transcription.")
+            return ""
+
+        try:
+            # Read the audio file into a float32 numpy array, as expected by the model
+            audio_data, sampling_rate = sf.read(file_path, dtype="float32")
+
+            if sampling_rate != STT_SAMPLE_RATE:
+                logging.warning(f"File {file_path} has sample rate {sampling_rate}, expected {STT_SAMPLE_RATE}. Mismatches can affect quality.")
+
+            # Process the audio file
+            inputs = self.processor(
+                audio_data,
+                sampling_rate=STT_SAMPLE_RATE,
+                return_tensors="pt"
+            ).to(self.device, dtype=self.torch_dtype)
+
+            # Generate the token IDs
+            with torch.no_grad():
+                # Set max_new_tokens to a safe value below the model's 448 limit
+                predicted_ids = self.model.generate(
+                    inputs["input_features"],
+                    task="transcribe",
+                    language="en",
+                    max_new_tokens=440
+                )
+
+            # Decode the token IDs to text
+            transcript = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0].strip()
+            return transcript
+
+        except Exception as e:
+            logging.error(f"❌ Error during file transcription for {file_path}: {e}")
+            return ""

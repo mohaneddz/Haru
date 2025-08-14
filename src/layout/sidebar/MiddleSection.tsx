@@ -1,7 +1,6 @@
 import ModelsControl from "@/layout/sidebar/ModelsControl";
 import { sections, entries } from '@/layout/sidebar/Entries';
-import { For, createSignal, onMount } from 'solid-js'; // Added Component and JSX
-import { invoke } from "@tauri-apps/api/core";
+import { For, createSignal } from 'solid-js'; // Added Component and JSX
 import * as icons from 'lucide-solid';
 import type { LucideIconComponent } from '@/types/misc/sidebar';
 
@@ -14,32 +13,6 @@ export default function MiddleSection(props: Props) {
 
   const [activeSection, setActiveSection] = createSignal<string | null>(null);
   const [activeEntry, setActiveEntry] = createSignal<string | null>(null);
-  const [app, setApp] = createSignal(false);
-
-  onMount(() => {
-    invoke("is_running").then((isRunning) => setApp(isRunning as boolean));
-  });
-
-  const stopApp = async () => {
-    setApp(false);
-    try {
-      await invoke("stop_app");
-      console.log("App stopped successfully");
-    } catch (error) {
-      console.error("Failed to stop app:", error);
-    }
-  };
-
-  const startApp = async () => {
-    setApp(true);
-    try {
-      await invoke("run_app");
-      console.log("App started successfully");
-    } catch (error) {
-      console.error("Failed to start app:", error);
-    }
-  };
-
 
   return (
     <div class="h-full w-full flex flex-col items-center text-text gap-0 relative">

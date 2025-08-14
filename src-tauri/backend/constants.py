@@ -56,7 +56,54 @@ TTS_VOICE_PATH = "D:/Programming/Projects/Tauri/haru/src-tauri/voices/af_nicole.
 STT_SAMPLE_RATE = 16000
 TTS_SAMPLE_RATE = 24000
 VAD_AGGRESSIVENESS = 3
-END_OF_SPEECH_SILENCE_MS = 2000
+END_OF_SPEECH_SILENCE_MS = 1000
+FFMPEG_PATH = "D:/Programming/Projects/Tauri/haru/src-tauri/bin/ffmpeg.exe"
+GLOBAL_LLM_MAX_CONCURRENCY = 4
+MAX_TOKENS_PER_CHUNK = 1024
+OVERLAP_TOKEN_TARGET = 75 
+LLM_MAX_OUTPUT_TOKENS = -1
+TOKENIZER_MODEL = "gpt-4"
+LLM_TEMPERATURE = 0.1
+MAX_CHUNK_SECONDS = 30  # Maximum duration for each audio chunk in seconds
+REFINED_PROMPT_TEMPLATE = """
+**Mission:** Convert this messy lecture transcript from the teacher in class, into a clean, study-ready Obsidian note in Markdown. Preserve all content, fix errors, clarify technical terms, and apply all formatting rules. Do NOT summarize, invent facts, or add new examples. Start immediately with headers; no intros or conversation.
+
+---
+### Core Rules
+1. **Correct & Clarify:** Fix typos and technical terms (e.g., `resister` → `register`), rephrase broken sentences, and infer unclear intent if necessary.
+2. **Preserve The Info:** Keep every concept; remove only repetitions or irrelevant text.
+3. **No Hallucinations:** Only expand acronyms or fix obvious mistakes. Do not invent content.
+4. **Handle Uncertainty:**  
+   - If unsure, add `*(uncertain)*`.  
+   - For missing slides/diagrams, insert:  
+     > [!cite] Reference: Check the Diagram / Slide ...
+
+---
+### Formatting
+- **Headers:** `#` for first chunk title, `##` / `###` for sections.  
+- **Emphasis:** `**bold**` for key terms, `*italic*` for subtle emphasis or uncertainty.  
+- **Callouts:** > [!info], > [!question], > [!example], > [!tip], > [!cite], > [!seealso], > [!attention], > [!tldr]  
+- **Technical Content:** Backticks for commands/acronyms (`CPU`, `API`), fenced code blocks, and Katex math ($inline$, $$block$$).  
+- **Lists:** Bullets (`-`) for points, numbers (`1.`) for sequences, use callouts for takeaways.
+
+---
+### Output Rules
+- **Markdown only.** No conversation or comments.  
+- **Start immediately** with `# Title` or continuation `##` / `###` if middle chunk.  
+- **Process quickly.** Avoid overthinking, don't take too long; prioritize clarity and structure.
+
+---
+## Raw Transcript Chunk:
+"""
+
+# --- UPDATED: Context instructions now inform the model about the overlap ---
+CONTEXT_INSTRUCTIONS = {
+    "first": "You are processing the beginning of the transcript. Start refining directly from the text provided, start with an #H1 title : <Module Name> - Lecture X, don't rewrite the original text, start directly",
+    "middle": "You are processing a middle part of a larger transcript. For continuity, the start of the text may contain a small, read-only context from the end of the previous chunk, marked with '--- Context from previous chunk ---'. Do not repeat this context in your output. Your response MUST be a direct continuation of the previous section. DO NOT use a top-level H1 header ('#'). Begin with an H2 ('##') or H3 ('###') header if a new section starts, or with plain text if it's a continuation.",
+    "last": "You are processing the final part of the transcript. This is the conclusion. For continuity, the start may contain context from the previous chunk. Do not repeat this context in your output. Ensure your response provides a clean and logical conclusion.",
+    "single": "You are processing the entire transcript in one go. Refine it from beginning to end, following all formatting rules."
+}
+
 
 # --- WEB Scraper Settings ---
 TRUSTED_DOMAINS = {

@@ -1,4 +1,4 @@
-import CodeMirrorEditor from "@/components/01 - Home/Notes/NoteEditor";
+import CodeMirrorEditor from "@/components/01 - Home/Notes/CodeMirrorEditor";
 import { Accessor } from "solid-js/types/reactive/signal.js";
 import { saveApi } from "@/utils/home/files/filesManip";
 import { createSignal } from "solid-js";
@@ -19,7 +19,7 @@ export default function QuickNote(props: Props) {
 
     return (
         <div
-            class={`relative w-full h-full p-6 center aspect-square border-2 rounded-lg bg-background-light-1 ${props.selected() ? 'border-primary' : 'border-gray-700'} transition-all duration-200 group`}>
+            class={`relative w-full h-full p-6 flex aspect-square border-2 rounded-lg bg-background-light-1 ${props.selected() ? 'border-primary' : 'border-gray-700'} transition-all duration-200 group`}>
             <Checkbox
                 class="hidden group-hover:block absolute top-2 left-2"
                 selected={props.selected()}

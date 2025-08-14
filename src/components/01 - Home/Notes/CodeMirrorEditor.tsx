@@ -13,9 +13,10 @@ interface Props {
   content: string;
   onChange: (v: string) => void;
   onBlur?: () => void;
+  class?: string;
 }
 
-export default function NoteEditor(props: Props) {
+export default function CodeMirrorEditor(props: Props) {
   let editorRef: HTMLDivElement | undefined;
   let view: EditorView | undefined;
 
@@ -67,5 +68,5 @@ export default function NoteEditor(props: Props) {
     view?.destroy();
   });
 
-  return <div ref={editorRef} class="rounded-md w-full h-full [&>div]:h-full" />;
+  return <div ref={editorRef} class={`rounded-md w-full ${props.class}`} />;
 }

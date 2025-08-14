@@ -7,6 +7,7 @@ import base64
 import mimetypes
 import os
 from fastapi.responses import StreamingResponse
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -141,46 +142,61 @@ async def voice_create_llm_payload(
     }
     return payload
 
-async def handle_non_streaming_llm_response(client: httpx.AsyncClient, payload: dict, url: str) -> dict:
+async def handle_non_streaming_llm_response(
+    client: httpx.AsyncClient,
+    payload: dict,
+    url: str,
+    request_timeout: float | httpx.Timeout | None = None,
+    retries: int = 0,
+    backoff_base: float = 0.75
+) -> dict:
     """
     Send non-streaming request to llama server and normalize response to {'content': str, ...}
+    Retries on transient httpx errors with exponential backoff.
     """
-    start_time = time.monotonic()
-    resp = await client.post(url, json=payload, timeout=120)
-    resp.raise_for_status()
-    obj = orjson.loads(resp.content)
+    last_exc = None
+    for attempt in range(retries + 1):
+        start_time = time.monotonic()
+        try:
+            timeout = request_timeout if request_timeout is not None else client.timeout
+            resp = await client.post(url, json=payload, timeout=timeout)
+            resp.raise_for_status()
+            obj = orjson.loads(resp.content)
 
-    # Normalize content extraction for OpenAI-compatible responses
-    content = ""
-    # Try several known shapes
-    if isinstance(obj, dict):
-        # first: choices -> message -> content
-        choices = obj.get("choices")
-        if choices and isinstance(choices, list):
-            parts = []
-            for c in choices:
-                # prefer message.content
-                msg = c.get("message", {})
-                if isinstance(msg, dict) and msg.get("content"):
-                    parts.append(msg.get("content"))
-                elif c.get("text"):
-                    parts.append(c.get("text"))
-                # legacy: delta or content root
-                elif c.get("delta") and isinstance(c.get("delta"), dict):
-                    parts.append(c["delta"].get("content", ""))
-            content = "".join(parts).strip()
-        # fallback: content field at top-level
-        elif obj.get("content"):
-            content = obj.get("content", "")
-        # another fallback: text
-        elif obj.get("text"):
-            content = obj.get("text", "")
-    else:
-        content = str(obj)
+            # Normalize content extraction for OpenAI-compatible responses
+            content = ""
+            if isinstance(obj, dict):
+                choices = obj.get("choices")
+                if choices and isinstance(choices, list):
+                    parts = []
+                    for c in choices:
+                        msg = c.get("message", {})
+                        if isinstance(msg, dict) and msg.get("content"):
+                            parts.append(msg.get("content"))
+                        elif c.get("text"):
+                            parts.append(c.get("text"))
+                        elif c.get("delta") and isinstance(c.get("delta"), dict):
+                            parts.append(c["delta"].get("content", ""))
+                    content = "".join(parts).strip()
+                elif obj.get("content"):
+                    content = obj.get("content", "")
+                elif obj.get("text"):
+                    content = obj.get("text", "")
+            else:
+                content = str(obj)
 
-    total_time = time.monotonic() - start_time
-    logger.info(f"Non-stream request completed in {total_time:.3f}s")
-    return {"content": content, "raw": obj}
+            total_time = time.monotonic() - start_time
+            logger.info(f"Non-stream request completed in {total_time:.3f}s (attempt {attempt+1}/{retries+1})")
+            return {"content": content, "raw": obj}
+        except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.RequestError) as e:
+            last_exc = e
+            total_time = time.monotonic() - start_time
+            logger.warning(f"LLM request failed in {total_time:.3f}s on attempt {attempt+1}/{retries+1}: {e}")
+            if attempt < retries:
+                sleep_s = backoff_base * (2 ** attempt)
+                await asyncio.sleep(sleep_s)
+                continue
+            raise
 
 async def stream_unified_response(client: httpx.AsyncClient, payload: dict, url: str, sources: list) -> StreamingResponse:
     """
@@ -199,10 +215,12 @@ async def stream_unified_response(client: httpx.AsyncClient, payload: dict, url:
             local_client = None
             _client = client
             if _client is None:
-                local_client = httpx.AsyncClient(timeout=60.0)
+                # Infinite timeout client
+                local_client = httpx.AsyncClient(timeout=httpx.Timeout(None))
                 _client = local_client
             try:
-                async with _client.stream("POST", url, json=payload, timeout=60.0) as response:
+                # Infinite timeout for the stream request
+                async with _client.stream("POST", url, json=payload, timeout=httpx.Timeout(None)) as response:
                     response.raise_for_status()
                     async for line in response.aiter_lines():
                         if not line:

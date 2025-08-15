@@ -1,20 +1,5 @@
+import type { CourseInfo } from '@/types/home/library';
 import { invoke } from '@tauri-apps/api/core';
-
-export interface CourseInfo {
-	title: string;
-	description: string;
-	difficulty: string;
-	duration: string;
-	overview: string;
-	prerequisites: string[];
-	topics: { [key: string]: string[] }[];
-	tags?: string[];
-	img: string;
-}
-
-export interface GameInfo extends CourseInfo {
-	benefits: string[];
-}
 
 export async function loadCourseData(parent: string, course: string): Promise<CourseInfo> {
 	try {

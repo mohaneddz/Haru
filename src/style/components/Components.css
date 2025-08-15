@@ -16,13 +16,12 @@
   display: inline;
 }
 
-input[type="time"],
-input[type="number"] {
+input[type="time"]
+{
   /* @apply bg-sidebar-light-2;  */
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1px solid #374151 !important;
   color: #f3f4f6;
   padding: 0.2rem;
   border-radius: 0.5rem;

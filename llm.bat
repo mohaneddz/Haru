@@ -5,7 +5,7 @@ if "%1"=="v" (
     lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf --mmproj weights\mmproj-model-f16-4B.gguf -ngl 99 -c 32768 -t 6
 )
 if "%1"=="g" (
-    lib\llama-server.exe -m weights\gemma-3-1b-it-q4_0.gguf -ngl 99 -c 40960 -t 6
+    lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf -ngl 99 -c 40960 -t 6
 ) else (
-    lib\llama-server.exe -m weights\gemma-3-1b-it-q4_0.gguf -ngl 99 -c 32768 -t 6
+    lib\llama-server.exe -m weights\gemma-3-4b-it-q4_0.gguf -ngl 99 -c 32768 -t 6
 )

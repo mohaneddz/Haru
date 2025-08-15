@@ -49,7 +49,34 @@ WATCHER_DEBOUNCE_SECONDS = 2.0
 # --- Web Scraper Settings ---
 # Constants and configs
 MAX_CONCURRENCY = 24
-USER_AGENT = "Mozilla/5.0 (compatible; Bot/1.0; +https://example.com/bot)"  # Customize
+USER_AGENT = "Mozilla/5.0 (compatible; Bot/1.0; +https://example.com/bot)" 
+UNIVERSITIES_URLS = [
+    "harvard.edu",
+    "mit.edu",
+    "stanford.edu",
+    "ox.ac.uk",               # University of Oxford
+    "cam.ac.uk",              # University of Cambridge
+    "berkeley.edu",           # UC Berkeley
+    "princeton.edu",
+    "yale.edu",
+    "columbia.edu",
+    "caltech.edu",
+    "cmu.edu",                # Carnegie Mellon
+    "imperial.ac.uk",         # Imperial College London
+    "nus.edu.sg",             # National University of Singapore
+    "utoronto.ca",            # University of Toronto
+    "ethz.ch",                # ETH Zurich
+    "unimelb.edu.au",         # University of Melbourne
+    "anu.edu.au",             # Australian National University
+    "epfl.ch",                # École Polytechnique Fédérale de Lausanne
+    "tudelft.nl",             # Delft University of Technology
+    "umich.edu",              # University of Michigan
+    "ucla.edu",               # University of California, Los Angeles
+    "cornell.edu",
+    "edinburgh.ac.uk",        # University of Edinburgh
+    "unsw.edu.au",            # University of New South Wales
+]
+
 
 STT_MODEL_ID = "openai/whisper-large-v3-turbo"
 TTS_VOICE_PATH = "D:/Programming/Projects/Tauri/haru/src-tauri/voices/af_nicole.pt"

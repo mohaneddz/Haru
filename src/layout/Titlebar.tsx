@@ -50,7 +50,7 @@ export default function Titlebar() {
   return (
     <div data-tauri-drag-region class="titlebar">
       <Show when={!isFullscreen()}>
-        <button onClick={() => appWindow.minimize()} class="titlebar-button" id="titlebar-minimize">
+        <button onClick={() => appWindow.minimize()} class="titlebar-button z-9999" id="titlebar-minimize">
           <img src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize" />
         </button>
 
@@ -60,7 +60,7 @@ export default function Titlebar() {
             const max = await appWindow.isMaximized();
             setIsMaximized(max);
           }}
-          class="titlebar-button"
+          class="titlebar-button z-9999"
           id="titlebar-maximize"
         >
           <Show when={!isMaximized()}>
@@ -71,7 +71,7 @@ export default function Titlebar() {
           </Show>
         </button>
 
-        <button onClick={() => appWindow.close()} class="titlebar-button" id="titlebar-close">
+        <button onClick={() => appWindow.close()} class="titlebar-button z-9999" id="titlebar-close">
           <img src="https://api.iconify.design/mdi:close.svg" alt="close" />
         </button>
       </Show>

@@ -6,7 +6,7 @@ import Checkbox from "@/components/core/Input/Checkbox";
 
 interface Props {
     content: Accessor<string>;
-    index: Accessor<number>;
+    index: number;
     onChange: (newContent: string) => void;
     onSelectionChange: (selected: boolean) => void;
     selected: Accessor<boolean>;
@@ -29,7 +29,7 @@ export default function QuickNote(props: Props) {
                 content={content()}
                 onChange={(v) => {
                     setContent(v);
-                    saveApi(notesFolder + `\\note_${props.index()}.md`, v);
+                    saveApi(notesFolder + `\\note_${props.index}.md`, v);
                 }}
             />
         </div>

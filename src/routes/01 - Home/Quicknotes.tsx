@@ -1,28 +1,42 @@
-import UniversalFilter from "@/components/01 - Home/Filters/ComposableFilter";
+import UniversalFilter from "@/components/core/UniversalFilter";
 import QuickNote from "@/components/01 - Home/Notes/QuickNote";
 
 import { StickyNote } from "lucide-solid";
-import { createSignal } from "solid-js";
+import { createSignal, For, onMount } from "solid-js";
 import { loadQuickNotes, deleteQuicknotes, createQuicknote } from "@/utils/home/useQuickNotes";
-import { For, onMount } from "solid-js";
 
 import { Pen, Trash } from "lucide-solid";
 
 export default function Quicknotes() {
 
-  const [quicknotes, setQuicknotes] = createSignal<string[]>(Array.from({ length: 10 }, () => ""));
+  const [quicknotes, setQuicknotes] = createSignal<string[]>([]);
   const [selectedNotes, setSelectedNotes] = createSignal<number[]>([]);
   const [showDeleteModal, setShowDeleteModal] = createSignal(false);
+  const [searchQuery, setSearchQuery] = createSignal("");
 
   onMount(async () => {
     setQuicknotes(await loadQuickNotes());
   });
 
+  // Create a derived signal for filtered notes
+  const filteredNotes = () => {
+    const query = searchQuery().toLowerCase();
+    if (!query) {
+      return quicknotes().map((content, index) => ({ content, originalIndex: index }));
+    }
+    return quicknotes()
+      .map((content, index) => ({ content, originalIndex: index }))
+      .filter(({ content }) => content.toLowerCase().includes(query));
+  };
+
   const createQuickNote = async () => {
     const newNotes = [...quicknotes()];
-    newNotes.push("");
+    const newNoteContent = "";
+    newNotes.push(newNoteContent);
     setQuicknotes(newNotes);
-    createQuicknote(newNotes.length - 1)
+    await createQuicknote(newNotes.length - 1);
+    // After creating, we might want to clear the search to show the new note
+    setSearchQuery("");
   };
 
   const deleteSelectedNotes = async () => {
@@ -30,11 +44,9 @@ export default function Quicknotes() {
     if (selected.length === 0) return;
 
     try {
-      // Convert selected indices to boolean array
       const booleanArray = quicknotes().map((_, index) => selected.includes(index));
       await deleteQuicknotes(booleanArray);
 
-      // Reload notes from filesystem to reflect the changes
       setQuicknotes(await loadQuickNotes());
       setSelectedNotes([]);
       setShowDeleteModal(false);
@@ -43,43 +55,48 @@ export default function Quicknotes() {
     }
   };
 
+  // Handle the filter change from UniversalFilter
+  const handleFilterChange = (filterData: any) => {
+    // Extract just the searchQuery from the filter object
+    if (typeof filterData === 'string') {
+      setSearchQuery(filterData);
+    } else if (filterData && typeof filterData === 'object') {
+      setSearchQuery(filterData.searchQuery || "");
+    }
+  };
+
   return (
     <main class="w-full h-full ">
-
       <div class="w-full h-full overflow-y-scroll flex flex-col items-center justify-start">
-
         <div class="w-full max-w-[80%] mt-20">
           <UniversalFilter
-            onFilterChange={() => { }}
-            title="Filter Definitions"
-            icon={StickyNote}
-            placeholder="Search definitions..."
-            pageType="dictionary"
-            availableFields={[]}
-            availableTypes={[]}
+            onFilterChange={handleFilterChange} // Updated to use our handler function
+            title="Filter Notes"
+            icon={<StickyNote class="text-accent" />}
+            placeholder="Search notes..."
           />
         </div>
 
         <div class="grid grid-cols-4 gap-4 mt-10 w-full max-w-[80%]">
-          <For each={quicknotes()}>
-            {(_, index) => (
+          <For each={filteredNotes()}>
+            {(note, _) => (
               <QuickNote
-                content={() => quicknotes()[index()]}
-                index={index}
-                selected={() => selectedNotes().includes(index())}
+                content={() => note.content}
+                index={note.originalIndex}
+                selected={() => selectedNotes().includes(note.originalIndex)}
                 onSelectionChange={(isSelected) => {
                   setSelectedNotes(prev => {
                     if (isSelected) {
-                      return [...prev, index()];
+                      return [...prev, note.originalIndex];
                     } else {
-                      return prev.filter(i => i !== index());
+                      return prev.filter(i => i !== note.originalIndex);
                     }
                   });
                 }}
                 onChange={(newContent) => {
                   setQuicknotes((prev) => {
                     const newNotes = [...prev];
-                    newNotes[index()] = newContent;
+                    newNotes[note.originalIndex] = newContent;
                     return newNotes;
                   });
                 }}
@@ -101,7 +118,6 @@ export default function Quicknotes() {
           <Pen class="w-6 h-6 text-text " />
         </div>
 
-        {/* Delete Confirmation Modal */}
         {showDeleteModal() && (
           <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-background-light-1 p-6 rounded-lg border border-gray-700 max-w-sm w-full mx-4">

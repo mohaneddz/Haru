@@ -79,12 +79,7 @@ async def create_llm_payload_with_images(messages: list, image_paths: list, stre
     }
     return payload
 
-async def voice_create_llm_payload(
-    messages: list,
-    audio_paths: list = None,
-    stream: bool = False,
-    llm_config: dict = None
-) -> dict:
+async def voice_create_llm_payload(messages: list,audio_paths: list = None,stream: bool = False,llm_config: dict = None) -> dict:
     """
     Create LLM payload for voice-based input (STT text + optional audio attachments).
     messages: list of dicts: {"role": "user"/"assistant"/"system", "content": <string or content-list>}
@@ -142,14 +137,7 @@ async def voice_create_llm_payload(
     }
     return payload
 
-async def handle_non_streaming_llm_response(
-    client: httpx.AsyncClient,
-    payload: dict,
-    url: str,
-    request_timeout: float | httpx.Timeout | None = None,
-    retries: int = 0,
-    backoff_base: float = 0.75
-) -> dict:
+async def handle_non_streaming_llm_response(client: httpx.AsyncClient,payload: dict,url: str,request_timeout: float | httpx.Timeout | None = None,retries: int = 0,backoff_base: float = 0.75) -> dict:
     """
     Send non-streaming request to llama server and normalize response to {'content': str, ...}
     Retries on transient httpx errors with exponential backoff.

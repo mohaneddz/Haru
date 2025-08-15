@@ -10,12 +10,20 @@ interface Props {
 }
 
 export default function SelectInput(props: Props) {
-    const background = props.background ?? "bg-background-light-3";
+    const background = props.background ?? "bg-sidebar-light-2";
     return (
-        <select id={props.id} class={`justify-self-end p-2 rounded ${background} ${props.class}`} onChange={(e) => props.onChange?.(e.currentTarget.value)}>
+        <select
+            id={props.id}
+            class={`justify-self-end p-2 border h-full border-border-light-2 text-sm text-text rounded-md ${background} overflow-y-auto resize-none ${props.class}`}
+            onChange={(e) => props.onChange?.(e.currentTarget.value)}
+        >
             <For each={props.options}>
                 {(option) => (
-                    <option value={option.value} selected={option.value === props.selected} class="text-text-light-2 bg-background-light-3">
+                    <option
+                        value={option.value}
+                        selected={option.value === props.selected}
+                        class="text-sm text-text-light-2 bg-sidebar-light-3"
+                    >
                         {option.label}
                     </option>
                 )}

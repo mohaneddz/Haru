@@ -3,7 +3,7 @@ import { createSignal, onMount, For } from 'solid-js';
 import TranslationRow from '@/components/01 - Home/Dictionary/TranslationRow';
 import Modal from '@/components/core/Modal';
 import { Trash, Pen, ChevronDown, ChevronUp } from 'lucide-solid';
-import UniversalFilter from '@/components/01 - Home/Filters/ComposableFilter';
+import UniversalFilter from '@/components/core/UniversalFilter';
 import Checkbox from '@/components/core/Input/Checkbox';
 
 export default function Translation() {
@@ -140,13 +140,12 @@ export default function Translation() {
       </Modal>
 
       {/* Search Bar */}
-      <div class="w-full max-w-[80%]">
+      <div class="w-full max-w-[80%] mb-8">
         <UniversalFilter
           onFilterChange={(filters) => { searchForTerm(filters.searchQuery) }}
           title="Filter Translations"
-          icon={Trash}
+          icon={<Trash class='text-accent' />}
           placeholder="Search translations..."
-          pageType="dictionary"
           availableFields={[]}
           availableTypes={[]}
         />

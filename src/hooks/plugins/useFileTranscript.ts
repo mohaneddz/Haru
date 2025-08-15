@@ -3,7 +3,9 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { mimeFromPath } from '@/utils/misc/audioUtils';
 import { invoke } from '@tauri-apps/api/core';
+
 export default function useTranscript() {
+
 	const [transcription, setTranscription] = createSignal<string>('');
 	const [filePath, setFilePath] = createSignal<string>('');
 	const [audioSrc, setAudioSrc] = createSignal<string | null>(null);
@@ -14,18 +16,16 @@ export default function useTranscript() {
 
 	let revokeUrl: string | null = null;
 
-	// Normalize possible `file://` URIs to filesystem paths (Windows-safe).
 	function normalizeDroppedPath(p: string): string {
 		if (p.startsWith('file://')) {
 			let out = decodeURI(p.replace('file://', ''));
-			// On Windows we may get /C:/... — strip leading slash.
 			if (/^\/[A-Za-z]:\//.test(out)) out = out.slice(1);
 			return out;
 		}
 		return p;
 	}
 
-	function isAudioPath(p: string) {
+	function isValidFile(p: string) {
 		return /\.(mp3|wav|m4a|ogg|flac|aac|opus|mp4|mov)$/i.test(p);
 	}
 
@@ -115,7 +115,7 @@ export default function useTranscript() {
 					setDragging(false);
 
 					// Pick first audio file if multiple are dropped.
-					const firstAudio = paths?.find((p) => isAudioPath(p)) ?? null;
+					const firstAudio = paths?.find((p) => isValidFile(p)) ?? null;
 					if (!firstAudio) {
 						setError('Unsupported file type. Drop an audio file.');
 						return;

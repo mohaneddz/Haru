@@ -3,7 +3,7 @@ import Separator from "@/components/01 - Home/Cards/MainSeperator";
 import DocumentCard from "@/components/01 - Home/Cards/DocumentCard";
 import VideoCard from "@/components/01 - Home/Cards/VideoCard";
 import ToolCard from "@/components/01 - Home/Cards/ToolCard";
-import ComposableFilter, { FilterState } from "@/components/01 - Home/Filters/ComposableFilter";
+import ComposableFilter, { FilterState } from "@/components/core/UniversalFilter";
 import { Tag, BookOpen, FileText } from "lucide-solid";
 
 import rl from '/data/videos/rl.jpg';

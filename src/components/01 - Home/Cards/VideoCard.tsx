@@ -1,57 +1,55 @@
-import overlay from '@/assets/overlay.png';
-import * as LucideIcons from 'lucide-solid';
 import { For } from 'solid-js';
+import { openUrl } from '@tauri-apps/plugin-opener'; // 1. Import the opener plugin
+import type { Video } from '@/types/home/resource';
 
-interface Props {
-  img: string;
-  title: string;
-  description: string;
-  icon: string;
-  duration?: string;
-  type?: 'video' | 'playlist';
-  count?: number;
-  tags?: string[];
-  field?: string;
-}
+// Note: Ensure your `Video` type includes a `link` property, e.g., `link: string;`
 
-export default function VideoCard(props: Props) {
-  const IconComponent = (LucideIcons as any)[props.icon];
-  const isPlaylist = props.type === 'playlist';
+export default function VideoCard(props: Video) {
+  const isPlaylist = (props.count ?? 0) > 1;
+
+  /**
+   * Handles the click event to open the video link externally.
+   * @param event The mouse event.
+   */
+  const handleClick = (event: MouseEvent) => {
+    // Prevent the <a> tag's default behavior (like trying to navigate within the app)
+    event.preventDefault();
+
+    // Use the Tauri API to open the link in the user's default browser
+    if (props.link) {
+      void openUrl(props.link);
+    } else {
+      console.warn('VideoCard was clicked, but no link is available in props.');
+    }
+  };
 
   return (
     <a
       class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
       style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
-      href={`/home/library/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
+      href={props.link} // Use the actual link for the href attribute
+      onClick={handleClick} // 2. Add the custom click handler
       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
     >
-
       <div class="relative bg-background-light-3 rounded-lg shadow-md overflow-hidden aspect-[5/3] w-full group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)] transition-shadow duration-300">
+        <div class="absolute inset-0 w-full h-full z-10 bg-gradient-to-t 
+                    from-background-dark-1 from-0% 
+                    via-background-dark-2/90 via-20% 
+                    to-background-dark-3/10 to-100%"/>
 
-        {/* Background Image */}
         <img
           src={props.img}
           alt={props.title}
           class="absolute inset-0 w-full h-full object-cover z-0"
         />
 
-        <img
-          src={overlay}
-          class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
-        />
-
         <div class="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 py-3 flex flex-col gap-1 translate-y-8 group-hover:translate-y-0 transition-transform duration-300">
           <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-accent 1 transition-colors duration-200">
+            <span class="text-sm font-semibold text-accent 1 transition-colors duration-200 truncate">
               {props.title}
             </span>
           </div>
-          <span class="text-xs text-gray-300 truncate w-70 ">{props.description}</span>
-          
-          {IconComponent && (
-            <IconComponent class="text-accent w-8 h-8 transition-colors duration-200 absolute mb-2 right-4 bottom-2 -translate-y-8" />
-          )}
 
           {/* Tags */}
           {props.tags && props.tags.length > 0 && (
@@ -64,13 +62,6 @@ export default function VideoCard(props: Props) {
                 )}
               </For>
             </div>
-          )}
-
-          {/* Field indicator */}
-          {props.field && (
-            <span class="text-xs text-accent-light-1 font-medium mt-0.5">
-              {props.field}
-            </span>
           )}
         </div>
 

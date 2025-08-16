@@ -1,8 +1,12 @@
+import type { CourseInfo } from '@/types/home/library';
+
 import { useLocation } from '@solidjs/router';
 import { createSignal, onMount, Show } from 'solid-js';
+import { loadCourseData } from '@/utils/home/courses/courseUtils';
+
 import overlay from '@/assets/overlay.png';
-import { CourseInfo, loadCourseData } from '@/utils/home/courses/courseUtils';
 import CourseInfoTopCard from '@/components/01 - Home/Cards/CourseInfoTopCard';
+
 import { invoke } from '@tauri-apps/api/core';
 import { For } from 'solid-js';
 
@@ -40,7 +44,6 @@ export default function Overview() {
 
           const data = await loadCourseData(fieldName, display);
           setCourseData(data);
-          console.log('Course Data:', courseData());
           setLoading(false);
           setImage(await invoke<string>('read_image', { path: data.img }));
           return;
@@ -53,7 +56,6 @@ export default function Overview() {
 
           const data = await loadCourseData('AI', display);
           setCourseData(data);
-          console.log('Course Data:', courseData());
           setLoading(false);
           if (data.img && await invoke('verify_file', { path: data.img })) {
             setImage(await invoke<string>('read_image', { path: data.img }));

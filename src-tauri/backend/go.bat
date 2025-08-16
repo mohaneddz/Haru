@@ -1,9 +1,4 @@
 @echo off
-REM Activate conda environment
-call conda activate haru
-
-REM Change directory to backend
-cd /d D:\Programming\Projects\Tauri\haru\src-tauri\backend
 
 REM Determine argument
 if "%1"=="chat" (

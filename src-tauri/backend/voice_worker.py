@@ -1,19 +1,18 @@
-# main.py
-
+import re
 import asyncio
 import logging
 import json
-import re
+
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-# Local utils and config
 from utils.stt_utils import STT
 from utils.tts_utils import TTS
 from utils.chat_utils import voice_create_llm_payload, stream_unified_response
-from constants import LLAMA_SERVER_URL
+from config.constants import LLAMA_SERVER_URL
 
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

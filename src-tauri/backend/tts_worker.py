@@ -1,4 +1,3 @@
-#TTS WORKER
 import logging
 import asyncio
 
@@ -8,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 from utils.tts_utils import TTS
 
 # ======================================================================================

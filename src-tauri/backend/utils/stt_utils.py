@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings("ignore", message="dropout option adds dropout after all but last recurrent layer")
 warnings.filterwarnings("ignore", message="torch.nn.utils.weight_norm")
 
-from constants import STT_SAMPLE_RATE, VAD_AGGRESSIVENESS, STT_MODEL_ID, END_OF_SPEECH_SILENCE_MS
+from config.constants import STT_SAMPLE_RATE, VAD_AGGRESSIVENESS, STT_MODEL_ID, END_OF_SPEECH_SILENCE_MS
 
 class STT:
     def __init__(self):

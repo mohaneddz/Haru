@@ -5,7 +5,7 @@ import numpy as np
 import sounddevice as sd
 from kokoro import KPipeline
 import logging
-from constants import TTS_VOICE_PATH, TTS_SAMPLE_RATE
+from config.constants import TTS_VOICE_PATH, TTS_SAMPLE_RATE
 
 class TTS:
     def __init__(self):

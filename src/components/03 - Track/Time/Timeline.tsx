@@ -3,7 +3,10 @@ import { getTimeWidth, getTimePosition, parseTime, formatTime, formatDate } from
 
 // UI and Icon Imports
 import LayoutCard from '@/components/02 - Practice/training/LayoutCard';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-solid';
+
+import Calendar from 'lucide-solid/icons/calendar';
+import ChevronLeft from 'lucide-solid/icons/chevron-left';
+import ChevronRight from 'lucide-solid/icons/chevron-right';
 
 // Utility and Data Imports
 import { getCategoryColor } from '@/utils/track/themeUtils';
@@ -88,7 +91,7 @@ export default function Timeline(props: Props) {
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-4">
                             <Calendar class="w-6 h-6 text-accent" />
-                            <h2 class="text-xl font-bold text-text/90">Daily Timeline</h2>
+                            <p class="text-xl font-bold text-accent">Daily Timeline</p>
                         </div>
                         <div class="flex items-center gap-4">
                             <button onClick={goToPreviousDay} class="p-2 bg-sidebar-light-2 hover:bg-sidebar-light-3 rounded-lg transition-colors">

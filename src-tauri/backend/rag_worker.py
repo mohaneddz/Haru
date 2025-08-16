@@ -1,16 +1,19 @@
-from pathlib import Path
 import logging
 import re
 import asyncio
 
 import httpx 
-from contextlib import asynccontextmanager
 import traceback
-from constants import LLAMA_SERVER_URL, LLM_PROMPT_TEMPLATE_BASIC, LLM_PROMPT_TEMPLATE_ADVANCED
+
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse, ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+from config.constants import LLAMA_SERVER_URL
+from config.prompt import LLM_PROMPT_TEMPLATE_BASIC, LLM_PROMPT_TEMPLATE_ADVANCED
 
 from utils.llm_utils import create_llm_payload,handle_non_streaming_llm_response,stream_unified_response
 from utils.rag_utils import RAGSystem

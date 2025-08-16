@@ -1,87 +1,304 @@
-# --- Endpoints ---
-@app.post("/transcribe_file")
-async def transcribe_file(req: TranscribeRequest):
+import json
+import httpx
+import logging
+import asyncio
+
+from fastapi import FastAPI, Request
+from fastapi.responses import ORJSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+from contextlib import asynccontextmanager
+from urllib.parse import urlparse
+
+from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL, UNIVERSITIES_URLS 
+from config.lists import PDF_SEARCH_DOMAINS, VIDEO_SEARCH_DOMAINS, VIDEO_PLACEHOLDER_IMG
+from config.prompts import get_system_prompt, get_user_prompt
+
+from utils.chat_utils import create_llm_payload,handle_non_streaming_llm_response
+from utils.search_utils import ddgs_search_async,normalize_url,crawl_webpages_hybrid,process_crawled_results
+from utils.web_utils import ContentExtractor
+
+# Config ==========================================
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Global variables
+http_client: httpx.AsyncClient
+content_extractor: ContentExtractor
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_client, content_extractor
+    logging.info("Starting up and creating a persistent httpx client...")
+    http_client = httpx.AsyncClient(timeout=120.0)
+    content_extractor = ContentExtractor()
+    yield
+    logging.info("Shutting down and closing the httpx client...")
+    if http_client:
+        await http_client.aclose()
+
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Endpoints ==========================================
+
+@app.post("/module-documents")
+async def module_documents(request: Request):
     """
-    Transcribes any audio/video file.
-
-    Workflow:
-    1. Converts the input file to a standardized WAV format (16kHz, mono).
-    2. If the WAV is longer than `max_chunk_seconds`, it's split into smaller chunks.
-    3. Each chunk is transcribed sequentially.
-    4. The final transcript is returned.
+    Endpoint to fetch PDF documents related to a course module from the web.
     """
-    if not stt.is_ready():
-        raise HTTPException(status_code=503, detail="STT model is not loaded or ready.")
+    from utils.document_utils  import ddgs_search_full_async, classify_document_type
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
 
-    if not Path(ffmpeg_path).exists():
-        raise HTTPException(status_code=500, detail=f"FFmpeg executable not found at '{ffmpeg_path}'")
+    logging.info(f"Received document request for module: {module_name}")
 
-    input_path = Path(req.file_path)
-    if not input_path.exists():
-        raise HTTPException(status_code=404, detail=f"File not found at path: {req.file_path}")
+    # 1. Construct targeted search queries for PDFs
+    search_queries = []
+    for domain in PDF_SEARCH_DOMAINS:
+        search_queries.append(f'site:{domain} "{module_name}" filetype:pdf')
 
-    # Use a temporary directory for all generated files (safer and auto-cleans)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        standard_wav_path = temp_dir_path / "converted.wav"
-        
-        # 1. Convert input to a standard WAV file for processing
-        logging.info(f"Converting '{input_path.name}' to standard WAV format using '{ffmpeg_path}'...")
-        try:
-            cmd = [
-                ffmpeg_path, "-y", "-i", str(input_path),
-                "-ar", str(STT_SAMPLE_RATE),
-                "-ac", "1",
-                "-c:a", "pcm_s16le",
-                str(standard_wav_path)
-            ]
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
-            logging.info(f"Successfully converted to {standard_wav_path}")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"FFmpeg conversion failed: {e.stderr}")
-            raise HTTPException(status_code=500, detail=f"Failed to convert file. FFmpeg error: {e.stderr}")
+    search_queries.extend([
+        f'"{module_name}" textbook filetype:pdf',
+        f'"{module_name}" lecture notes filetype:pdf',
+        f'"{module_name}" tutorial filetype:pdf'
+    ])
 
-        # 2. Check duration and split if necessary
-        info = sf.info(str(standard_wav_path))
-        duration = info.duration
-        total_seconds = float(duration)
-        chunk_files = []
+    # 2. Perform asynchronous search
+    logging.info(f"Searching for PDF documents with {len(search_queries)} queries...")
+    search_tasks = [ddgs_search_full_async(q, max_results=4) for q in search_queries]
+    search_results_list = await asyncio.gather(*search_tasks)
 
-        if total_seconds <= req.max_chunk_seconds:
-            logging.info(f"Audio duration ({total_seconds:.1f}s) is within the limit. No splitting needed.")
-            chunk_files.append(standard_wav_path)
-        else:
-            num_chunks = math.ceil(total_seconds / req.max_chunk_seconds)
-            logging.info(f"Audio duration ({total_seconds:.1f}s) exceeds limit. Splitting into {num_chunks} chunks...")
-            try:
-                chunk_filename_pattern = temp_dir_path / "chunk_%03d.wav"
-                cmd_split = [
-                    ffmpeg_path, "-y", "-i", str(standard_wav_path),
-                    "-f", "segment",
-                    "-segment_time", str(req.max_chunk_seconds),
-                    "-c", "copy",
-                    str(chunk_filename_pattern)
-                ]
-                subprocess.run(cmd_split, check=True, capture_output=True, text=True)
-                chunk_files = sorted(list(temp_dir_path.glob("chunk_*.wav")))
-                logging.info(f"Successfully split audio into {len(chunk_files)} files.")
-            except subprocess.CalledProcessError as e:
-                logging.error(f"FFmpeg splitting failed: {e.stderr}")
-                raise HTTPException(status_code=500, detail=f"Failed to split audio file. FFmpeg error: {e.stderr}")
+    # 3. Process and format the results
+    unique_links = set()
+    documents = []
 
-        # 3. Transcribe each chunk
-        full_transcript = []
-        for i, chunk_path in enumerate(chunk_files):
-            logging.info(f"Transcribing chunk {i+1}/{len(chunk_files)}: {chunk_path.name}")
-            transcript_part = stt.transcribe_from_file(str(chunk_path))
-            if transcript_part:
-                full_transcript.append(transcript_part)
-        
-        logging.info("Transcription complete.")
+    all_results = [item for sublist in search_results_list for item in sublist]
 
-        return {
-            "status": "success",
-            "duration_sec": total_seconds,
-            "chunks_processed": len(chunk_files),
-            "transcription": "\n".join(full_transcript)
+    for result in all_results:
+        link = result.get('href')
+        title = result.get('title')
+
+        if not link or not title or not link.endswith('.pdf'):
+            continue
+
+        normalized_link = normalize_url(link)
+        if normalized_link in unique_links:
+            continue
+
+        # Unique PDF link
+        unique_links.add(normalized_link)
+
+        doc_type = classify_document_type(title)
+
+        document_obj = {
+            "title": title,
+            "type": doc_type,
+            "link": normalized_link,
+            "tags": [module_name.capitalize(), doc_type],
+            "local": False
         }
+        documents.append(document_obj)
+
+        if len(documents) >= 10:
+            break
+
+    if not documents:
+        return ORJSONResponse(
+            status_code=404,
+            content={"error": f"Could not find any PDF documents for the module '{module_name}'."}
+        )
+
+    logging.info(f"Successfully found {len(documents)} documents for {module_name}")
+    return ORJSONResponse(content=documents)
+
+@app.post("/module-info")
+async def module_info(request: Request):
+    """
+    Endpoint to fetch, process, and generate structured information about a course module.
+    """
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Received request for module: {module_name}")
+
+    # 1. Improved Search Strategy
+    search_queries = []
+    for uni_domain in UNIVERSITIES_URLS:
+        search_queries.append(f'site:{uni_domain} "{module_name}" course syllabus OR outline OR "course catalog"')
+    search_queries.extend([
+        f'"{module_name}" course syllabus learning outcomes',
+        f'"{module_name}" university course prerequisites',
+        f'introduction to "{module_name}" course topics',
+    ])
+
+    # 2. Asynchronously search for URLs
+    logging.info(f"Performing targeted web search with {len(search_queries)} queries...")
+    search_tasks = [ddgs_search_async(q, max_results=2) for q in search_queries]
+    url_nested_list = await asyncio.gather(*search_tasks)
+
+    # 3. Deduplicate URLs
+    unique_urls = set()
+    for url_list in url_nested_list:
+        for url in url_list:
+            unique_urls.add(normalize_url(url))
+    
+    if not unique_urls:
+        return ORJSONResponse(status_code=404, content={"error": "Could not find any web pages for the module."})
+
+    # 4. Crawl and process web content
+    logging.info(f"Crawling {len(unique_urls)} unique URLs...")
+    crawled_data = await crawl_webpages_hybrid(list(unique_urls)[:25], http_client)
+    processed_results = process_crawled_results(crawled_data, module_name, content_extractor)
+
+    if not processed_results:
+        return ORJSONResponse(status_code=404, content={"error": "Could not find enough information for the module."})
+
+    # 5. Build context
+    logging.info("Building context for the language model...")
+    context_parts = []
+    for i, res in enumerate(processed_results[:7]):
+        context_parts.append(f"Source [{i+1}] | URL: {res['url']}\nContent: {res['content']}\n---")
+    context_string = "\n".join(context_parts)
+    
+    # 6. Get response from LLM
+    logging.info("Sending request to the local LLM...")
+    messages = [
+        {"role": "system", "content": get_system_prompt()},
+        {"role": "user", "content": get_user_prompt(module_name, context_string)}
+    ]
+    llm_config = {"model": DEFAULT_MODEL, "temperature": 0.05, "max_tokens": 2048}
+    payload = await create_llm_payload(messages, stream=False, llm_config=llm_config)
+    
+    raw_llm_output = ""
+    try:
+        response = await handle_non_streaming_llm_response(http_client, payload, LLAMA_SERVER_URL, retries=1)
+        raw_llm_output = response.get('content', '').strip()
+
+        start = raw_llm_output.find('{')
+        end = raw_llm_output.rfind('}')
+        if start != -1 and end != -1:
+            clean_json_str = raw_llm_output[start:end+1]
+            json_response = json.loads(clean_json_str)
+            logging.info(f"Successfully generated JSON for {module_name}")
+            return ORJSONResponse(content=json_response)
+        else:
+            raise json.JSONDecodeError("No valid JSON object found in the LLM output.", raw_llm_output, 0)
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to decode JSON from LLM response: {e}")
+        logging.error(f"Raw LLM output was:\n---\n{raw_llm_output}\n---")
+        return ORJSONResponse(status_code=500, content={"error": "The model produced an invalid JSON structure."})
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        return ORJSONResponse(status_code=500, content={"error": "An internal server error occurred."})
+
+@app.post("/module-videos")
+async def module_videos(request: Request):
+    from utils.video_utils import normalize_domain, normalize_url_keep_yt, extract_generic_metadata, extract_youtube_metadata,normalized_title_key
+    from utils.document_utils  import ddgs_search_full_async
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Searching videos for module: %s", module_name)
+
+    # build queries
+    queries = [f'site:{d} "{module_name}" video' for d in VIDEO_SEARCH_DOMAINS]
+    queries += [f'"{module_name}" lecture site:youtube.com', f'"{module_name}" playlist site:youtube.com']
+
+    # async search
+    search_tasks = [ddgs_search_full_async(q, max_results=6) for q in queries]
+    search_results_list = await asyncio.gather(*search_tasks)
+
+    all_results = [item for sublist in search_results_list for item in sublist]
+
+    seen_urls = set()
+    seen_title_keys = set()
+    videos = []
+
+    for result in all_results:
+        raw_link = result.get("href") or ""
+        if not raw_link:
+            continue
+
+        # pick extractor
+        parsed_netloc = (urlparse(raw_link).netloc or "").lower()
+        if "youtu" in parsed_netloc:
+            meta = extract_youtube_metadata(result)
+        else:
+            # find which domain from our list is present
+            source = next((d for d in VIDEO_SEARCH_DOMAINS if d in raw_link.lower()), parsed_netloc or "other")
+            meta = extract_generic_metadata(result, source)
+
+        if not meta:
+            continue
+
+        # normalize link but keep key yt params
+        normalized_link = normalize_url_keep_yt(meta["link"])
+        if not normalized_link:
+            continue
+
+        # dedupe by normalized URL
+        if normalized_link in seen_urls:
+            continue
+
+        # dedupe by normalized title (fuzzy)
+        title_key = normalized_title_key(meta["title"])
+        if title_key and title_key in seen_title_keys:
+            # skip near-duplicate title
+            continue
+
+        # normalize tags
+        meta["tags"] = [t.lower() for t in meta.get("tags", [])]
+        # ensure img fallback
+        if not meta.get("img"):
+            meta["img"] = VIDEO_PLACEHOLDER_IMG
+        # set normalized link
+        meta["link"] = normalized_link
+
+        # mark domain tag if missing
+        if not any(normalize_domain(t) in meta["tags"] for t in meta["tags"]):
+            dom = normalize_domain(parsed_netloc)
+            if dom and dom not in meta["tags"]:
+                meta["tags"].append(dom)
+
+        # accept
+        seen_urls.add(normalized_link)
+        if title_key:
+            seen_title_keys.add(title_key)
+        videos.append(meta)
+
+        if len(videos) >= 12:  # slightly larger pool, you can cap to 10 later
+            break
+
+    if not videos:
+        return ORJSONResponse(status_code=404, content={"error": f"No videos found for module '{module_name}'."})
+
+    logging.info("Returning %d videos for module %s", len(videos), module_name)
+    return ORJSONResponse(content=videos[:10])
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=4999)

@@ -50,46 +50,9 @@ app.add_middleware(
 def _url_hash(url: str) -> str:
     return hashlib.sha1(url.encode("utf-8")).hexdigest()
 
-def _make_fallback(path: str) -> None:
-    from PIL import Image, ImageDraw, ImageFont
-    PIL_AVAILABLE = True
-    """Create a simple fallback PNG if Pillow available, else write a tiny empty PNG."""
-    if os.path.exists(path):
-        return
-    try:
-        if PIL_AVAILABLE:
-            img = Image.new("RGBA", (600, 800), (30, 30, 40, 255))
-            draw = ImageDraw.Draw(img)
-            try:
-                font = ImageFont.truetype("DejaVuSans.ttf", 28)
-            except Exception:
-                font = None
-            text = "No preview available"
-            # simple check for textsize attribute
-            if hasattr(draw, 'textsize'):
-                w, h = draw.textsize(text, font=font)
-            else: # Pillow 10+
-                bbox = draw.textbbox((0,0), text, font=font)
-                w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-            draw.text(((600 - w) / 2, (800 - h) / 2), text, fill=(200, 200, 200, 255), font=font)
-            img.save(path, "PNG")
-            logging.info("Created fallback thumbnail (Pillow).")
-        else:
-            empty_png = (b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
-                         b"\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
-                         b"\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!"
-                         b"\xbc\x33\x00\x00\x00\x00IEND\xaeB`\x82")
-            with open(path, "wb") as f:
-                f.write(empty_png)
-            logging.info("Created minimal fallback thumbnail (binary).")
-    except Exception as e:
-        logging.warning("Failed to create fallback thumbnail: %s", e)
-
 # ensure fallback exists
-FALLBACK_NAME = "no-preview.png"
+FALLBACK_NAME = "default-document.png"
 FALLBACK_PATH = os.path.join(CACHE_DIR, FALLBACK_NAME)
-_make_fallback(FALLBACK_PATH)
 
 @app.post("/pdf-thumbnail")
 async def pdf_thumbnail(request: Request):
@@ -197,9 +160,6 @@ async def clear_cache():
         logging.error("Failed to clear cache: %s", e)
         raise HTTPException(status_code=500, detail="Failed to clear cache.")
 
-
-# FIX: Replace app.mount with a dedicated endpoint for reliability.
-# This serves all files from the thumbnails directory and will fix the 404 error.
 @app.get("/thumbnails/{filename:path}")
 async def get_thumbnail(filename: str):
     """

@@ -1,7 +1,7 @@
 import { createSignal, onMount } from 'solid-js';
 import type { FilterState } from '@/types/misc/filters';
 
-import { loadVideos, loadTools, loadDocuments, AppendDocumentsFile, AppendVideosFile } from '@/utils/home/courses/resourcessUtils';
+import { loadVideos, loadTools, loadDocuments, AppendDocumentsFile, AppendVideosFile, AppendToolsFile } from '@/utils/home/courses/resourcessUtils';
 import type { Document, Video, Tool } from '@/types/home/resource';
 
 export default function useResources() {
@@ -22,6 +22,7 @@ export default function useResources() {
 	
 	const [appendedDocuments, setAppendedDocuments] = createSignal<boolean>(false);
 	const [appendedVideos, setAppendedVideos] = createSignal<boolean>(false);
+	const [appendedTools, setAppendedTools] = createSignal<boolean>(false);
 
 	const [filters, setFilters] = createSignal<FilterState>({
 		searchQuery: '',
@@ -189,6 +190,70 @@ export default function useResources() {
 		}
 	}
 
+	async function searchTools() {
+		setIsLoading(true);
+		setError(null);
+
+		if (!moduleName() || moduleName().trim() === '') {
+			setError('Module name cannot be empty.');
+			setIsLoading(false);
+			return;
+		}
+
+		const API_URL = 'http://127.0.0.1:4999/module-tools';
+		const requestOptions = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ module_name: moduleName() }),
+		};
+
+		try {
+			const response = await fetch(API_URL, requestOptions);
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+			}
+			const data = await response.json();
+			console.log('Successfully fetched tools:', data);
+			return data as Tool[];
+		} catch (err) {
+			console.error('Failed to search for tools:', err);
+			setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+		} finally {
+			setIsLoading(false);
+		}
+	}
+
+	async function appendTools() {
+		const newTools = await searchTools();
+		if (!newTools || !Array.isArray(newTools)) return;
+
+		const fullTools = Array.from(
+			new Map(
+				[...(filteredTools() || []), ...newTools].map((t: Tool) => [t.link, t])
+			).values()
+		);
+		setFilteredTools(fullTools);
+		setAppendedTools(true);
+	}
+
+	async function saveTools() {
+		const tools = filteredTools();
+		if (!tools || tools.length === 0) {
+			setError('No tools to save.');
+			return;
+		}
+
+		try {
+			await AppendToolsFile(parentFolder(), moduleName(), tools);
+			console.log('Tools saved successfully');
+			setAppendedTools(false);
+		} catch (err) {
+			console.error('Failed to save tools:', err);
+			setError(err instanceof Error ? err.message : 'An unexpected error occurred while saving tools.');
+		}
+	}
+
 	const availableTags = [
 		'fundamentals',
 		'course',
@@ -273,7 +338,10 @@ export default function useResources() {
 		searchVideos,
 		appendVideos,
 		saveVideos,
+		appendTools,
+		saveTools,
 		appendedDocuments,
-		appendedVideos
+		appendedVideos,
+		appendedTools
 	};
 }

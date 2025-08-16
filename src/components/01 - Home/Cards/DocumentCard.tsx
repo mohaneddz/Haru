@@ -1,12 +1,12 @@
 import { createSignal, onMount } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
-import { openUrl } from '@tauri-apps/plugin-opener'; // 👈 Import the opener plugin
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 interface Props {
   title: string;
   type: string;
   link?: string;
-  offline?: boolean; // treat as local when true
+  offline?: boolean;
   tags?: string[];
 }
 
@@ -32,10 +32,8 @@ export default function DocumentCard(props: Props) {
         const isDataUri = base64.startsWith('data:');
         setThumbnail(isDataUri ? base64 : `data:image/png;base64,${base64}`);
       } else {
-        // New logic for online PDFs
         if (!safeLink) throw new Error('no remote link');
 
-        // 1. Try to fetch from the backend first
         try {
           const res = await fetch("http://localhost:3999/pdf-thumbnail", {
             method: "POST",
@@ -45,20 +43,18 @@ export default function DocumentCard(props: Props) {
           if (!res.ok) throw new Error(`Server responded with status: ${res.status}`);
           const data = await res.json();
           if (data.thumbnail) {
-            setThumbnail(data.thumbnail); // Success
+            setThumbnail(data.thumbnail);
           } else {
             if (data.error) console.warn(`Server error: ${data.error}`);
             throw new Error('No thumbnail in server response');
           }
         } catch (err) {
           console.warn('Backend thumbnail fetch failed, falling back to thum.io:', err);
-          // 2. Fallback to thum.io service
           const getPreviewUrl = () => `https://image.thum.io/get/width/400/crop/600/allowJPG/wait/20/noanimate/${safeLink}`;
           setThumbnail(getPreviewUrl());
         }
       }
     } catch (err) {
-      // 3. This is the final fallback for local errors or if a remote link is missing
       console.warn('Thumbnail generation failed:', err);
       setThumbError(true);
       setThumbnail(null);
@@ -73,8 +69,8 @@ export default function DocumentCard(props: Props) {
   const handleClick = (event: MouseEvent) => {
     if (!isLocal && safeLink) {
       event.preventDefault();
-      event.stopPropagation(); // prevent router/default behavior opening an extra tab
-      void openUrl(safeLink);  // open only the real external URL
+      event.stopPropagation();
+      void openUrl(safeLink);
     }
   };
 
@@ -88,17 +84,20 @@ export default function DocumentCard(props: Props) {
     >
       <div class="relative rounded-lg overflow-hidden bg-background-light-3 w-full h-full transition-shadow duration-300 group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)]">
         {thumbnail() ? (
-          <img
-            src={thumbnail()!}
-            alt={`${props.title} thumbnail`}
-            class="absolute inset-0 w-full h-full object-cover z-0"
-            // This onError handler acts as the final fallback for any image source (backend or thum.io) that fails to load
-            onError={() => {
-              console.warn(`Failed to load thumbnail from: ${thumbnail()}`);
-              setThumbError(true);
-              setThumbnail(null); // This triggers the placeholder UI
-            }}
-          />
+          // MODIFICATION START: Added a white background container and changed image to object-contain
+          <div class="absolute inset-0 w-full h-full bg-white z-0">
+            <img
+              src={thumbnail()!}
+              alt={`${props.title} thumbnail`}
+              class="w-full h-full object-contain" // Changed from 'absolute inset-0... object-cover'
+              onError={() => {
+                console.warn(`Failed to load thumbnail from: ${thumbnail()}`);
+                setThumbError(true);
+                setThumbnail(null);
+              }}
+            />
+          </div>
+          // MODIFICATION END
         ) : (
           <div class="absolute inset-0 w-full h-full bg-gray-800 z-0 flex items-center justify-center">
             {loading() ? (

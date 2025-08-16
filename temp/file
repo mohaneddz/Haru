@@ -1,26 +1,34 @@
-import json
-import httpx
-import logging
 import asyncio
-
-from fastapi import FastAPI, Request
-from fastapi.responses import ORJSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-
+import json
+import logging
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
-from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL, UNIVERSITIES_URLS 
-from config.lists import PDF_SEARCH_DOMAINS, VIDEO_SEARCH_DOMAINS, VIDEO_PLACEHOLDER_IMG
+import httpx
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
+
+from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL, VIDEO_PLACEHOLDER_IMG
+from config.lists import PDF_SEARCH_DOMAINS, VIDEO_SEARCH_DOMAINS, UNIVERSITIES_URLS
 from config.prompts import get_system_prompt, get_user_prompt
 
 from utils.chat_utils import create_llm_payload,handle_non_streaming_llm_response
 from utils.search_utils import ddgs_search_async,normalize_url,crawl_webpages_hybrid,process_crawled_results
 from utils.web_utils import ContentExtractor
 
-# Config ==========================================
+from utils.document_utils import ddgs_search_full_async
+from utils.video_utils import (
+    extract_video_metadata_from_url,
+    is_potential_video_link,
+    normalized_title_key,
+)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# CONFIG ==========================
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Global variables
 http_client: httpx.AsyncClient
@@ -28,10 +36,9 @@ content_extractor: ContentExtractor
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global http_client, content_extractor
+    global http_client
     logging.info("Starting up and creating a persistent httpx client...")
     http_client = httpx.AsyncClient(timeout=120.0)
-    content_extractor = ContentExtractor()
     yield
     logging.info("Shutting down and closing the httpx client...")
     if http_client:
@@ -47,7 +54,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Endpoints ==========================================
+# ENDPOINTS ==========================
 
 @app.post("/module-documents")
 async def module_documents(request: Request):
@@ -212,93 +219,86 @@ async def module_info(request: Request):
 
 @app.post("/module-videos")
 async def module_videos(request: Request):
-    from utils.video_utils import normalize_domain, normalize_url_keep_yt, extract_generic_metadata, extract_youtube_metadata,normalized_title_key
-    from utils.document_utils  import ddgs_search_full_async
     try:
         body = await request.json()
         module_name = body.get("module_name")
         if not module_name:
-            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+            return ORJSONResponse(
+                status_code=400, content={"error": "module_name is required"}
+            )
     except json.JSONDecodeError:
         return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
 
     logging.info(f"Searching videos for module: %s", module_name)
 
-    # build queries
     queries = [f'site:{d} "{module_name}" video' for d in VIDEO_SEARCH_DOMAINS]
-    queries += [f'"{module_name}" lecture site:youtube.com', f'"{module_name}" playlist site:youtube.com']
+    queries += [
+        f'"{module_name}" lecture site:youtube.com',
+        f'"{module_name}" playlist site:youtube.com',
+    ]
 
-    # async search
-    search_tasks = [ddgs_search_full_async(q, max_results=6) for q in queries]
+    search_tasks = [ddgs_search_full_async(q, max_results=8) for q in queries]
     search_results_list = await asyncio.gather(*search_tasks)
-
     all_results = [item for sublist in search_results_list for item in sublist]
 
+    allowed_domains = {d.lower() for d in VIDEO_SEARCH_DOMAINS}
+    allowed_domains.update(["youtube.com", "youtu.be"])
+
     seen_urls = set()
-    seen_title_keys = set()
-    videos = []
+    tasks = []
 
     for result in all_results:
-        raw_link = result.get("href") or ""
+        raw_link = result.get("href")
         if not raw_link:
             continue
 
-        # pick extractor
-        parsed_netloc = (urlparse(raw_link).netloc or "").lower()
-        if "youtu" in parsed_netloc:
-            meta = extract_youtube_metadata(result)
-        else:
-            # find which domain from our list is present
-            source = next((d for d in VIDEO_SEARCH_DOMAINS if d in raw_link.lower()), parsed_netloc or "other")
-            meta = extract_generic_metadata(result, source)
+        try:
+            domain = urlparse(raw_link).netloc.lower()
+            if not any(allowed in domain for allowed in allowed_domains):
+                continue
+        except Exception:
+            continue
+        
+        if not is_potential_video_link(raw_link):
+            continue
+            
+        if raw_link not in seen_urls:
+            seen_urls.add(raw_link)
+            tasks.append(extract_video_metadata_from_url(raw_link))
 
+    metadata_results = await asyncio.gather(*tasks)
+
+    videos = []
+    seen_title_keys = set()
+    for meta in metadata_results:
         if not meta:
             continue
-
-        # normalize link but keep key yt params
-        normalized_link = normalize_url_keep_yt(meta["link"])
-        if not normalized_link:
-            continue
-
-        # dedupe by normalized URL
-        if normalized_link in seen_urls:
-            continue
-
-        # dedupe by normalized title (fuzzy)
         title_key = normalized_title_key(meta["title"])
-        if title_key and title_key in seen_title_keys:
-            # skip near-duplicate title
+        if title_key in seen_title_keys:
             continue
-
-        # normalize tags
-        meta["tags"] = [t.lower() for t in meta.get("tags", [])]
-        # ensure img fallback
         if not meta.get("img"):
             meta["img"] = VIDEO_PLACEHOLDER_IMG
-        # set normalized link
-        meta["link"] = normalized_link
-
-        # mark domain tag if missing
-        if not any(normalize_domain(t) in meta["tags"] for t in meta["tags"]):
-            dom = normalize_domain(parsed_netloc)
-            if dom and dom not in meta["tags"]:
-                meta["tags"].append(dom)
-
-        # accept
-        seen_urls.add(normalized_link)
-        if title_key:
-            seen_title_keys.add(title_key)
+        # ensure consistent link key for frontend dedupe / saving
+        if not meta.get("link"):
+            meta["link"] = meta.get("url", "")
+        # mark as remote (not local) so save logic can use this field
+        meta["local"] = False
+        seen_title_keys.add(title_key)
         videos.append(meta)
-
-        if len(videos) >= 12:  # slightly larger pool, you can cap to 10 later
+        if len(videos) >= 10:
             break
 
     if not videos:
-        return ORJSONResponse(status_code=404, content={"error": f"No videos found for module '{module_name}'."})
+        return ORJSONResponse(
+            status_code=404,
+            content={"error": f"No videos found for module '{module_name}'."},
+        )
 
     logging.info("Returning %d videos for module %s", len(videos), module_name)
-    return ORJSONResponse(content=videos[:10])
+    return ORJSONResponse(content=videos)
+
+# MAIN ==========================
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=4999)
+    uvicorn.run(app, host="0.0.0.0", port=4999)

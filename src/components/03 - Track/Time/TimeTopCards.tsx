@@ -1,8 +1,11 @@
 import { createMemo, Accessor } from 'solid-js';
 
 // UI Component and Icon Imports
-import { Clock, TrendingUp, Activity, Timer } from 'lucide-solid';
+import Clock from 'lucide-solid/icons/clock';
 import ScoreCard from '@/components/core/Input/ScoreCard';
+import TrendingUp from 'lucide-solid/icons/trending-up';
+import Activity from 'lucide-solid/icons/activity';
+import Timer from 'lucide-solid/icons/timer';
 
 // 1. IMPORT the synchronous utility functions
 import {

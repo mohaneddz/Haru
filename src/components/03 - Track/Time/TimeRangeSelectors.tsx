@@ -1,4 +1,4 @@
-import { BarChart3 } from 'lucide-solid';
+import BarChart3 from 'lucide-solid/icons/bar-chart-3';
 import type { Accessor, Setter } from 'solid-js';
 
 // The props interface remains the same

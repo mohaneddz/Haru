@@ -12,7 +12,7 @@ const Progress = lazy(() => import("@/routes/01 - Home/Course/Progress"));
 
 export default function Course() {
     
-    const [activeTab, setActiveTab] = createSignal(tabs[0]);
+    const [activeTab, setActiveTab] = createSignal(tabs[2]);
     
     return (
         <div class="w-full h-full flex flex-col items-center justify-start">

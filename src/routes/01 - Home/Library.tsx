@@ -87,7 +87,7 @@ export default function Library() {
             <Button class="center w-full h-max col-span-2" variant="ghost" onClick={GetCourseContent} disabled={isContentLoading() || isSaving()}>
               <Show when={!isContentLoading()} fallback={<><LoaderCircle class="w-4 h-4 text-text mr-2 animate-spin" /><span>Loading...</span></>}>
                 <Stars class="w-4 h-4 text-text mr-2" />
-                <span>Secomparch With AI</span>
+                <span>Search With AI</span>
               </Show>
             </Button>
 

@@ -50,8 +50,7 @@ WATCHER_DEBOUNCE_SECONDS = 2.0
 # Constants and configs
 MAX_CONCURRENCY = 24
 USER_AGENT = "Mozilla/5.0 (compatible; Bot/1.0; +https://example.com/bot)" 
-VIDEO_PLACEHOLDER_IMG = "https://assets.example.com/video-placeholder.png"
-
+VIDEO_PLACEHOLDER_IMG = "https://lmsninjas.com/wp-content/uploads/2021/06/LMSninjas_blog-14.png"
 
 STT_MODEL_ID = "openai/whisper-large-v3-turbo"
 TTS_VOICE_PATH = "D:/Programming/Projects/Tauri/haru/src-tauri/voices/af_nicole.pt"

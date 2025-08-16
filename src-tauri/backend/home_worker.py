@@ -9,24 +9,35 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
-from config.lists import VIDEO_SEARCH_DOMAINS
-from config.constants import VIDEO_PLACEHOLDER_IMG
+from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL
+from config.lists import PDF_SEARCH_DOMAINS, VIDEO_SEARCH_DOMAINS, UNIVERSITIES_URLS
+from config.prompts import get_system_prompt, get_user_prompt
+
+from utils.chat_utils import create_llm_payload,handle_non_streaming_llm_response
+from utils.search_utils import ddgs_search_async,normalize_url,crawl_webpages_hybrid,process_crawled_results
+from utils.web_utils import ContentExtractor
+
 from utils.document_utils import ddgs_search_full_async
 from utils.video_utils import (
     extract_video_metadata_from_url,
-    is_video_link,
+    is_potential_video_link,
     normalized_title_key,
+    FALLBACK_THUMBNAILS,
+    normalize_domain,
 )
 
+# CONFIG ==========================
 
-# Config
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+# Reduce verbosity of other libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 
 # Global variables
 http_client: httpx.AsyncClient
-
+content_extractor: ContentExtractor
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,7 +49,6 @@ async def lifespan(app: FastAPI):
     if http_client:
         await http_client.aclose()
 
-
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 
 app.add_middleware(
@@ -49,12 +59,175 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ENDPOINTS ==========================
+
+@app.post("/module-documents")
+async def module_documents(request: Request):
+    """
+    Endpoint to fetch PDF documents related to a course module from the web.
+    """
+    from utils.document_utils  import ddgs_search_full_async, classify_document_type
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Received document request for module: {module_name}")
+
+    # 1. Construct targeted search queries for PDFs
+    search_queries = []
+    for domain in PDF_SEARCH_DOMAINS:
+        search_queries.append(f'site:{domain} "{module_name}" filetype:pdf')
+
+    search_queries.extend([
+        f'"{module_name}" textbook filetype:pdf',
+        f'"{module_name}" lecture notes filetype:pdf',
+        f'"{module_name}" tutorial filetype:pdf'
+    ])
+
+    # 2. Perform asynchronous search
+    logging.info(f"Searching for PDF documents with {len(search_queries)} queries...")
+    search_tasks = [ddgs_search_full_async(q, max_results=4) for q in search_queries]
+    search_results_list = await asyncio.gather(*search_tasks)
+
+    # 3. Process and format the results
+    unique_links = set()
+    documents = []
+
+    all_results = [item for sublist in search_results_list for item in sublist]
+
+    for result in all_results:
+        link = result.get('href')
+        title = result.get('title')
+
+        if not link or not title or not link.endswith('.pdf'):
+            continue
+
+        normalized_link = normalize_url(link)
+        if normalized_link in unique_links:
+            continue
+
+        # Unique PDF link
+        unique_links.add(normalized_link)
+
+        doc_type = classify_document_type(title)
+
+        document_obj = {
+            "title": title,
+            "type": doc_type,
+            "link": normalized_link,
+            "tags": [module_name.capitalize(), doc_type],
+            "local": False
+        }
+        documents.append(document_obj)
+
+        if len(documents) >= 10:
+            break
+
+    if not documents:
+        return ORJSONResponse(
+            status_code=404,
+            content={"error": f"Could not find any PDF documents for the module '{module_name}'."}
+        )
+
+    logging.info(f"Successfully found {len(documents)} documents for {module_name}")
+    return ORJSONResponse(content=documents)
+
+@app.post("/module-info")
+async def module_info(request: Request):
+    """
+    Endpoint to fetch, process, and generate structured information about a course module.
+    """
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Received request for module: {module_name}")
+
+    # 1. Improved Search Strategy
+    search_queries = []
+    for uni_domain in UNIVERSITIES_URLS:
+        search_queries.append(f'site:{uni_domain} "{module_name}" course syllabus OR outline OR "course catalog"')
+    search_queries.extend([
+        f'"{module_name}" course syllabus learning outcomes',
+        f'"{module_name}" university course prerequisites',
+        f'introduction to "{module_name}" course topics',
+    ])
+
+    # 2. Asynchronously search for URLs
+    logging.info(f"Performing targeted web search with {len(search_queries)} queries...")
+    search_tasks = [ddgs_search_async(q, max_results=2) for q in search_queries]
+    url_nested_list = await asyncio.gather(*search_tasks)
+
+    # 3. Deduplicate URLs
+    unique_urls = set()
+    for url_list in url_nested_list:
+        for url in url_list:
+            unique_urls.add(normalize_url(url))
+    
+    if not unique_urls:
+        return ORJSONResponse(status_code=404, content={"error": "Could not find any web pages for the module."})
+
+    # 4. Crawl and process web content
+    logging.info(f"Crawling {len(unique_urls)} unique URLs...")
+    crawled_data = await crawl_webpages_hybrid(list(unique_urls)[:25], http_client)
+    processed_results = process_crawled_results(crawled_data, module_name, content_extractor)
+
+    if not processed_results:
+        return ORJSONResponse(status_code=404, content={"error": "Could not find enough information for the module."})
+
+    # 5. Build context
+    logging.info("Building context for the language model...")
+    context_parts = []
+    for i, res in enumerate(processed_results[:7]):
+        context_parts.append(f"Source [{i+1}] | URL: {res['url']}\nContent: {res['content']}\n---")
+    context_string = "\n".join(context_parts)
+    
+    # 6. Get response from LLM
+    logging.info("Sending request to the local LLM...")
+    messages = [
+        {"role": "system", "content": get_system_prompt()},
+        {"role": "user", "content": get_user_prompt(module_name, context_string)}
+    ]
+    llm_config = {"model": DEFAULT_MODEL, "temperature": 0.05, "max_tokens": 2048}
+    payload = await create_llm_payload(messages, stream=False, llm_config=llm_config)
+    
+    raw_llm_output = ""
+    try:
+        response = await handle_non_streaming_llm_response(http_client, payload, LLAMA_SERVER_URL, retries=1)
+        raw_llm_output = response.get('content', '').strip()
+
+        start = raw_llm_output.find('{')
+        end = raw_llm_output.rfind('}')
+        if start != -1 and end != -1:
+            clean_json_str = raw_llm_output[start:end+1]
+            json_response = json.loads(clean_json_str)
+            logging.info(f"Successfully generated JSON for {module_name}")
+            return ORJSONResponse(content=json_response)
+        else:
+            raise json.JSONDecodeError("No valid JSON object found in the LLM output.", raw_llm_output, 0)
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to decode JSON from LLM response: {e}")
+        logging.error(f"Raw LLM output was:\n---\n{raw_llm_output}\n---")
+        return ORJSONResponse(status_code=500, content={"error": "The model produced an invalid JSON structure."})
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        return ORJSONResponse(status_code=500, content={"error": "An internal server error occurred."})
 
 @app.post("/module-videos")
 async def module_videos(request: Request):
     try:
         body = await request.json()
         module_name = body.get("module_name")
+        print(f"Searching for videos in module: {module_name}")
         if not module_name:
             return ORJSONResponse(
                 status_code=400, content={"error": "module_name is required"}
@@ -64,51 +237,69 @@ async def module_videos(request: Request):
 
     logging.info(f"Searching videos for module: %s", module_name)
 
-    # build queries
-    queries = [f'site:{d} "{module_name}" video' for d in VIDEO_SEARCH_DOMAINS]
-    queries += [
-        f'"{module_name}" lecture site:youtube.com',
-        f'"{module_name}" playlist site:youtube.com',
+    # --- UPGRADED: More targeted queries for better results ---
+    queries = [
+        f'site:youtube.com "{module_name}" course playlist',
+        f'site:khanacademy.org "{module_name}"',
+        f'site:3blue1brown.com "{module_name}" lessons',
     ]
+    queries += [f'site:{d} "{module_name}" video lecture' for d in VIDEO_SEARCH_DOMAINS]
+    queries.append(f'"{module_name}" lecture series site:youtube.com')
 
-    # async search
     search_tasks = [ddgs_search_full_async(q, max_results=6) for q in queries]
     search_results_list = await asyncio.gather(*search_tasks)
     all_results = [item for sublist in search_results_list for item in sublist]
 
-    seen_urls = set()
-    seen_title_keys = set()
-    videos = []
+    # Create a map of URL to its search result title for fallback
+    url_to_title_map = {result.get("href"): result.get("title") for result in all_results if result.get("href")}
 
+    seen_urls = set()
+    tasks = []
+    
     for result in all_results:
         raw_link = result.get("href")
-        if not raw_link or not is_video_link(raw_link):
+        if not raw_link or raw_link in seen_urls:
             continue
+        
+        # Use the smart filter to pre-qualify URLs
+        if is_potential_video_link(raw_link):
+            seen_urls.add(raw_link)
+            tasks.append(extract_video_metadata_from_url(raw_link))
 
-        meta = await extract_video_metadata_from_url(raw_link)
+    metadata_results = await asyncio.gather(*tasks)
+
+    videos = []
+    seen_title_keys = set()
+    
+    # --- CRITICAL: Create "best-effort" metadata for failed extractions ---
+    processed_urls = {meta['link'] for meta in metadata_results if meta}
+    for url in seen_urls:
+        if url not in processed_urls:
+            domain_key = normalize_domain(urlparse(url).netloc)
+            fallback_img = FALLBACK_THUMBNAILS.get(domain_key)
+            # Only create fallback for known educational sites to avoid junk
+            if fallback_img:
+                meta = {
+                    "title": url_to_title_map.get(url, "External Course Resource"),
+                    "img": fallback_img,
+                    "duration": "",
+                    "count": 1,
+                    "tags": [domain_key, "course"],
+                    "link": url,
+                    "local": False,
+                }
+                metadata_results.append(meta)
+
+    for meta in metadata_results:
         if not meta:
             continue
-
-        # dedupe by normalized URL
-        if meta["link"] in seen_urls:
-            continue
-
-        # dedupe by normalized title (fuzzy)
         title_key = normalized_title_key(meta["title"])
         if title_key in seen_title_keys:
             continue
-
-        # ensure img fallback
-        if not meta.get("img"):
-            meta["img"] = VIDEO_PLACEHOLDER_IMG
-
-        # accept
-        seen_urls.add(meta["link"])
-        if title_key:
-            seen_title_keys.add(title_key)
+            
+        seen_title_keys.add(title_key)
         videos.append(meta)
-
-        if len(videos) >= 12:  # slightly larger pool, you can cap to 10 later
+        if len(videos) >= 20: # Increased limit for more results
             break
 
     if not videos:
@@ -118,10 +309,10 @@ async def module_videos(request: Request):
         )
 
     logging.info("Returning %d videos for module %s", len(videos), module_name)
-    return ORJSONResponse(content=videos[:10])
+    return ORJSONResponse(content=videos)
 
+# MAIN ==========================
 
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(app, host="127.0.0.1", port=4999)
+    uvicorn.run(app, host="0.0.0.0", port=4999)

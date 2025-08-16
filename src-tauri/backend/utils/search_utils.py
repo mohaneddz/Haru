@@ -15,8 +15,8 @@ from bs4 import BeautifulSoup
 from ddgs import DDGS
 from dateutil import parser
 
-from config.constants import TRUSTED_DOMAINS, MAX_CONCURRENCY, USER_AGENT
-
+from config.constants import MAX_CONCURRENCY, USER_AGENT
+from config.lists import TRUSTED_DOMAINS
 
 HTTPX_LIMITS = httpx.Limits(max_connections=MAX_CONCURRENCY, max_keepalive_connections=MAX_CONCURRENCY)
 

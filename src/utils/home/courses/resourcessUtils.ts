@@ -2,13 +2,13 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Document, Video, Tool } from '@/types/home/resource';
 
 export async function loadVideos(parent: string, courseName: string): Promise<Video[]> {
-	console.log('Loading video resources');
+	// console.log('Loading video resources');
 	const name = courseName.toLocaleLowerCase().replace('-', ' ');
 	try {
 		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\videos.csv`;
-		console.log(`Loading videos from path: ${path}`);
+		// console.log(`Loading videos from path: ${path}`);
 
 		const response = await invoke<string>('read_file', { path });
 		if (!response) {
@@ -42,7 +42,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 				};
 			});
 
-		console.log(`Loaded:`, videosList);
+		// console.log(`Loaded:`, videosList);
 		return videosList;
 	} catch (error) {
 		console.error(`Failed to load videos for course ${courseName}:`, error);
@@ -51,13 +51,13 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 }
 
 export async function loadTools(parent: string, courseName: string): Promise<Tool[]> {
-	console.log('Loading tool resources');
+	// console.log('Loading tool resources');
 	const name = courseName.toLocaleLowerCase().replace('-', ' ');
 	try {
 		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\tools.csv`;
-		console.log(`Loading tools from path: ${path}`);
+		// console.log(`Loading tools from path: ${path}`);
 
 		const response = await invoke<string>('read_file', { path });
 		if (!response) {
@@ -82,7 +82,7 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 				};
 			});
 
-		console.log(`Loaded:`, toolsList);
+		// console.log(`Loaded:`, toolsList);
 		return toolsList;
 	} catch (error) {
 		console.error(`Failed to load tools for course ${courseName}:`, error);
@@ -91,17 +91,16 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 }
 
 export async function loadDocuments(parent: string, courseName: string): Promise<Document[]> {
-	console.log('Loading document resources');
+	// console.log('Loading document resources');
 	const name = courseName.toLocaleLowerCase().replace('-', ' ');
 	const documents: Document[] = [];
 	const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'txt', 'md'];
 
 	try {
-		// --- Load CSV documents first ---
 		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\documents.csv`;
-		console.log(`Loading CSV documents from path: ${csvPath}`);
+		// console.log(`Loading CSV documents from path: ${csvPath}`);
 
 		const csvResponse = await invoke<string>('read_file', { path: csvPath }).catch(() => '');
 		if (csvResponse) {
@@ -165,10 +164,47 @@ export async function loadDocuments(parent: string, courseName: string): Promise
 			}
 		}
 
-		console.log('Loaded documents:', documents);
+		// console.log('Loaded documents:', documents);
 		return documents;
 	} catch (error) {
 		console.error(`Failed to load documents for course ${courseName}:`, error);
 		return documents;
+	}
+}
+
+export async function AppendDocumentsFile(parent: string, courseName: string, documents: Document[]): Promise<boolean> {
+	console.log(`Appending documents for course ${courseName}`);
+	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	try {
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\documents.csv`;
+		const csvContent = '\n' + documents.map(doc => {
+			return `"${doc.title}","${doc.link}","${doc.tags.join(';')}","${doc.type}","${doc.local}"`;
+		}).join('\n');
+
+		await invoke('save_file', { path: csvPath, content: csvContent });
+		return true;
+	} catch (error) {
+		console.error(`Failed to append documents for course ${courseName}:`, error);
+		return false;
+	}
+}
+
+export async function AppendVideosFile(parent: string, courseName: string, videos: Video[]): Promise<boolean> {
+	console.log(`Appending videos for course ${courseName}`);
+	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	try {
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\videos.csv`;
+		// CSV columns: title,img,duration,count,tags,link
+		const csvContent = '\n' + videos.map(v => {
+			const count = typeof v.count === 'number' ? v.count : (v.count ? parseInt(String(v.count), 10) || 0 : 0);
+			const duration = v.duration || '';
+			return `"${v.title}","${v.img || ''}","${duration}","${count}","${(v.tags || []).join(';')}","${v.link || ''}"`;
+		}).join('\n');
+
+		await invoke('save_file', { path: csvPath, content: csvContent });
+		return true;
+	} catch (error) {
+		console.error(`Failed to append videos for course ${courseName}:`, error);
+		return false;
 	}
 }

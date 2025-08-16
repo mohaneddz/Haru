@@ -12,3 +12,6 @@ models/static/audio/*
 notes/*
 models/model.bin
 data/*
+src-tauri/backend/cookies.txt
+src-tauri/backend/thumbnails/*
+src-tauri/backend/__pycache__/*

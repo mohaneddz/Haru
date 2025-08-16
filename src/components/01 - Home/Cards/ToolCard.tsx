@@ -129,7 +129,7 @@ export default function ToolCard(props: Props) {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                <h3 class="text-lg font-semibold text-text mb-2">{props.title}</h3>
+                <p class="text-lg font-semibold text-accent mb-2 truncate">{props.title}</p>
                 <p class="text-text/70 text-sm mb-3 line-clamp-2">{props.description}</p>
 
                 {/* Tags */}
@@ -137,7 +137,7 @@ export default function ToolCard(props: Props) {
                     <div class="flex flex-wrap gap-1 mb-2">
                         <For each={props.tags.slice(0, 3)}>
                             {(tag) => (
-                                <span class="px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">
+                                <span class="px-2 py-1 bg-accent/20 text-accent text-xs rounded-full truncate">
                                     {tag}
                                 </span>
                             )}

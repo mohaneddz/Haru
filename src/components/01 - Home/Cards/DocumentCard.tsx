@@ -10,6 +10,8 @@ interface Props {
   tags?: string[];
 }
 
+const DOCUMENT_PLACEHOLDER_IMG = "/default-document.jpg";
+
 export default function DocumentCard(props: Props) {
   const [thumbnail, setThumbnail] = createSignal<string | null>(null);
   const [loading, setLoading] = createSignal(false);
@@ -45,19 +47,19 @@ export default function DocumentCard(props: Props) {
           if (data.thumbnail) {
             setThumbnail(data.thumbnail);
           } else {
-            if (data.error) console.warn(`Server error: ${data.error}`);
+            if (data.error) // console.warn(`Server error: ${data.error}`);
             throw new Error('No thumbnail in server response');
           }
         } catch (err) {
-          console.warn('Backend thumbnail fetch failed, falling back to thum.io:', err);
+          // console.warn('Backend thumbnail fetch failed, falling back to thum.io:', err);
           const getPreviewUrl = () => `https://image.thum.io/get/width/400/crop/600/allowJPG/wait/20/noanimate/${safeLink}`;
           setThumbnail(getPreviewUrl());
         }
       }
     } catch (err) {
-      console.warn('Thumbnail generation failed:', err);
+      // console.warn('Thumbnail generation failed:', err);
       setThumbError(true);
-      setThumbnail(null);
+      setThumbnail(DOCUMENT_PLACEHOLDER_IMG);
     } finally {
       setLoading(false);
     }
@@ -91,27 +93,23 @@ export default function DocumentCard(props: Props) {
               alt={`${props.title} thumbnail`}
               class="w-full h-full object-contain" // Changed from 'absolute inset-0... object-cover'
               onError={() => {
-                console.warn(`Failed to load thumbnail from: ${thumbnail()}`);
+                // console.warn(`Failed to load thumbnail from: ${thumbnail()}`);
                 setThumbError(true);
-                setThumbnail(null);
+                setThumbnail(DOCUMENT_PLACEHOLDER_IMG);
               }}
             />
           </div>
           // MODIFICATION END
         ) : (
-          <div class="absolute inset-0 w-full h-full bg-gray-800 z-0 flex items-center justify-center">
+          <div class="absolute inset-0 w-full h-full bg-sidebar-light-3 z-0 flex items-center justify-center">
             {loading() ? (
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
             ) : (
-              <div class="flex flex-col items-center gap-2 text-gray-300">
-                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M8 3v4" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M16 3v4" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M3 11h18" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <span class="text-xs">{thumbError() ? 'Preview unavailable' : 'No preview'}</span>
-              </div>
+              <img
+                src={DOCUMENT_PLACEHOLDER_IMG}
+                alt="Default document preview"
+                class="absolute inset-0 w-full h-full object-cover rounded-xl z-0"
+              />
             )}
           </div>
         )}

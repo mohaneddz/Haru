@@ -12,7 +12,7 @@ from sentence_transformers.cross_encoder import CrossEncoder
 from unstructured.partition.auto import partition
 import chromadb
 
-from constants import (
+from config.constants import (
     CHUNK_SIZE, CHUNK_OVERLAP, PERSIST_DIRECTORY, COLLECTION_NAME,
     EMBEDDING_BATCH_SIZE, DOCUMENTS_DIR, SUPPORTED_EXTS,
     RETRIEVAL_TOP_K, RERANK_TOP_K, EMBEDDING_DEVICE,

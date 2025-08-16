@@ -13,6 +13,7 @@ import Check from "lucide-solid/icons/check";
 
 import FileText from "lucide-solid/icons/file-text";
 import Youtube from "lucide-solid/icons/youtube";
+import Wrench from "lucide-solid/icons/wrench";
 
 import useResources from "@/hooks/home/useResources";
 
@@ -38,6 +39,9 @@ export default function Resources() {
     appendVideos,
     appendedVideos,
     saveVideos,
+    appendTools,
+    appendedTools,
+    saveTools,
     // searchResources
   } = useResources();
 
@@ -168,9 +172,26 @@ export default function Resources() {
           </div>
         }
       >
-        <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+        <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-36 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
              classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
              onclick={() => runWithLoading(saveVideos)}>
+          <Check class="w-6 h-6 text-text " />
+        </div>
+      </Show>
+
+      <Show 
+        when={appendedTools()} 
+        fallback={
+          <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-48 right-8 bg-accent-dark-2 rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+               classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+               onclick={() => runWithLoading(appendTools)}>
+            <Wrench class="w-6 h-6 text-text " />
+          </div>
+        }
+      >
+        <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-48 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+             classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+             onclick={() => runWithLoading(saveTools)}>
           <Check class="w-6 h-6 text-text " />
         </div>
       </Show>

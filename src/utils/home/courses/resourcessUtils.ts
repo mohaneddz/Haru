@@ -3,7 +3,7 @@ import type { Document, Video, Tool } from '@/types/home/resource';
 
 export async function loadVideos(parent: string, courseName: string): Promise<Video[]> {
 	// console.log('Loading video resources');
-	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
 		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
@@ -45,6 +45,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 		// console.log(`Loaded:`, videosList);
 		return videosList;
 	} catch (error) {
+		console.log(name);
 		console.error(`Failed to load videos for course ${courseName}:`, error);
 		return [];
 	}
@@ -52,7 +53,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 
 export async function loadTools(parent: string, courseName: string): Promise<Tool[]> {
 	// console.log('Loading tool resources');
-	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
 		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
@@ -64,12 +65,23 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 			throw new Error(`No tools found for course: ${courseName}`);
 		}
 
+		// Use a CSV parser that respects quoted commas (same approach as loadVideos)
+		const parseCSVLine = (line: string) => {
+			const regex = /"([^"]*)"|([^,]+)/g;
+			const result: string[] = [];
+			let match;
+			while ((match = regex.exec(line)) !== null) {
+				result.push(match[1] ?? match[2] ?? '');
+			}
+			return result;
+		};
+
 		const toolsList = response
 			.split('\n')
 			.map((line) => line.trim())
 			.filter((line, index) => index > 0 && line.length > 0) // skip header + empty
 			.map((line) => {
-				const [title, description, link, tags] = line.split(',');
+				const [title = '', description = '', link = '', tags = ''] = parseCSVLine(line);
 				return {
 					title: title.replace(/"/g, ''),
 					description: description.replace(/"/g, ''),
@@ -92,7 +104,7 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 
 export async function loadDocuments(parent: string, courseName: string): Promise<Document[]> {
 	// console.log('Loading document resources');
-	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	const documents: Document[] = [];
 	const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'txt', 'md'];
 
@@ -174,12 +186,20 @@ export async function loadDocuments(parent: string, courseName: string): Promise
 
 export async function AppendDocumentsFile(parent: string, courseName: string, documents: Document[]): Promise<boolean> {
 	console.log(`Appending documents for course ${courseName}`);
-	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\documents.csv`;
-		const csvContent = '\n' + documents.map(doc => {
-			return `"${doc.title}","${doc.link}","${doc.tags.join(';')}","${doc.type}","${doc.local}"`;
-		}).join('\n');
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\documents.csv`;
+		const csvContent =
+			'\n' +
+			documents
+				.map((doc) => {
+					return `"${doc.title}","${doc.link}","${doc.tags.join(';')}","${doc.type}","${
+						doc.local
+					}"`;
+				})
+				.join('\n');
 
 		await invoke('save_file', { path: csvPath, content: csvContent });
 		return true;
@@ -191,20 +211,62 @@ export async function AppendDocumentsFile(parent: string, courseName: string, do
 
 export async function AppendVideosFile(parent: string, courseName: string, videos: Video[]): Promise<boolean> {
 	console.log(`Appending videos for course ${courseName}`);
-	const name = courseName.toLocaleLowerCase().replace('-', ' ');
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\videos.csv`;
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\videos.csv`;
 		// CSV columns: title,img,duration,count,tags,link
-		const csvContent = '\n' + videos.map(v => {
-			const count = typeof v.count === 'number' ? v.count : (v.count ? parseInt(String(v.count), 10) || 0 : 0);
-			const duration = v.duration || '';
-			return `"${v.title}","${v.img || ''}","${duration}","${count}","${(v.tags || []).join(';')}","${v.link || ''}"`;
-		}).join('\n');
+		const csvContent =
+			'\n' +
+			videos
+				.map((v) => {
+					const count =
+						typeof v.count === 'number'
+							? v.count
+							: v.count
+							? parseInt(String(v.count), 10) || 0
+							: 0;
+					const duration = v.duration || '';
+					return `"${v.title}","${v.img || ''}","${duration}","${count}","${(
+						v.tags || []
+					).join(';')}","${v.link || ''}"`;
+				})
+				.join('\n');
 
 		await invoke('save_file', { path: csvPath, content: csvContent });
 		return true;
 	} catch (error) {
 		console.error(`Failed to append videos for course ${courseName}:`, error);
+		return false;
+	}
+}
+
+export async function AppendToolsFile(parent: string, courseName: string, tools: Tool[]): Promise<boolean> {
+	console.log(`Appending tools for course ${courseName}`);
+	const name = courseName.toLowerCase().replace(/-/g, ' ');
+	try {
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\tools.csv`;
+		// CSV columns: title,description,link,tags
+		const csvContent =
+			'\n' +
+			tools
+				.map((t) => {
+					// Ensure commas inside fields don't break CSV: wrap in quotes and join tags with ';'
+					const title = (t.title ?? '').replace(/"/g, '""');
+					const description = (t.description ?? '').replace(/"/g, '""');
+					const link = (t.link ?? '').replace(/"/g, '""');
+					const tags = (t.tags ?? []).join(';').replace(/"/g, '""');
+					return `"${title}","${description}",""${link}"","${tags}"`.replace(/"""/g, '"'); // minor normalization
+				})
+				.join('\n');
+
+		await invoke('save_file', { path: csvPath, content: csvContent });
+		return true;
+	} catch (error) {
+		console.error(`Failed to append tools for course ${courseName}:`, error);
 		return false;
 	}
 }

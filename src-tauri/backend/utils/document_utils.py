@@ -1,28 +1,47 @@
 import asyncio
-from ddgs import DDGS
 import logging
+
+# Use the new package name as recommended
+from ddgs import DDGS
+
+def sync_ddgs_search(query: str, max_results: int):
+    """
+    This is a synchronous wrapper function that performs the actual search.
+    It's designed to be run in a separate thread by `run_in_executor`.
+    """
+    try:
+        # --- THIS IS THE CORRECTED LINE ---
+        # The method expects the argument to be named 'query', not 'keywords'.
+        results = DDGS().text(query=query, max_results=max_results)
+        
+        return results
+    except Exception as e:
+        # Log any exception that occurs inside the thread.
+        logging.error(f"Error inside sync_ddgs_search for query '{query}': {e}")
+        return []
 
 async def ddgs_search_full_async(query: str, max_results: int = 5):
     """
-    Asynchronously performs a DuckDuckGo search and returns the full result objects.
+    Asynchronously performs a DuckDuckGo search by running the synchronous
+    search function in a separate thread to avoid blocking the event loop.
     """
+    loop = asyncio.get_running_loop()
     try:
-        # The DDGS().text method is synchronous, so we run it in a thread pool
-        # to avoid blocking the asyncio event loop.
-        loop = asyncio.get_event_loop()
-        with DDGS() as ddgs:
-            results = await loop.run_in_executor(
-                None,  # Uses the default executor
-                lambda: list(ddgs.text(query, max_results=max_results))
-            )
+        results = await loop.run_in_executor(
+            None,
+            sync_ddgs_search,
+            query,
+            max_results
+        )
         return results
     except Exception as e:
-        logging.error(f"An error occurred during DDG search for query '{query}': {e}")
+        logging.error(f"An error occurred while dispatching DDG search for query '{query}': {e}")
         return []
 
 def classify_document_type(title: str) -> str:
     """
     Infers the document type from its title using keywords.
+    (This function is from your original file and remains unchanged).
     """
     title_lower = title.lower()
     if "book" in title_lower:

@@ -37,3 +37,5 @@ tauri-plugin-clipboard-x = "2.0.1"
 winapi = { version = "0.3", features = ["winuser", "shellapi", "winbase"] }
 anyhow = "1.0"
 tokio = { version = "1.47.1", features = ["full", "process"] }
+pdfium-render = "0.8.10"
+image = { version = "0.25.1", features = ["png"] }

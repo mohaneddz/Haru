@@ -1,13 +1,15 @@
-# main.py
+import os
+import httpx
 import logging
 import asyncio
+
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import ORJSONResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import httpx
-from constants import LLAMA_SERVER_URL, DEFAULT_MODEL
+
+from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL
 from utils.chat_utils import create_llm_payload, create_llm_payload_with_images, handle_non_streaming_llm_response, stream_unified_response 
 
 # ======================================================================================

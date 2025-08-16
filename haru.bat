@@ -16,6 +16,10 @@ if "%1"=="chat" (
     uvicorn tts_worker:app --host 0.0.0.0 --port 5003 --workers 1
 ) else if "%1"=="stt" (
     uvicorn stt_worker:app --host 0.0.0.0 --port 5004 --workers 1
+) else if "%1"=="misc" (
+    uvicorn misc_worker:app --host 0.0.0.0 --port 3999 --workers 1
+) else if "%1"=="home" (
+    uvicorn home_worker:app --host 0.0.0.0 --port 4999 --workers 1
 ) else if "%1"=="voice" (
     uvicorn voice_worker:app --host 0.0.0.0 --port 5005 --workers 1
 ) else (

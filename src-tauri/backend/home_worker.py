@@ -311,6 +311,120 @@ async def module_videos(request: Request):
     logging.info("Returning %d videos for module %s", len(videos), module_name)
     return ORJSONResponse(content=videos)
 
+@app.post("/module-tools")
+async def module_tools(request: Request):
+    """
+    Endpoint to find useful tools, websites, and resources for a course module.
+    """
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Received tools request for module: {module_name}")
+
+    # 1. Construct targeted search queries for tools and resources
+    search_queries = [
+        f'"{module_name}" online tools',
+        f'"{module_name}" interactive simulation OR visualization',
+        f'"{module_name}" online calculator',
+        f'"{module_name}" cheat sheet OR reference guide',
+        f'best "{module_name}" resources for students',
+        f'github awesome list "{module_name}"',
+        f'"{module_name}" online exercises'
+    ]
+
+    # 2. Perform asynchronous search
+    logging.info(f"Searching for tools with {len(search_queries)} queries...")
+    search_tasks = [ddgs_search_full_async(q, max_results=5) for q in search_queries]
+    search_results_list = await asyncio.gather(*search_tasks)
+
+    # 3. Process and format the results
+    unique_links = set()
+    tools = []
+    
+    all_results = [item for sublist in search_results_list for item in sublist]
+
+    for result in all_results:
+        link = result.get('href')
+        title = result.get('title')
+        description = result.get('body')
+
+        if not link or not title or not description:
+            continue
+
+        normalized_link = normalize_url(link)
+        if normalized_link in unique_links:
+            continue
+        
+        unique_links.add(normalized_link)
+
+        # Limit title and description lengths and capitalize title
+        truncated_title = title[:50].title() + "..." if len(title) > 50 else title.title()
+        truncated_description = description[:100] + "..." if len(description) > 100 else description
+
+        # Limit tags to 2
+        tags = [module_name.lower(), "tool", "resource"][:2]
+
+        tool_obj = {
+            "title": truncated_title,
+            "description": truncated_description,
+            "link": normalized_link,
+            "tags": tags
+        }
+        tools.append(tool_obj)
+
+        if len(tools) >= 15:
+            break
+
+    # 4. Fallback search if not enough results are found
+    if len(tools) < 10:
+        logging.info(f"Found only {len(tools)} tools, performing a broader search...")
+        broad_search_tasks = [ddgs_search_full_async(f'"{module_name}" useful learning resources', max_results=15)]
+        broad_search_results = await asyncio.gather(*broad_search_tasks)
+        
+        for result in broad_search_results[0]:
+            link = result.get('href')
+            title = result.get('title')
+            description = result.get('body')
+
+            if not link or not title or not description:
+                continue
+
+            normalized_link = normalize_url(link)
+            if normalized_link in unique_links:
+                continue
+
+            unique_links.add(normalized_link)
+
+            # Apply the same truncation and tag limits
+            truncated_title = title[:20].title() + "..." if len(title) > 20 else title.title()
+            truncated_description = description[:40] + "..." if len(description) > 40 else description
+            tags = [module_name.lower(), "resource"][:2]
+
+            tool_obj = {
+                "title": truncated_title,
+                "description": truncated_description,
+                "link": normalized_link,
+                "tags": tags
+            }
+            tools.append(tool_obj)
+            
+            if len(tools) >= 15:
+                break
+    
+    if not tools:
+        return ORJSONResponse(
+            status_code=404,
+            content={"error": f"Could not find any useful tools or websites for the module '{module_name}'."}
+        )
+
+    logging.info(f"Successfully found {len(tools)} tools for {module_name}")
+    return ORJSONResponse(content=tools)
+
 # MAIN ==========================
 
 if __name__ == "__main__":

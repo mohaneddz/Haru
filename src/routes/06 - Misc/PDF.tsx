@@ -1,7 +1,7 @@
 import TopBar from "@/components/06 - Misc/PDF/TopBar";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker?worker";
-import { usePDFViewer } from "@/hooks/content/usePDFViewer";
+import { usePDFViewer } from "@/hooks/misc/usePDFViewer";
 import { createEffect } from "solid-js";
 import { useLocation } from '@solidjs/router';
 

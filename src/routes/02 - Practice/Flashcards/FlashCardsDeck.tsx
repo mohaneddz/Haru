@@ -1,4 +1,4 @@
-import UniversalFilter from "@/components/01 - Home/Filters/ComposableFilter";
+import UniversalFilter from "@/components/core/UniversalFilter";
 import FlashcCardListItem from "@/components/02 - Practice/training/Flashcards/FlashcCardListItem";
 import { Flame, ArrowLeft, Pen, Trash2 } from 'lucide-solid';
 import { For } from "solid-js";

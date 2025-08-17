@@ -7,18 +7,20 @@ export const entries = [
 
   { title: 'Flashcards', icon: 'WalletCards', section: 'practice', slug: 'flashcards' },
   { title: 'Training', icon: 'Swords', section: 'practice', slug: 'training' },
-  { title: 'Games', icon: 'Gamepad2', section: 'practice', slug: 'games' },
+  { title: 'Revision', icon: 'BookOpen', section: 'practice', slug: 'revision' },
+  { title: 'Typing', icon: 'Keyboard', section: 'practice', slug: 'typing' },
 
-  // { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },
-  { title: 'Achievements', icon: 'Trophy', section: 'track', slug: 'achievements' },
-  { title: 'Insights', icon: 'BarChart', section: 'track', slug: 'insights' },
-  { title: 'Goals', icon: 'Target', section: 'track', slug: 'goals' },
-  { title: 'Time', icon: 'Clock', section: 'track', slug: 'time' },
+// { title: 'Track', icon: 'ListChecks', section: 'track', slug: 'track' },
+{ title: 'Achievements', icon: 'Trophy', section: 'track', slug: 'achievements' },
+{ title: 'Insights', icon: 'BarChart', section: 'track', slug: 'insights' },
+{ title: 'Goals', icon: 'Target', section: 'track', slug: 'goals' },
+{ title: 'Time', icon: 'Clock', section: 'track', slug: 'time' },
 
-  { title: 'Plugins', icon: 'Puzzle', section: 'tools', slug: 'plugins' },
-  { title: 'Whiteboard', icon: 'LayoutDashboard', section: 'tools', slug: 'whiteboard' },
-  { title: 'Calculators', icon: 'Calculator', section: 'tools', slug: 'calculators' },
-  { title: 'Pomodoro', icon: 'AlarmClock', section: 'tools', slug: 'pomodoro' },
+{ title: 'Plugins', icon: 'Puzzle', section: 'tools', slug: 'plugins' },
+{ title: 'Whiteboard', icon: 'LayoutDashboard', section: 'tools', slug: 'whiteboard' },
+{ title: 'Calculators', icon: 'Calculator', section: 'tools', slug: 'calculators' },
+{ title: 'Pomodoro', icon: 'AlarmClock', section: 'tools', slug: 'pomodoro' },
+{ title: 'Transcription', icon: 'Mic', section: 'tools', slug: 'transcription' },
 ];
 
 export const sections = [

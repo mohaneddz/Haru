@@ -14,11 +14,11 @@ import { LoaderCircle } from "lucide-solid";
 
 
 // --- PLUGINS for Markdown & HTML Rendering ---
-import remarkMath from "remark-math";       // For math syntax
-import remarkGfm from "remark-gfm";          // For GitHub Flavored Markdown (tables, etc.)
-import rehypeKatex from "rehype-katex";      // To render math with KaTeX
-import rehypeRaw from 'rehype-raw';          // **CRITICAL**: This allows rendering HTML (like your <span> tags)
-import "katex/dist/katex.min.css";         // Styles for KaTeX math rendering
+import remarkMath from "remark-math";      
+import remarkGfm from "remark-gfm";          
+import rehypeKatex from "rehype-katex";      
+import rehypeRaw from 'rehype-raw';         
+import "katex/dist/katex.min.css";        
 
 // --- ICONS & TYPES ---
 import { LoaderCircle } from "lucide-solid";
@@ -67,6 +67,17 @@ export default function Message(props: MessageProps) {
               // Plugins to handle rendering. rehype-raw is essential for your HTML spans.
               rehypePlugins={[rehypeRaw, rehypeKatex]}
             />
+            <div class="flex flex-wrap gap-2 mt-2">
+            <For each={props.images || []}>
+              {(image) => (
+                <img
+                src={image}
+                alt="Attached image"
+                class="max-w-full h-auto rounded-md mt-2 max-h-16 object-cover"
+                />
+              )}
+            </For>
+              </div>
           </Show>
         </div>
 

@@ -2,6 +2,7 @@ interface Props {
     onClick?: () => void;
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'basic' | '';
     class?: string;
+    disabled?: boolean;
     children?: any;
 }
 
@@ -25,7 +26,7 @@ export default function Button(props: Props) {
     }
 
     return (
-        <div class={`cursor-pointer hover:brightness-105 active:brightness-95 hover:scale-102 active:scale-95 transition-all duration-100 py-4 px-2 rounded-sm ${getVariantClass()} ${props.class}`} onclick={props.onClick}>
+        <div class={`hover:brightness-105 active:brightness-95 hover:scale-102 active:scale-95 transition-all duration-100 py-4 px-2 rounded-sm ${getVariantClass()} ${props.class} ${props.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} onclick={!props.disabled ? props.onClick : undefined}>
             {props.children}
         </div>
     );

@@ -22,9 +22,11 @@ export const routes = [
       { path: "/practice/training", component: lazy(() => import("@/routes/02 - Practice/Training")) },
       { path: "/practice/games", component: lazy(() => import("@/routes/02 - Practice/Games")) },
       { path: "/practice/flashcards", component: lazy(() => import("@/routes/02 - Practice/Flashcards")) },
+      { path: "/practice/revision", component: lazy(() => import("@/routes/02 - Practice/Revision")) },
+      { path: "/practice/typing", component: lazy(() => import("@/routes/02 - Practice/Typing")) },
 
-      { path: "/practice/games/*", component: lazy(() => import("@/routes/02 - Practice/Game")) },
-      { path: "/practice/games/play/*", component: lazy(() => import("@/routes/02 - Practice/Play")) },
+      // { path: "/practice/games/*", component: lazy(() => import("@/routes/02 - Practice/Game")) },
+      // { path: "/practice/games/play/*", component: lazy(() => import("@/routes/02 - Practice/Play")) },
       { path: "/practice/flashcards/*", component: lazy(() => import("@/routes/02 - Practice/Flashcards/FlashCardsDeck")) },
       { path: "/practice/flashcards/revision", component: lazy(() => import("@/routes/02 - Practice/Flashcards/Flashcard")) },
 
@@ -41,6 +43,7 @@ export const routes = [
       { path: "/tools/plugins", component: lazy(() => import("@/routes/04 - Tools/Plugins")) },
       { path: "/tools/pomodoro", component: lazy(() => import("@/routes/04 - Tools/Pomodoro")) },
       { path: "/tools/whiteboard", component: lazy(() => import("@/routes/04 - Tools/Whiteboard")) },
+      { path: "/tools/transcription", component: lazy(() => import("@/routes/04 - Tools/AudioTranscribe")) },
 
       // 05 - Auth
       { path: "/auth/login", component: lazy(() => import("@/routes/05 - Auth/Login")) },

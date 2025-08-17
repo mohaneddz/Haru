@@ -1,120 +1,119 @@
-import { Trash, Pen, Folder } from "lucide-solid";
-import { loadTools } from "@/utils/home/courses/resourcessUtils";
-import { CourseInfo, loadCourses, loadCoursesSections } from "@/utils/home/courses/courseUtils";
+import { For, Show } from "solid-js";
 
-import { createSignal, For, onMount } from "solid-js";
+import Modal from '@/components/core/Modal'
+
+import Button from "@/components/core/Input/Button";
+import Input from "@/components/core/Input/Input";
+import Textarea from "@/components/core/Input/Textarea";
+import NumberInput from "@/components/core/Input/NumberInput";
+import MultiValueInput from "@/components/core/Input/MultiValueInput";
+import SelectInput from "@/components/core/Input/SelectInput";
+
 import CourseCard from "@/components/01 - Home/Cards/CourseCard";
 import MainSeperator from '@/components/01 - Home/Cards/MainSeperator';
-import ComposableFilter, { FilterState } from "@/components/01 - Home/Filters/ComposableFilter";
-import { Tag, BookOpen, GraduationCap } from "lucide-solid";
+import UniversalFilter from "@/components/core/UniversalFilter";
 
-interface ExtendedCourseInfo extends CourseInfo {
-  icon?: string;
-  tags: string[];
-  field: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-}
+import GraduationCap from "lucide-solid/icons/graduation-cap";
+import Stars from "lucide-solid/icons/stars";
+import Pen from "lucide-solid/icons/pen";
+import LoaderCircle from "lucide-solid/icons/loader-circle";
 
-interface Section {
-  name: string;
-  courses: ExtendedCourseInfo[];
-}
+import useLibrary from "@/hooks/home/useLibrary";
 
 export default function Library() {
 
-  const [_, setFilters] = createSignal<FilterState>({
-    searchQuery: "",
-    selectedTags: [],
-    selectedFields: [],
-    selectedTypes: []
-  });
-  const [sections, setSections] = createSignal<Section[]>([]);
-  const [closedSections, setClosedSections] = createSignal<Set<string>>(new Set());
-
-  // Define all courses data with tags and fields
-  onMount(async () => {
-    try {
-      const loadedSections = await loadCoursesSections();
-
-      const allSections = [];
-      for (const section of loadedSections) {
-        const courses = await loadCourses(section);
-        allSections.push({
-          name: section,
-          courses: courses.map(course => ({
-            ...course,
-            field: section, 
-            tags: course.tags || [], 
-            difficulty: (course.difficulty as "Beginner" | "Intermediate" | "Advanced") || "Beginner" 
-          }))
-        });
-      }
-      setSections(allSections);
-
-      // console.log('Sections Data:', sections());
-    } catch (error) {
-      console.error('Error loading sections:', error);
-    }
-  });
-
-  // Define available filter options
-  const availableTags = ["machine-learning", "deep-learning", "computer-vision", "nlp", "reinforcement-learning"];
-
-  const availableFields = ["Artificial Intelligence", "Mathematics", "Signal Processing", "Data Science"];
-
-  const availableDifficulties = ["Beginner", "Intermediate", "Advanced"];
-
-  // Filter function
-  // const matchesFilter = (course: any, filters: FilterState) => {
-  //   const query = filters.searchQuery.toLowerCase();
-  //   const matchesSearch = !query ||
-  //     course.title.toLowerCase().includes(query) ||
-  //     course.description.toLowerCase().includes(query) ||
-  //     (course.tags && course.tags.some((tag: string) => tag.toLowerCase().includes(query)));
-
-  //   const matchesTags = filters.selectedTags.length === 0 ||
-  //     (course.tags && filters.selectedTags.some(tag => course.tags.includes(tag)));
-
-  //   const matchesFields = filters.selectedFields.length === 0 ||
-  //     (course.field && filters.selectedFields.includes(course.field));
-
-  //   const matchesTypes = filters.selectedTypes.length === 0 ||
-  //     (course.difficulty && filters.selectedTypes.includes(course.difficulty));
-
-  //   return matchesSearch && matchesTags && matchesFields && matchesTypes;
-  // };
-
-  // const filteredCourses = createMemo(() => coursesData.filter(course => matchesFilter(course, filters())));
+  const {
+    sections,
+    isContentLoading,
+    isSaving,
+    addModal,
+    setAddModal,
+    title,
+    overview,
+    description,
+    tags,
+    fieldVals,
+    difficulty,
+    duration,
+    prerequisites,
+    topics,
+    setTitle,
+    setOverview,
+    setDescription,
+    setTags,
+    setFieldVals,
+    setDifficulty,
+    setDuration,
+    setPrerequisites,
+    setTopics,
+    resetForm,
+    saveCourse,
+    setFilters,
+    availableTags,
+    availableFields,
+    availableDifficulties,
+    setClosedSections,
+    closedSections,
+    GetCourseContent
+  } = useLibrary();
 
   return (
     <div class="flex flex-col items-center justify-start h-screen w-full overflow-y-scroll ">
 
-      {/* Composable Filter Component */}
-      <ComposableFilter
-        title="Discover Courses"
-        icon={Tag}
+      <Modal show={addModal()} onClose={() => setAddModal(false)}>
+        <div class="w-[45vw] h-[90vh] flex flex-col">
+
+          <h2 class="w-full text-center text-xl font-semibold flex-shrink-0">Add New Course</h2>
+
+          <div class="grid grid-cols-2 grid-rows-none gap-x-6 gap-y-4 p-8 flex-grow overflow-y-auto">
+
+            <Input Value={title()} setValue={setTitle} placeholder="Course title" class="col-span-2" />
+
+            <Textarea Value={overview()} setValue={setOverview} placeholder="Course overview" rows={2} class="col-span-2" />
+
+            <Textarea Value={description()} setValue={setDescription} placeholder="Course description" rows={2} class="col-span-2" />
+
+            <MultiValueInput Value={topics()} setValue={setTopics} placeholder="Add topics..." class="col-span-2" />
+
+            <MultiValueInput Value={prerequisites()} setValue={setPrerequisites} placeholder="Add prerequisites..." />
+            <MultiValueInput Value={tags()} setValue={setTags} placeholder="Add tags..." />
+            <Input Value={fieldVals()} setValue={setFieldVals} placeholder="Add the field..." />
+
+            <SelectInput selected={difficulty()} onChange={setDifficulty} options={availableDifficulties} class="w-full" />
+
+            <label for="Duration" class="text-text whitespace-nowrap flex items-center pl-2">Duration (Weeks)</label>
+            <NumberInput Value={duration()} setValue={setDuration} min={0} step={1} placeholder="Weeks" />
+
+            <Button class="center w-full h-max col-span-2" variant="ghost" onClick={GetCourseContent} disabled={isContentLoading() || isSaving()}>
+              <Show when={!isContentLoading()} fallback={<><LoaderCircle class="w-4 h-4 text-text mr-2 animate-spin" /><span>Loading...</span></>}>
+                <Stars class="w-4 h-4 text-text mr-2" />
+                <span>Search With AI</span>
+              </Show>
+            </Button>
+
+            <Button class="text-center h-max" variant="secondary" onClick={() => setAddModal(false)}>Cancel</Button>
+            <Button class="text-center h-max" variant="primary" onClick={saveCourse} disabled={isSaving()}>
+              <Show when={!isSaving()} fallback={<><LoaderCircle class="w-4 h-4 text-text-dark mr-2 animate-spin" /><span>Saving...</span></>}>
+                Save Course
+              </Show>
+            </Button>
+          </div>
+
+        </div>
+      </Modal>
+
+      <UniversalFilter
+        title="Search Your Courses"
+        icon={<GraduationCap class="text-accent" />}
         onFilterChange={setFilters}
-        pageType="library"
         placeholder="Search courses by title, description, or tags..."
-        class="max-w-[80%] mt-20"
-        tagsConfig={{
-          enabled: true,
-          options: availableTags,
-          title: "Tags",
-          icon: Tag
-        }}
-        fieldsConfig={{
-          enabled: true,
-          options: availableFields,
-          title: "Subject Fields",
-          icon: BookOpen
-        }}
-        typesConfig={{
-          enabled: true,
-          options: availableDifficulties,
-          title: "Difficulty Level",
-          icon: GraduationCap
-        }}
+        availableTags={availableTags}
+        tagsLabel="Tags"
+        availableFields={availableFields}
+        fieldsLabel="Subject Fields"
+        availableTypes={availableDifficulties.map(d => d.label)}
+        typesLabel="Difficulty Level"
+        class="my-12 w-[80%]"
       />
 
       <For each={sections()}>
@@ -126,11 +125,7 @@ export default function Library() {
               onToggle={(isClosed) => {
                 setClosedSections(prev => {
                   const newSet = new Set(prev);
-                  if (isClosed) {
-                    newSet.add(section.name);
-                  } else {
-                    newSet.delete(section.name);
-                  }
+                  isClosed ? newSet.add(section.name) : newSet.delete(section.name);
                   return newSet;
                 });
               }}
@@ -141,8 +136,7 @@ export default function Library() {
                   {(course) => (
                     <CourseCard
                       title={course.title}
-                      icon={course.icon || "BookOpen"}
-                      img={course.img || "/default-course-image.jpg"}
+                      img={course.img}
                       description={course.description}
                       tags={course.tags}
                       field={course.field}
@@ -156,21 +150,12 @@ export default function Library() {
         )}
       </For>
 
-      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-24 bg-accent-dark-2 rounded-full p-2
-                        hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={() => { loadCourses('AI') }}>
-        <Folder class="w-6 h-6 text-text " />
+      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-8 bg-accent-dark-2 rounded-full p-2
+                  hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+        onClick={() => { resetForm(); setAddModal(true); }}>
+        <Pen class="w-6 h-6 text-text" />
       </div>
-
-      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-12 bg-accent-dark-2 rounded-full p-2
-                        hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={() => { loadCoursesSections() }}>
-        <Trash class="w-6 h-6 text-text " />
-      </div>
-
-      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
-                        hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={() => { loadTools('AI', 'computer vision') }}>
-        <Pen class="w-6 h-6 text-text " />
-      </div>
-
-    </div>
+      
+    </div >
   );
 };

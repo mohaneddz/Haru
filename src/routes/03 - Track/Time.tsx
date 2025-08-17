@@ -1,5 +1,7 @@
 import { createSignal, onMount, createEffect, createMemo, Accessor, on } from 'solid-js';
-import { Trash, Pen } from 'lucide-solid';
+
+import Trash from 'lucide-solid/icons/trash';
+import Pen from 'lucide-solid/icons/pen';
 
 import TimeTopCards from '@/components/03 - Track/Time/TimeTopCards';
 import ChartsGrid from '@/components/03 - Track/Time/ChartsGrid';
@@ -12,7 +14,6 @@ import Modal from '@/components/core/Modal';
 export default function Time() {
 
   // --- STATE MANAGEMENT ---
-  // --- THE FIX for Initial State ---
   const today = new Date();
   const initialEnd = new Date(today);
 
@@ -23,11 +24,9 @@ export default function Time() {
   const [start, setStart] = createSignal(initialStart);
   const [end, setEnd] = createSignal(initialEnd);
   const [showDeleteModal, setShowDeleteModal] = createSignal(false);
-  // --- END OF FIX ---
 
   const [events, setEvents] = createSignal<any[]>([]);
   const [timelineDay, setTimelineDay] = createSignal(new Date());
-  // Add period signal, default to 'week'
   const [period, setPeriod] = createSignal<'week' | 'month' | 'quarter'>('week');
 
   // --- DATA FETCHING ---

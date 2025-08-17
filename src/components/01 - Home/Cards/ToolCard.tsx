@@ -1,16 +1,13 @@
 import { createSignal, Show, onCleanup, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import Link from 'lucide-solid/icons/link';
 
 interface Props {
     title: string;
     description: string;
-    type?: string;
-    icon?: string;
     link?: string;
-    img?: string;
     onClick?: () => void;
     tags?: string[];
-    field?: string;
 }
 
 export default function ToolCard(props: Props) {
@@ -28,6 +25,8 @@ export default function ToolCard(props: Props) {
             } catch (error) {
                 console.error('Failed to navigate:', error);
             }
+        }else{
+            console.log('No link provided for this tool card.');
         }
 
         if (props.onClick) {
@@ -132,15 +131,15 @@ export default function ToolCard(props: Props) {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                <h3 class="text-lg font-semibold text-text mb-2">{props.title}</h3>
-                <p class="text-text/70 text-sm mb-3">{props.description}</p>
+                <p class="text-lg font-semibold text-accent mb-2 truncate">{props.title}</p>
+                <p class="text-text/70 text-sm mb-3 line-clamp-2">{props.description}</p>
 
                 {/* Tags */}
                 {props.tags && props.tags.length > 0 && (
                     <div class="flex flex-wrap gap-1 mb-2">
                         <For each={props.tags.slice(0, 3)}>
                             {(tag) => (
-                                <span class="px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">
+                                <span class="px-2 py-1 bg-accent/20 text-accent text-xs rounded-full truncate">
                                     {tag}
                                 </span>
                             )}
@@ -153,21 +152,10 @@ export default function ToolCard(props: Props) {
                     </div>
                 )}
 
-                {/* Field indicator */}
-                {props.field && (
-                    <div class="mb-2">
-                        <span class="text-xs text-accent-light-1 font-medium">
-                            {props.field}
-                        </span>
-                    </div>
-                )}
-
                 {/* Optional: Show a small indicator if there's a link */}
                 <Show when={props.link}>
                     <div class="mt-2 flex items-center gap-1 text-primary-light-3 text-xs">
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
-                        </svg>
+                        <Link class="w-3 h-3 text-accent" />
                         <span class='truncate max-w-[80%]'>{props.link}</span>
                     </div>
                 </Show>

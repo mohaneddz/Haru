@@ -35,7 +35,7 @@ function App() {
             {props.children}
 
             {/* Lower Fade */}
-            <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40 pointer-events-none" />
+            {/* <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background via-90% to-background/20 z-40 pointer-events-none" /> */}
 
             <Statebar />
           </div>

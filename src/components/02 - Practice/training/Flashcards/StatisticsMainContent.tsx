@@ -7,7 +7,8 @@ import {
   weeklyLayout,
 } from '@/utils/track/layoutsUtils';
 
-import { Activity, BookOpenCheck } from "lucide-solid";
+import Activity from "lucide-solid/icons/activity";
+import BookOpenCheck from "lucide-solid/icons/book-open-check";
 
 export default function StatisticsMainContent() {
     return (

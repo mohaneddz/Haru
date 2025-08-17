@@ -8,3 +8,5 @@
 /gen/schemas
 
 /documents/
+/backend/chroma_db/
+/backend/thumbnails/

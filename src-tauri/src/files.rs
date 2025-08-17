@@ -33,17 +33,19 @@ pub fn read_file(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn create_file(dir: String) -> Result<String, String> {
-    let base_name = "New Note";
+pub fn create_file(dir: String, name: Option<String>) -> Result<String, String> {
+    let base_name = name.unwrap_or_else(|| "New Note".to_string());
     let ext = ".md";
     let mut count = 0;
+
     loop {
-        let name = if count == 0 {
+        let file_name = if count == 0 {
             format!("{}{}", base_name, ext)
         } else {
             format!("{} ({}){}", base_name, count, ext)
         };
-        let full_path = Path::new(&dir).join(&name);
+        let full_path = Path::new(&dir).join(&file_name);
+
         if !full_path.exists() {
             fs::write(&full_path, "").map_err(|e| e.to_string())?;
             return Ok(full_path.to_string_lossy().to_string());

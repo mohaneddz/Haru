@@ -1,35 +1,16 @@
-import { createSignal, createEffect, onCleanup, onMount } from 'solid-js';
-
-// --- TYPE DEFINITIONS ---
-interface SourceData {
-	path?: string;
-	title?: string;
-	url?: string;
-	score_range?: [number, number];
-	prompt_indices?: number[];
-}
-
-interface MessageData {
-	id: number;
-	text: string;
-	user: boolean;
-	sources?: SourceData[];
-	rawText?: string; // Temporary storage for streaming
-}
+import { createSignal, onCleanup } from 'solid-js';
+import type { MessageData } from '@/types/home/tutor';
+import useLLM from '@/hooks/home/useLLM';
+import useVoice from '@/hooks/home/useVoice';
 
 export default function useTutor() {
-	let messageContainerRef: HTMLDivElement | null = null;
-	// --- STATE MANAGEMENT (Signals) ---
 	const [currText, setCurrText] = createSignal('');
 	const [isLoading, setIsLoading] = createSignal(false);
-	const [transcript, setTranscript] = createSignal('');
-	const [response, setResponse] = createSignal('');
-	const [eventSource, setEventSource] = createSignal<EventSource | null>(null);
-	const [voiceStatus, setVoiceStatus] = createSignal('Listening...');
+	const [images, setImages] = createSignal<string[]>([]);
+	const [paths, setPaths] = createSignal<string[]>([]);
 
 	const [web, setWeb] = createSignal(false);
 	const [rag, setRag] = createSignal(false);
-	const [voice, setVoice] = createSignal(false);
 
 	const [mode, setMode] = createSignal('tutor');
 
@@ -45,83 +26,40 @@ export default function useTutor() {
 		},
 	]);
 
-	// --- UTILITIES & REFS ---
+	// utilities
 	let abortController = new AbortController();
 
-	onMount(() => {
-		const source = eventSource();
-		if (source) {
-			source.onmessage = (event) => {
-				setTranscript(event.data);
-			};
+	// LLM helpers (moved here via hook)
+	const { appendMasterPrompt, buildHistoryForBackend, processStreamedResponse } = useLLM();
 
-			source.onerror = (err) => {
-				console.error('SSE error:', err);
-				source.close();
-			};
+	// Small formatter used when updating the assistant message text while streaming
+	const formatTextWithCitations = (text: string): string => {
+		const citationRegex = /\[(?:Source\s)?(\d+(?:,\s*\d+)*)\]/g;
+		return text.replace(citationRegex, '<span class="citation">[$1]</span>');
+	};
 
-			onCleanup(() => {
-				source.close();
-			});
-		}
+	// Voice integration moved to useVoice; wire dependencies
+	const {
+		voice,
+		transcript,
+		voiceStatus,
+		toggleVoice: _toggleVoiceInternal,
+		stopVoiceServices,
+	} = useVoice({
+		getMessages: messages,
+		setMessages,
+		getNextId,
+		buildHistoryForBackend,
+		processStreamedResponse,
+		setIsLoading,
 	});
 
-	// Effect to auto-scroll to the latest message in chat mode
-	createEffect(() => {
-		if (!voice()) return;
-
-		let eventSource: EventSource | null = null;
-
-		const connect = () => {
-			eventSource = new EventSource('http://localhost:5000/transcribe');
-
-			eventSource.onmessage = (event) => {
-				setTranscript(event.data);
-			};
-
-			eventSource.onerror = (err) => {
-				console.error('SSE error:', err);
-				eventSource?.close();
-				setTimeout(connect, 1000); // Retry after 1s
-			};
-		};
-
-		connect();
-
-		onCleanup(() => {
-			eventSource?.close();
-		});
-	});
-
-	createEffect(() => {
-		let responseSource: EventSource | null = null;
-
-		const connectResponse = () => {
-			responseSource = new EventSource("http://127.0.0.1:5000/response");
-
-			responseSource.onmessage = (event) => {
-				try {
-					console.log('Response received:', event);
-					const parsedData = JSON.parse(event.data); // Ensure the content is parsed correctly
-					setResponse(parsedData.content || event.data); // Extract the content or fallback to raw data
-				} catch {
-					setResponse(event.data); // Fallback in case parsing fails
-				}
-			};
-
-			responseSource.onerror = (err) => {
-				console.error('SSE error:', err);
-				responseSource?.close();
-				setTimeout(connectResponse, 1000); // Retry after 1s
-			};
-		};
-
-		connectResponse();
-
-		onCleanup(() => {
-			responseSource?.close();
-		});
-	});
+	// Wrapper to keep previous behavior of aborting any text fetch before enabling voice
+	const toggleVoice = async () => {
+		abortController.abort();
+		setIsLoading(false);
+		await _toggleVoiceInternal();
+	};
 
 	onCleanup(() => {
 		abortController.abort();
@@ -357,6 +295,16 @@ export default function useTutor() {
 	}
 
 	// --- CORE API FUNCTIONS (for text chat) ---
+	const toggleWeb = () => {
+		setWeb((prev) => !prev);
+		if (web()) setRag(false);
+	};
+
+	const toggleRag = () => {
+		setRag((prev) => !prev);
+		if (rag()) setWeb(false);
+	};
+
 	async function sendQueryWithSources(
 		endpoint: '/rag' | '/ask_search',
 		messageText: string,
@@ -368,6 +316,11 @@ export default function useTutor() {
 			endpoint === '/rag'
 				? { query: messageText, stream: true }
 				: { prompt: messageText, stream: true };
+
+		let port = 5000;
+		if (endpoint === '/rag') port = 5001;
+		if (endpoint === '/ask_search') port = 5002;
+
 		try {
 			const response = await fetch(`http://localhost:5000${endpoint}`, {
 			const response = await fetch(`http://localhost:5000${endpoint}`, {
@@ -393,7 +346,8 @@ export default function useTutor() {
 	async function sendStandardQuestion(
 		messageText: string,
 		history: { role: string; content: string }[],
-		signal: AbortSignal
+		signal: AbortSignal,
+		imagePaths: string[] = []
 	) {
 		const botMessageId = getNextId();
 		appendBotMessage(botMessageId);
@@ -412,7 +366,22 @@ export default function useTutor() {
 				await handleBackendError(response, botMessageId);
 				return;
 			}
-			await processStreamedResponse(response, signal, botMessageId);
+			await processStreamedResponse(response, signal, {
+				onSources: (payload) => {
+					setMessages((prev) =>
+						prev.map((m) => (m.id === botMessageId ? { ...m, sources: payload } : m))
+					);
+				},
+				onToken: (newRawText) => {
+					setMessages((prev) =>
+						prev.map((m) =>
+							m.id === botMessageId
+								? { ...m, rawText: newRawText, text: formatTextWithCitations(newRawText) }
+								: m
+						)
+					);
+				},
+			});
 		} catch (error: any) {
 			if (error.name !== 'AbortError') handleNetworkError(error, botMessageId);
 		}
@@ -421,7 +390,9 @@ export default function useTutor() {
 	// --- PRIMARY USER ACTION HANDLER (for text chat) ---
 	const handleSend = async () => {
 		const messageText = currText().trim();
-		if (!messageText || isLoading() || voice()) return;
+		const messageImages = images();
+		const messagePaths = paths();
+		if ((!messageText && messageImages.length === 0) || isLoading() || voice()) return;
 
 		abortController.abort();
 		const newAbortController = new AbortController();
@@ -430,8 +401,15 @@ export default function useTutor() {
 
 		setIsLoading(true);
 		setCurrText('');
+		setImages([]);
+		setPaths([]);
 
-		const newUserMessage: MessageData = { id: getNextId(), text: messageText, user: true };
+		const newUserMessage: MessageData = {
+			id: getNextId(),
+			text: messageText,
+			user: true,
+			images: messageImages,
+		};
 		const currentMessages = [...messages(), newUserMessage];
 		setMessages(currentMessages);
 
@@ -441,8 +419,8 @@ export default function useTutor() {
 			} else if (web()) {
 				await sendQueryWithSources('/ask_search', messageText, signal);
 			} else {
-				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1)); // History before the new message
-				await sendStandardQuestion(messageText, historyForBackend, signal);
+				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1));
+				await sendStandardQuestion(messageText, historyForBackend, signal, messagePaths);
 			}
 		} catch (error: any) {
 			if (error.name === 'AbortError') console.log('Fetch aborted by a new request.');
@@ -464,6 +442,8 @@ export default function useTutor() {
 			},
 		]);
 		setCurrText('');
+		setImages([]);
+		setPaths([]);
 		setIsLoading(false);
 		if (voice()) stopVoice(); // Also stop voice mode if active
 	};
@@ -476,10 +456,17 @@ export default function useTutor() {
 		currText,
 		setCurrText,
 		isLoading,
+		addImage,
+		images,
+		removeImage,
+		clearImages,
+		paths,
 
 		// Text chat actions
 		handleSend,
 		newChat,
+		setMessages,
+		getNextId,
 
 		// Mode state and toggles
 		mode,
@@ -488,14 +475,15 @@ export default function useTutor() {
 		rag,
 		toggleWeb,
 		toggleRag,
-		messageContainerRef: (ref: HTMLDivElement) => (messageContainerRef = ref),
 
 		// Voice state and actions
 		voice,
 		toggleVoice,
 		transcript,
-		response,
-		setResponse,
 		voiceStatus,
+
+		// aliases
+		deleteImage: removeImage,
+		deleteAllImages: clearImages,
 	};
 }

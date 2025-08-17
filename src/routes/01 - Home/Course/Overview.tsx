@@ -45,7 +45,6 @@ export default function Overview() {
           const data = await loadCourseData(fieldName, display);
           setCourseData(data);
           setLoading(false);
-          setImage(await invoke<string>('read_image', { path: data.img }));
           return;
         }
 

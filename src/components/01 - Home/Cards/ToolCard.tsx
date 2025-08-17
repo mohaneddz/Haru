@@ -25,6 +25,8 @@ export default function ToolCard(props: Props) {
             } catch (error) {
                 console.error('Failed to navigate:', error);
             }
+        }else{
+            console.log('No link provided for this tool card.');
         }
 
         if (props.onClick) {

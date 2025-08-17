@@ -31,7 +31,7 @@ export default function DropdownFilter(props: DropdownFilterProps) {
         <div class="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen())}
-                class="w-full flex items-center justify-between px-4 py-3 bg-[#1D293E] border border-[#3A4B67] rounded-lg text-gray-300 hover:border-[#66D9EF] focus:outline-none focus:ring-2 focus:ring-[#66D9EF] transition-all"
+                class="w-full flex items-center justify-between px-4 py-3 bg-[#1D293E] border border-[#3A4B67] rounded-lg text-gray-300 hover:border-[#66D9EF] focus:outline-none focus:ring-2 focus:ring-[#66D9EF] transition-all truncate"
             >
                 <div class="flex items-center gap-2">
                     {props.icon}

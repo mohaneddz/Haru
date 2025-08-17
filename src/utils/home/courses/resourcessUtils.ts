@@ -12,6 +12,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 
 		const response = await invoke<string>('read_file', { path });
 		if (!response) {
+			await invoke('create_file', { path });
 			throw new Error(`No videos found for course: ${courseName}`);
 		}
 
@@ -94,7 +95,7 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 				};
 			});
 
-		// console.log(`Loaded:`, toolsList);
+		console.log(`Loaded:`, toolsList);
 		return toolsList;
 	} catch (error) {
 		console.error(`Failed to load tools for course ${courseName}:`, error);
@@ -249,17 +250,14 @@ export async function AppendToolsFile(parent: string, courseName: string, tools:
 		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\tools.csv`;
-		// CSV columns: title,description,link,tags
+		const q = (s: string) => `"${(s ?? '').replace(/"/g, '')}"`;
+
 		const csvContent =
 			'\n' +
 			tools
 				.map((t) => {
-					// Ensure commas inside fields don't break CSV: wrap in quotes and join tags with ';'
-					const title = (t.title ?? '').replace(/"/g, '""');
-					const description = (t.description ?? '').replace(/"/g, '""');
-					const link = (t.link ?? '').replace(/"/g, '""');
-					const tags = (t.tags ?? []).join(';').replace(/"/g, '""');
-					return `"${title}","${description}",""${link}"","${tags}"`.replace(/"""/g, '"'); // minor normalization
+					const tags = (t.tags ?? []).join(';');
+					return [q(t.title ?? ''), q(t.description ?? ''), q(t.link ?? ''), q(tags)].join(',');
 				})
 				.join('\n');
 

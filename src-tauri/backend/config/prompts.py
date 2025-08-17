@@ -48,6 +48,89 @@ REQUIRED JSON STRUCTURE:
 
 Now, generate the single, raw JSON object:"""
 
+def get_syllabus_system_prompt() -> str:
+    """
+    New system prompt for generating a detailed, chapter-based syllabus.
+    """
+    return """You are an expert instructional designer and curriculum author. Your task is to synthesize disparate information from web search results into a complete, coherent, and deeply structured syllabus for a university-level module.
+- Your output MUST be a single, raw, and perfectly valid JSON object.
+- Do NOT include any explanations, markdown like ```json, or any text outside of the JSON object.
+- You will structure the entire module into logical "Chapters".
+- Each Chapter will be broken down into specific "Topics".
+- Each Topic will be detailed with a list of 5 to 20 core "Concepts".
+- Adhere strictly to the requested JSON format.
+"""
+
+def get_syllabus_user_prompt(module_name: str, context_string: str) -> str:
+    """
+    Generates a clear and strict prompt for creating a syllabus.
+    The required JSON structure is a list of chapters, where each chapter
+    contains a list with a single object of topic-to-description mappings.
+    This structure is designed to be easily parsed by frontends.
+    """
+    return f"""You are a strict syllabus generator and expert curriculum author. You must use ONLY the CONTEXT provided below. Your output must be ONE valid JSON object and NOTHING else.
+
+KEY GOAL:
+- Generate a syllabus with a simple, flat structure: a list of chapters, where each chapter contains a single object of topic-description pairs.
+
+MANDATORY RULES:
+1.  Your entire output must be a single, raw, valid JSON object. Do not include any extra text, introductions, or markdown formatting like ```json.
+2.  The JSON shape MUST be EXACTLY:
+    `{{"syllabus": [ {{ "I. <Chapter Title>": [ {{ "<Topic Number> <Topic Title>": "<Topic Description>", ... }} ] }}, ... ]}}`
+3.  Use double quotes (") exclusively for all keys and string values. Use ASCII characters only. Do not add trailing commas or comments.
+4.  The top-level "syllabus" key must contain a list of chapter objects.
+5.  Each chapter object must have a single key, which is the chapter title (e.g., "I. Introduction to AI"). The value for this key must be a list containing exactly ONE object.
+6.  This single inner object holds all the topics for that chapter as key-value pairs.
+7.  The key for each topic MUST be a numbered string (e.g., "1.1 What is AI?", "2.3 Data Preprocessing").
+8.  The value for each topic MUST be a single, concise string explanation. It MUST NOT be an object or an array.
+9.  Produce between 4 and 10 chapters. Each chapter must contain between 3 and 10 topics.
+10. Do not invent sources, papers, or datasets. Use only the provided CONTEXT. If the context is insufficient, generate canonical, conservative content appropriate for the module topic.
+11. If you cannot follow these rules exactly, your ONLY output must be: `{{"error":"cannot_generate_syllabus_json"}}`.
+
+GUIDANCE:
+- Chapter titles must use Roman numerals (I, II, III...).
+- Topic numbering should logically follow a `Chapter.Topic` format (e.g., topics in Chapter I are 1.1, 1.2; topics in Chapter II are 2.1, 2.2, etc.).
+- Topic descriptions should be neutral, educational, and concise.
+
+CONTEXT:
+---
+{context_string}
+---
+
+Now, generate the single, raw JSON object for the module "{module_name}" using the CONTEXT. Follow all MANDATORY RULES exactly.
+"""
+
+def get_mindmap_user_prompt(module_name: str, syllabus_json: str, context_string: str) -> str:
+    """
+    Prompt: turn syllabus descriptions + context into concepts.json
+    Output shape:
+    {"concepts":[ {"id":"Concept Name","description":"...", "dependencies":["Other Concept"], "date_learned":""}, ... ]}
+    """
+    # syllabus_json will be inserted as a JSON string; escape braces for f-string literal.
+    return f"""You are a precise JSON generator that builds a concept graph for a learning roadmap.
+
+INPUT:
+- Module name: "{module_name}"
+- Syllabus JSON: {syllabus_json}
+- Additional Context: {context_string}
+
+TASK:
+- Produce a single JSON object ONLY with key "concepts" whose value is an array of objects.
+- Each object must have:
+  - "id": canonical concept name (Title Case, short)
+  - "description": 10-60 word plain-English explanation the student will read (no sources)
+  - "dependencies": array of "id" strings naming prerequisite concepts (use only concepts present in the syllabus or created by you logically)
+  - "date_learned": "" (leave empty)
+- Provide 30-120 total concepts spanning fundamentals -> advanced where appropriate.
+- Do NOT include duplicate concepts (canonicalize names).
+- The graph SHOULD be acyclic. If you cannot ensure acyclic, return exact JSON: {{"error":"cannot_generate_concepts_graph"}}
+- If you cannot follow the rules, return exact JSON: {{"error":"cannot_generate_concepts_graph"}}
+
+OUTPUT example:
+{{"concepts":[{{"id":"Linear Regression","description":"Short desc...","dependencies":["Statistics Basics"],"date_learned":""}}]}}
+Now generate the single JSON object for the module: "{module_name}".
+"""
+
 LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant.  
 Based ONLY on the provided context, answer the user's question clearly and concisely.  
 Cite sources immediately after facts using brackets, e.g., [Source 1].  

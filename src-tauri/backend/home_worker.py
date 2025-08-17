@@ -11,13 +11,13 @@ from fastapi.responses import ORJSONResponse
 
 from config.constants import LLAMA_SERVER_URL, DEFAULT_MODEL
 from config.lists import PDF_SEARCH_DOMAINS, VIDEO_SEARCH_DOMAINS, UNIVERSITIES_URLS
-from config.prompts import get_system_prompt, get_user_prompt
+from config.prompts import get_system_prompt, get_user_prompt, get_syllabus_user_prompt, get_mindmap_user_prompt, get_syllabus_system_prompt
 
 from utils.chat_utils import create_llm_payload,handle_non_streaming_llm_response
 from utils.search_utils import ddgs_search_async,normalize_url,crawl_webpages_hybrid,process_crawled_results
 from utils.web_utils import ContentExtractor
 
-from utils.document_utils import ddgs_search_full_async
+from utils.document_utils import ddgs_search_full_async, dedupe_concepts, detect_cycle, canonicalize_name, safe_json_extract
 from utils.video_utils import (
     extract_video_metadata_from_url,
     is_potential_video_link,
@@ -41,9 +41,10 @@ content_extractor: ContentExtractor
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global http_client
+    global http_client, content_extractor
     logging.info("Starting up and creating a persistent httpx client...")
     http_client = httpx.AsyncClient(timeout=120.0)
+    content_extractor = ContentExtractor() # Initialize the content extractor
     yield
     logging.info("Shutting down and closing the httpx client...")
     if http_client:
@@ -425,6 +426,141 @@ async def module_tools(request: Request):
     logging.info(f"Successfully found {len(tools)} tools for {module_name}")
     return ORJSONResponse(content=tools)
 
+@app.post("/module-syllabus")
+async def module_syllabus(request: Request):
+    """
+    Constructs a chapter->topic->subtopic syllabus for a given course module.
+    Each Topic contains subtopics as objects with explanations.
+    """
+    try:
+        body = await request.json()
+        module_name = body.get("module_name")
+        if not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "module_name is required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
+
+    logging.info(f"Received syllabus request for module: {module_name}")
+
+    # 1. Search queries
+    search_queries = [
+        f'"{module_name}" textbook table of contents',
+        f'"{module_name}" course curriculum structure',
+        f'site:.edu "{module_name}" course syllabus chapters',
+        f'"{module_name}" learning path OR modules',
+        f'OpenCourseWare "{module_name}" curriculum',
+    ]
+
+    # 2. Asynchronously search for URLs
+    search_tasks = [ddgs_search_async(q, max_results=5) for q in search_queries]
+    url_nested_list = await asyncio.gather(*search_tasks)
+
+    # 3. Deduplicate URLs
+    unique_urls = {normalize_url(url) for sublist in url_nested_list for url in sublist}
+    if not unique_urls:
+        return ORJSONResponse(status_code=404, content={"error": "No source material found."})
+
+    # 4. Crawl and process web content
+    crawled_data = await crawl_webpages_hybrid(list(unique_urls)[:15], http_client)
+    processed_results = process_crawled_results(crawled_data, module_name, content_extractor)
+    if not processed_results:
+        return ORJSONResponse(status_code=404, content={"error": "Could not extract enough information to build a syllabus."})
+
+    # 5. Build context string for LLM
+    context_parts = [
+        f"Source [{i+1}] | URL: {res['url']}\nContent: {res['content']}\n---"
+        for i, res in enumerate(processed_results[:10])
+    ]
+    context_string = "\n".join(context_parts)
+
+    # 6. LLM request
+    messages = [
+        {"role": "system", "content": get_syllabus_system_prompt()},
+        {"role": "user", "content": get_syllabus_user_prompt(module_name, context_string)}
+    ]
+    llm_config = {"model": DEFAULT_MODEL, "temperature": 0.1, "max_tokens": 8192}
+    payload = await create_llm_payload(messages, stream=False, llm_config=llm_config)
+
+    raw_llm_output = ""
+    try:
+        response = await handle_non_streaming_llm_response(http_client, payload, LLAMA_SERVER_URL, retries=1)
+        raw_llm_output = response.get('content', '').strip()
+
+        # Standard JSON cleaning
+        start, end = raw_llm_output.find('{'), raw_llm_output.rfind('}')
+        if start != -1 and end != -1:
+            clean_json_str = raw_llm_output[start:end+1]
+            json_response = json.loads(clean_json_str)
+            logging.info(f"Successfully generated syllabus JSON for {module_name}")
+            return ORJSONResponse(content=json_response)
+        else:
+            raise json.JSONDecodeError("No valid JSON object found in LLM output.", raw_llm_output, 0)
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to decode syllabus JSON: {e}")
+        logging.error(f"Raw output:\n{raw_llm_output}")
+        return ORJSONResponse(status_code=500, content={"error": "The model produced invalid syllabus JSON."})
+    except Exception as e:
+        logging.error(f"Unexpected error during syllabus generation: {e}")
+        return ORJSONResponse(status_code=500, content={"error": "Internal server error during syllabus generation."})
+    
+@app.post("/generate-concepts")
+async def generate_concepts(request: Request):
+    payload_body = await request.json()
+    syllabus_json = payload_body.get("syllabus_json")
+    module_name = payload_body.get("module_name", "Module")
+    context_string = payload_body.get("context_string", "")[:20000]
+
+    if not syllabus_json:
+        return ORJSONResponse(status_code=400, content={"error":"syllabus_json is required"})
+
+    # stringify the syllabus JSON safely
+    syllabus_str = json.dumps(syllabus_json, ensure_ascii=True)
+
+    messages = [
+        {"role":"system","content":"You are a strict JSON generator that builds concept dependency graphs."},
+        {"role":"user","content": get_mindmap_user_prompt(module_name, syllabus_str, context_string)}
+    ]
+    payload = await create_llm_payload(messages, stream=False, llm_config={"model":DEFAULT_MODEL,"temperature":0.15,"max_tokens":8192})
+    raw = ""
+    try:
+        resp = await handle_non_streaming_llm_response(http_client, payload, LLAMA_SERVER_URL, retries=1)
+        raw = resp.get("content","").strip()
+        clean = safe_json_extract(raw)
+        parsed = json.loads(clean)
+
+        # quick validation
+        if parsed.get("error"):
+            return ORJSONResponse(status_code=500, content=parsed)
+
+        concepts = parsed.get("concepts", [])
+        if not isinstance(concepts, list):
+            raise ValueError("concepts must be a list")
+
+        # canonicalize & dedupe
+        for c in concepts:
+            c['id'] = canonicalize_name(c.get('id',''))
+            c['description'] = c.get('description','').strip()
+            c['dependencies'] = [canonicalize_name(d) for d in c.get('dependencies',[])]
+            c.setdefault('date_learned','')
+
+        concepts = dedupe_concepts(concepts)
+
+        cycles = detect_cycle(concepts)
+        if cycles:
+            logging.warning("Cycle detected in generated concepts: %s", cycles)
+            # best effort: return with error tag for UI review
+            return ORJSONResponse(status_code=500, content={"error":"cycle_detected_in_concepts", "cycle_nodes": cycles, "concepts": concepts})
+
+        # return final concepts.json
+        return ORJSONResponse(content={"concepts": concepts})
+    except json.JSONDecodeError as e:
+        logging.error("Concepts JSON decode failed: %s", e)
+        logging.error("Raw LLM output:\n%s", raw)
+        return ORJSONResponse(status_code=500, content={"error":"The model produced invalid concepts JSON."})
+    except Exception as e:
+        logging.exception("Unexpected error in /generate-concepts")
+        return ORJSONResponse(status_code=500, content={"error":"Internal server error."})
 # MAIN ==========================
 
 if __name__ == "__main__":

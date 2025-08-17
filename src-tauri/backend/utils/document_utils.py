@@ -1,14 +1,14 @@
 import asyncio
 import logging
-
-# Use the new package name as recommended
-from ddgs import DDGS
+import re
+from typing import List, Dict, Any
 
 def sync_ddgs_search(query: str, max_results: int):
     """
     This is a synchronous wrapper function that performs the actual search.
     It's designed to be run in a separate thread by `run_in_executor`.
     """
+    from ddgs import DDGS
     try:
         # --- THIS IS THE CORRECTED LINE ---
         # The method expects the argument to be named 'query', not 'keywords'.
@@ -57,3 +57,62 @@ def classify_document_type(title: str) -> str:
     if "supplement" in title_lower:
         return "Supplement"
     return "Document"
+
+def safe_json_extract(raw: str) -> str:
+    """Return substring that starts with first { and ends at last }."""
+    start = raw.find('{')
+    end = raw.rfind('}')
+    return raw[start:end+1] if (start != -1 and end != -1 and end > start) else raw
+
+def canonicalize_name(name: str) -> str:
+    s = name.strip()
+    s = re.sub(r'\s+', ' ', s)
+    s = re.sub(r'[^\w\s-]', '', s)  # remove punctuation
+    s = s.title()
+    return s
+
+def make_id(name: str) -> str:
+    return re.sub(r'\W+', '_', name.strip().lower())
+
+def dedupe_concepts(concepts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Merge concepts with same canonical id, preferring longer descriptions."""
+    seen = {}
+    for c in concepts:
+        cid = make_id(c['id'])
+        if cid not in seen:
+            seen[cid] = c
+        else:
+            # merge descriptions, prefer existing if longer
+            if len(c.get('description','')) > len(seen[cid].get('description','')):
+                seen[cid]['description'] = c['description']
+            # merge dependencies
+            deps = set(seen[cid].get('dependencies',[])) | set(c.get('dependencies',[]))
+            seen[cid]['dependencies'] = list(deps)
+    return list(seen.values())
+
+def detect_cycle(concepts: List[Dict[str, Any]]) -> List[str]:
+    """Return cycle nodes if cycle exists, else empty list. Simple DFS."""
+    graph = {make_id(c['id']): [make_id(d) for d in c.get('dependencies',[])] for c in concepts}
+    visited = {}
+    stack = []
+    cycles = []
+
+    def dfs(node):
+        if visited.get(node,0) == 1:
+            # found back edge
+            cycles.append(node)
+            return True
+        if visited.get(node,0) == 2:
+            return False
+        visited[node] = 1
+        for nei in graph.get(node,[]):
+            if dfs(nei):
+                return True
+        visited[node] = 2
+        return False
+
+    for n in graph:
+        if visited.get(n,0) == 0:
+            if dfs(n):
+                break
+    return cycles

@@ -5,9 +5,13 @@ backend/chroma_db/*
 backend/documents/*
 idea/models/*
 .env
-src-tauri/chroma_db/chroma.sqlite3
 src-tauri/target/*
 src-tauri/bin/*
 models/static/audio/*
 notes/*
 models/model.bin
+src-tauri/backend/thumbnails/
+src-tauri/backend/chroma_db/*
+src-tauri/weights/*
+src-tauri/chroma_db/chroma.sqlite3
+data/*

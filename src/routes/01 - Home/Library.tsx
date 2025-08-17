@@ -155,6 +155,7 @@ export default function Library() {
         onClick={() => { resetForm(); setAddModal(true); }}>
         <Pen class="w-6 h-6 text-text" />
       </div>
+      
     </div >
   );
 };

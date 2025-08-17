@@ -27,7 +27,7 @@ export async function loadCourseData(parent: string, course: string): Promise<Co
 			img: path + '/' + metadata.img,
 			overview: metadata.overview,
 		};
-		console.log(`Loaded course data : `, courseData);
+		// console.log(`Loaded course data : `, courseData);
 		return courseData;
 	} catch (error) {
 		console.error('Failed to load course data:', error);

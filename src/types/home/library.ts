@@ -36,3 +36,11 @@ export interface CourseContentResponse {
 export interface GameInfo extends CourseInfo {
 	benefits: string[];
 }
+
+export interface Syllabus {
+  syllabus: {
+    [chapter: string]: {
+      [subtopic: string]: string;
+    }[];
+  }[];
+}

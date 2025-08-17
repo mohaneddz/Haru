@@ -1,6 +1,6 @@
 import { Show, For } from "solid-js";
-import { Show, For } from "solid-js";
 import { SolidMarkdown } from "solid-markdown";
+import type {SourceData} from "@/types/home/tutor";
 
 // --- PLUGINS for Markdown & HTML Rendering ---
 import remarkMath from "remark-math";       // For math syntax
@@ -12,23 +12,11 @@ import "katex/dist/katex.min.css";         // Styles for KaTeX math rendering
 // --- ICONS & TYPES ---
 import { LoaderCircle } from "lucide-solid";
 
-
-// --- PLUGINS for Markdown & HTML Rendering ---
-import remarkMath from "remark-math";      
-import remarkGfm from "remark-gfm";          
-import rehypeKatex from "rehype-katex";      
-import rehypeRaw from 'rehype-raw';         
-import "katex/dist/katex.min.css";        
-
-// --- ICONS & TYPES ---
-import { LoaderCircle } from "lucide-solid";
-
 interface MessageProps {
+  images: any;
   text: string;
   user: boolean;
   id: number;
-  sources?: SourceData[];
-  showSources?: boolean;
   sources?: SourceData[];
   showSources?: boolean;
 }

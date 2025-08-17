@@ -1,5 +1,17 @@
 import { Show, For } from "solid-js";
+import { Show, For } from "solid-js";
 import { SolidMarkdown } from "solid-markdown";
+
+// --- PLUGINS for Markdown & HTML Rendering ---
+import remarkMath from "remark-math";       // For math syntax
+import remarkGfm from "remark-gfm";          // For GitHub Flavored Markdown (tables, etc.)
+import rehypeKatex from "rehype-katex";      // To render math with KaTeX
+import rehypeRaw from 'rehype-raw';          // **CRITICAL**: This allows rendering HTML (like your <span> tags)
+import "katex/dist/katex.min.css";         // Styles for KaTeX math rendering
+
+// --- ICONS & TYPES ---
+import { LoaderCircle } from "lucide-solid";
+
 
 // --- PLUGINS for Markdown & HTML Rendering ---
 import remarkMath from "remark-math";       // For math syntax
@@ -17,9 +29,14 @@ interface MessageProps {
   id: number;
   sources?: SourceData[];
   showSources?: boolean;
+  sources?: SourceData[];
+  showSources?: boolean;
 }
 
 export default function Message(props: MessageProps) {
+  // NOTE: The createSignal and createEffect have been removed.
+  // Using props directly is the correct and idiomatic way in SolidJS
+  // and it solves the infinite loop that was causing the crash.
   // NOTE: The createSignal and createEffect have been removed.
   // Using props directly is the correct and idiomatic way in SolidJS
   // and it solves the infinite loop that was causing the crash.

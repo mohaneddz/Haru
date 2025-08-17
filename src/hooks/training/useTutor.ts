@@ -131,10 +131,13 @@ export default function useTutor() {
 	const toggleWeb = () => {
 		setWeb((prev) => !prev);
 		if (web()) setRag(false);
+		if (web()) setRag(false);
 	};
+
 
 	const toggleRag = () => {
 		setRag((prev) => !prev);
+		if (rag()) setWeb(false);
 		if (rag()) setWeb(false);
 	};
 
@@ -197,11 +200,14 @@ export default function useTutor() {
 		switch (mode()) {
 			case 'tutor':
 				return `${masterPrompt} You are a helpful tutor.`;
+				return `${masterPrompt} You are a helpful tutor.`;
 			case 'explorer':
 				return `${masterPrompt} You are an explorer, ready to library new knowledge.`;
 			case 'objective':
 				return `${masterPrompt} You are an objective assistant, focused on providing clear and concise answers.`;
+				return `${masterPrompt} You are an objective assistant, focused on providing clear and concise answers.`;
 			default:
+				return `${masterPrompt} You are a helpful tutor.`;
 				return `${masterPrompt} You are a helpful tutor.`;
 		}
 	}
@@ -228,9 +234,24 @@ export default function useTutor() {
 			)
 		);
 	}
+	async function handleBackendError(response: Response, botMessageId: number) {
+		const errorText = await response.text();
+		console.error('Backend error:', errorText);
+		setMessages((prev) =>
+			prev.map((m) =>
+				m.id === botMessageId
+					? { ...m, text: `Error: ${errorText || 'Failed to get response.'}` }
+					: m
+			)
+		);
+	}
 
 	function handleNetworkError(error: any, botMessageId: number) {
+	function handleNetworkError(error: any, botMessageId: number) {
 		console.error('Network or processing error:', error);
+		setMessages((prev) =>
+			prev.map((m) => (m.id === botMessageId ? { ...m, text: `Network Error: ${error.message}` } : m))
+		);
 		setMessages((prev) =>
 			prev.map((m) => (m.id === botMessageId ? { ...m, text: `Network Error: ${error.message}` } : m))
 		);
@@ -240,6 +261,13 @@ export default function useTutor() {
 		setMessages((prev) => [...prev, { id: botMessageId, text: '', user: false, sources: [] }]);
 	}
 
+	async function processStreamedResponse(response: Response, signal: AbortSignal, botMessageId: number) {
+		if (!response.body) {
+			console.error('Response body is null.');
+			return;
+		}
+
+		const reader = response.body.getReader();
 	async function processStreamedResponse(response: Response, signal: AbortSignal, botMessageId: number) {
 		if (!response.body) {
 			console.error('Response body is null.');
@@ -270,8 +298,10 @@ export default function useTutor() {
 				break;
 			}
 
+
 			const { value, done } = await reader.read();
 			if (done) break;
+
 
 			buffer += decoder.decode(value, { stream: true });
 			const messageParts = buffer.split('\n\n');
@@ -340,15 +370,20 @@ export default function useTutor() {
 				: { prompt: messageText, stream: true };
 		try {
 			const response = await fetch(`http://localhost:5000${endpoint}`, {
+			const response = await fetch(`http://localhost:5000${endpoint}`, {
 				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(body),
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body),
 				signal,
 			});
 			if (!response.ok || !response.body) {
 				await handleBackendError(response, botMessageId);
+				await handleBackendError(response, botMessageId);
 				return;
 			}
+			await processStreamedResponse(response, signal, botMessageId);
 			await processStreamedResponse(response, signal, botMessageId);
 		} catch (error: any) {
 			if (error.name !== 'AbortError') handleNetworkError(error, botMessageId);
@@ -364,12 +399,16 @@ export default function useTutor() {
 		appendBotMessage(botMessageId);
 		try {
 			const response = await fetch('http://localhost:5000/chat', {
+			const response = await fetch('http://localhost:5000/chat', {
 				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ message: messageText, history, stream: true }),
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ message: messageText, history, stream: true }),
 				signal,
 			});
 			if (!response.ok || !response.body) {
+				await handleBackendError(response, botMessageId);
 				await handleBackendError(response, botMessageId);
 				return;
 			}
@@ -429,6 +468,7 @@ export default function useTutor() {
 		if (voice()) stopVoice(); // Also stop voice mode if active
 	};
 
+	// --- RETURNED VALUES & FUNCTIONS ---
 	// --- RETURNED VALUES & FUNCTIONS ---
 	return {
 		// Text chat state

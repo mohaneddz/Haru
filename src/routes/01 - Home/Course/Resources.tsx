@@ -10,6 +10,7 @@ import UniversalFilter from "@/components/core/UniversalFilter";
 import Tag from "lucide-solid/icons/tag";
 import RotateCw from "lucide-solid/icons/rotate-cw";
 import Check from "lucide-solid/icons/check";
+import Trash from "lucide-solid/icons/trash";
 
 import FileText from "lucide-solid/icons/file-text";
 import Youtube from "lucide-solid/icons/youtube";
@@ -42,6 +43,12 @@ export default function Resources() {
     appendTools,
     appendedTools,
     saveTools,
+    selection,
+    setSelection,
+    DeleteSelection,
+    selectedDocuments, setSelectedDocuments,
+    selectedTools, setSelectedTools,
+    selectedVideos, setSelectedVideos
     // searchResources
   } = useResources();
 
@@ -59,8 +66,15 @@ export default function Resources() {
   };
 
   return (
-    <div class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll" aria-busy={isLoading()}>
-      <div class="relative w-[80%] mt-20 mb-8">
+    <div
+      class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll"
+      aria-busy={isLoading()}
+      onClick={() => setSelection(false)} // Cancel selection on background click
+    >
+      <div
+        class="relative w-[80%] mt-20 mb-8"
+        onClick={(e) => e.stopPropagation()} // Prevent canceling selection when interacting with the filter
+      >
         <UniversalFilter
           title="Resource Filters"
           icon={<Tag class="text-accent" />}
@@ -76,6 +90,10 @@ export default function Resources() {
         />
       </div>
 
+      <Show when={selection()}>
+        <p>SELECTION IS ON</p>
+      </Show>
+
       <Separator
         title={`Course Documents (${filteredDocuments()?.length ?? 0})`}
         description="Essential material including notes, books, and references"
@@ -90,7 +108,21 @@ export default function Resources() {
                 type={doc.type}
                 link={doc.link}
                 tags={doc.tags}
+                selection={selection}
+                setSelection={setSelection}
                 offline={!!doc.local}
+                onSelect={(isSelected) => {
+                  setSelectedDocuments(prev => {
+                    const set = new Set(prev);
+                    if (isSelected) {
+                      set.add(doc.link); // Add the document link if selected
+                    } else {
+                      set.delete(doc.link); // Remove it if deselected
+                    }
+                    return Array.from(set);
+                  });
+                }}
+                isSelected={() => selectedDocuments().includes(doc.link)}
               />
             )}
           </For>
@@ -113,6 +145,20 @@ export default function Resources() {
                 count={video.count}
                 tags={video.tags}
                 link={video.link} // added so VideoCard can open the video
+                selection={selection}
+                setSelection={setSelection}
+                onSelect={(isSelected) => {
+                  setSelectedVideos(prev => {
+                    const set = new Set(prev);
+                    if (isSelected) {
+                      set.add(video.link ?? ""); // Add the video link if selected
+                    } else {
+                      if (video.link) set.delete(video.link); // Remove it if deselected
+                    }
+                    return Array.from(set);
+                  });
+                }}
+                isSelected={() => video.link ? selectedVideos().includes(video.link) : false}
               />
             )}
           </For>
@@ -133,65 +179,88 @@ export default function Resources() {
                 description={tool.description}
                 link={tool.link}
                 tags={tool.tags}
+                selection={selection}
+                setSelection={setSelection}
+                onSelect={(isSelected) => {
+                  setSelectedTools(prev => {
+                    const set = new Set(prev);
+                    if (isSelected) {
+                      set.add(tool.link); // Add the tool link if selected
+                    } else {
+                      set.delete(tool.link); // Remove it if deselected
+                    }
+                    return Array.from(set);
+                  });
+                }}
+                isSelected={() => selectedTools().includes(tool.link)}
               />
             )}
           </For>
         </div>
       </Show>
 
+      <Show when={selection()}>
+        <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-60 right-8 bg-error rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+          classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+          onclick={() => runWithLoading(DeleteSelection)}>
+          <Trash class="w-6 h-6 text-text " />
+        </div>
+      </Show>
+
+
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-8 bg-accent-dark-2 rounded-full p-2
                   hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-           classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-           onclick={() => runWithLoading(loadResources)} >
+        classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+        onclick={() => runWithLoading(loadResources)} >
         <RotateCw class="w-6 h-6 text-text " />
       </div>
-      <Show 
-        when={appendedDocuments()} 
+      <Show
+        when={appendedDocuments()}
         fallback={
           <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-8 bg-accent-dark-2 rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-               classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-               onclick={() => runWithLoading(appendDocuments)}>
+            classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+            onclick={() => runWithLoading(appendDocuments)}>
             <FileText class="w-6 h-6 text-text " />
           </div>
         }
       >
         <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-             classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-             onclick={() => runWithLoading(saveDocuments)}>
+          classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+          onclick={() => runWithLoading(saveDocuments)}>
           <Check class="w-6 h-6 text-text " />
         </div>
       </Show>
 
-      <Show 
-        when={appendedVideos()} 
+      <Show
+        when={appendedVideos()}
         fallback={
           <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-36 right-8 bg-accent-dark-2 rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-               classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-               onclick={() => runWithLoading(appendVideos)}>
+            classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+            onclick={() => runWithLoading(appendVideos)}>
             <Youtube class="w-6 h-6 text-text " />
           </div>
         }
       >
         <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-36 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-             classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-             onclick={() => runWithLoading(saveVideos)}>
+          classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+          onclick={() => runWithLoading(saveVideos)}>
           <Check class="w-6 h-6 text-text " />
         </div>
       </Show>
 
-      <Show 
-        when={appendedTools()} 
+      <Show
+        when={appendedTools()}
         fallback={
           <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-48 right-8 bg-accent-dark-2 rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-               classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-               onclick={() => runWithLoading(appendTools)}>
+            classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+            onclick={() => runWithLoading(appendTools)}>
             <Wrench class="w-6 h-6 text-text " />
           </div>
         }
       >
         <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-48 right-8 bg-success rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-             classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
-             onclick={() => runWithLoading(saveTools)}>
+          classList={{ "opacity-60 cursor-not-allowed": isLoading() }}
+          onclick={() => runWithLoading(saveTools)}>
           <Check class="w-6 h-6 text-text " />
         </div>
       </Show>

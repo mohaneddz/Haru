@@ -20,6 +20,7 @@ export default function useSyllabus() {
             const parentname = pathParts.pop();
             setModuleName(modulename || '');
             setParentFolder(parentname || '');
+            loadSyllabus();
         }
     });
 
@@ -87,5 +88,13 @@ export default function useSyllabus() {
         await saveSyllabusFile(parentFolder(), moduleName(), { syllabus: syllabusToSave });
     };
 
-    return { courseData, moduleName, handleCourseClick, formatDesc, fetchSyllabus, loadSyllabus, saveSyllabus };
+    const getChapters = () => {
+    const syllabusArray = courseData().syllabus;
+    if (Array.isArray(syllabusArray) && syllabusArray.length > 0 && typeof syllabusArray[0] === 'object') {
+      return Object.entries(syllabusArray[0]);
+    }
+    return [];
+  };
+
+    return { courseData, moduleName, handleCourseClick, formatDesc, fetchSyllabus, loadSyllabus, saveSyllabus, getChapters };
 }

@@ -1,7 +1,7 @@
-import { Node, Transform } from '@/types/home/roadmap';
+import { oldNode, Transform } from '@/types/home/roadmap';
 
 interface Props {
-    node: Node;
+    node: oldNode;
     transform: Transform;
     isPinned: boolean;
     onClose?: () => void;
@@ -31,10 +31,10 @@ export default function ConceptTooltip(props: Props) {
     };
 
     const formatDate = (date: Date) => {
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
     };
 
@@ -43,9 +43,11 @@ export default function ConceptTooltip(props: Props) {
             class="absolute bg-gray-800 text-text p-3 rounded-lg shadow-lg z-50 max-w-xs"
             style={{
                 left: `${props.transform.x + (props.node.x + props.node.width / 2) * props.transform.scale}px`,
-                top: `${props.transform.y + props.node.y * props.transform.scale - 140}px`,
+                // FIX: Position the tooltip's bottom 10px above the node's top
+                top: `${props.transform.y + props.node.y * props.transform.scale - 10}px`,
                 'font-size': '12px',
-                transform: 'translateX(-50%)',
+                // FIX: Adjust transform to correctly position the tooltip above the node
+                transform: 'translateX(-50%) translateY(-100%)',
                 'pointer-events': props.isPinned ? 'auto' : 'none',
             }}
         >
@@ -55,9 +57,10 @@ export default function ConceptTooltip(props: Props) {
                     <span class="text-green-400 text-xs">✓ Learned</span>
                 )}
             </div>
-            
+
+            {/* FIX: Display the node's description (details) */}
             <div class="text-gray-300 text-xs mb-3">
-                {props.isPinned ? 'Click to unpin this tooltip.' : 'Click to pin this tooltip.'} 
+                {props.node.details}
             </div>
 
             {props.node.learned && props.node.learnedDate && (
@@ -65,13 +68,13 @@ export default function ConceptTooltip(props: Props) {
                     Learned on: {formatDate(props.node.learnedDate)}
                 </div>
             )}
-            
+
             {props.isPinned && (
                 <>
                     <div class="text-xs text-blue-300 mb-2">
                         📌 Pinned
                     </div>
-                    
+
                     {/* Action buttons */}
                     <div class="flex gap-2 mt-2 flex-wrap">
                         {props.node.learned ? (
@@ -98,9 +101,9 @@ export default function ConceptTooltip(props: Props) {
                     </div>
                 </>
             )}
-            
+
             {/* Arrow pointing down to the node */}
-            <div 
+            <div
                 class="absolute w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-800"
                 style={{
                     left: '50%',

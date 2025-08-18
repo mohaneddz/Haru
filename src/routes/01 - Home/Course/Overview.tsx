@@ -142,28 +142,6 @@ export default function Overview() {
                 </For>
               </div>
             </div>
-            <div class="h-[2px] my-6 w-full bg-sidebar" />
-            <p class="text-3xl font-bold text-sidebar-light-3 mb-6 brightness-120">Related Courses</p>
-            <div class="grid grid-cols-3 w-full gap-6 mb-20">
-              {/* <CourseCard
-                title="Natural Language Processing"
-                icon="MessageSquare"
-                img={NaturalLanguageProcessingImage}
-                description="Understanding and processing human language"
-              />
-              <CourseCard
-                title="Reinforcement Learning"
-                icon="Target"
-                img={ReinforcementLearningImage}
-                description="AI agents learning through trial and reward"
-              />
-              <CourseCard
-                title="Signal Processing"
-                icon="Cpu"
-                img={SignalProcessingImage}
-                description="Building blocks of artificial intelligence systems"
-              /> */}
-            </div>
           </div>
         </>
       </Show>

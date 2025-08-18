@@ -1,4 +1,4 @@
-import { createSignal, Show, onCleanup, For } from 'solid-js';
+import { createSignal, Show, onCleanup, For, Accessor, Setter } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import Link from 'lucide-solid/icons/link';
 
@@ -8,6 +8,10 @@ interface Props {
     link?: string;
     onClick?: () => void;
     tags?: string[];
+    selection: Accessor<boolean>;
+    setSelection: Setter<boolean>;
+    onSelect: (selected: boolean) => void;
+    isSelected: Accessor<boolean>;
 }
 
 export default function ToolCard(props: Props) {
@@ -17,31 +21,42 @@ export default function ToolCard(props: Props) {
     const navigate = useNavigate();
 
     let hoverTimeout: number | undefined;
+    const [longPressTimeout, setLongPressTimeout] = createSignal<number | null>(null);
+    let didLongPress = false;
 
-    const handleClick = async () => {
+    const handleClick = async (event: MouseEvent) => {
+        if (didLongPress) {
+            didLongPress = false;
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        if (props.selection()) {
+            event.preventDefault();
+            event.stopPropagation();
+            props.onSelect?.(!props.isSelected());
+            return;
+        }
+
         if (props.link) {
             try {
                 navigate(`/webview?url=${encodeURIComponent(props.link)}`);
             } catch (error) {
                 console.error('Failed to navigate:', error);
             }
-        }else{
+        } else {
             console.log('No link provided for this tool card.');
         }
 
-        if (props.onClick) {
-            props.onClick();
-        }
+        if (props.onClick) props.onClick();
     };
 
     const getPreviewUrl = () => {
         if (!props.link) return '';
-
         return `https://image.thum.io/get/width/400/crop/600/allowJPG/wait/20/noanimate/${props.link}`;
     };
 
     const handleMouseEnter = () => {
-        // Add a small delay to prevent flickering on quick mouse movements
         hoverTimeout = window.setTimeout(() => {
             setIsHovered(true);
             setPreviewLoaded(false);
@@ -50,18 +65,32 @@ export default function ToolCard(props: Props) {
     };
 
     const handleMouseLeave = () => {
-        if (hoverTimeout) {
-            clearTimeout(hoverTimeout);
-        }
+        if (hoverTimeout) clearTimeout(hoverTimeout);
         setIsHovered(false);
         setPreviewLoaded(false);
         setPreviewError(false);
     };
 
-    onCleanup(() => {
-        if (hoverTimeout) {
-            clearTimeout(hoverTimeout);
+    const handleLongPressStart = () => {
+        if (props.setSelection) {
+            const timeout = window.setTimeout(() => {
+                props.setSelection(true);
+                props.onSelect?.(true);
+                didLongPress = true;
+            }, 500);
+            setLongPressTimeout(timeout);
         }
+    };
+    const handleLongPressEnd = () => {
+        if (longPressTimeout()) {
+            clearTimeout(longPressTimeout()!);
+            setLongPressTimeout(null);
+        }
+    };
+
+    onCleanup(() => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        if (longPressTimeout()) clearTimeout(longPressTimeout()!);
     });
 
     return (
@@ -126,10 +155,19 @@ export default function ToolCard(props: Props) {
 
             {/* Main Card */}
             <div
-                class="bg-card p-4 rounded-lg border border-white/20 hover:border-white/40 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                class={`bg-card p-4 rounded-lg border border-white/20 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg
+                    ${props.selection()
+                        ? props.isSelected()
+                            ? 'ring-4 ring-primary/60 shadow-none'
+                            : 'ring-4 ring-sidebar-light-2/60 shadow-none'
+                        : ''}`}
                 onClick={handleClick}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
+                onMouseDown={handleLongPressStart}
+                onMouseUp={handleLongPressEnd}
+                onTouchStart={handleLongPressStart}
+                onTouchEnd={handleLongPressEnd}
             >
                 <p class="text-lg font-semibold text-accent mb-2 truncate">{props.title}</p>
                 <p class="text-text/70 text-sm mb-3 line-clamp-2">{props.description}</p>

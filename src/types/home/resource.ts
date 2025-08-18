@@ -1,7 +1,9 @@
+export type UrlString = `http://${string}` | `https://${string}`;
+
 export interface Document{
     title: string;
     type: string;
-    link: string;
+    link: string; // may be local path or URL
     tags: string[];
     local?: boolean;
 }
@@ -12,12 +14,12 @@ export interface Video {
     duration?: string;
     count: number; // if playlist show the number of vids / = 1
     tags: string[];
-    link: string;
+    link?: UrlString; // must be a URL
 }
 
 export interface Tool {
     title: string;
     description: string;
-    link: string;
+    link: UrlString; // must be a URL
     tags: string[];
 }

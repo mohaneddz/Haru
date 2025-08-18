@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { Document, Video, Tool } from '@/types/home/resource';
+import type { Document, Video, Tool, UrlString } from '@/types/home/resource';
 
 export async function loadVideos(parent: string, courseName: string): Promise<Video[]> {
 	// console.log('Loading video resources');
@@ -39,7 +39,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 					duration: duration,
 					count: parseInt(count, 10),
 					tags: tags.split(';').filter(Boolean),
-					link: link,
+					link: link as UrlString,
 				};
 			});
 
@@ -86,7 +86,7 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 				return {
 					title: title.replace(/"/g, ''),
 					description: description.replace(/"/g, ''),
-					link: link.replace(/"/g, ''),
+					link: link.replace(/"/g, '') as UrlString,
 					tags: tags
 						.split(';')
 						.filter(Boolean)
@@ -268,3 +268,141 @@ export async function AppendToolsFile(parent: string, courseName: string, tools:
 		return false;
 	}
 }
+
+export async function DeleteDocumentsFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
+	try {
+		const name = courseName.toLowerCase().replace(/-/g, ' ');
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\documents.csv`;
+
+		const csvContent = await invoke<string>('read_file', { path: csvPath }).catch(() => '');
+		if (!csvContent) return false;
+
+		// Robust CSV parser (quoted commas safe)
+		const parseCSVLine = (line: string) => {
+			const regex = /"([^"]*)"|([^,]+)/g;
+			const result: string[] = [];
+			let match;
+			while ((match = regex.exec(line)) !== null) result.push(match[1] ?? match[2] ?? '');
+			return result;
+		};
+
+		const toDelete = new Set(linksToDelete.filter(Boolean));
+		const lines = csvContent.split('\n');
+		const header = lines[0] ?? '';
+		const kept: string[] = [header];
+		const localFilesToDelete: string[] = [];
+
+		for (const line of lines.slice(1)) {
+			const trimmed = line.trim();
+			if (!trimmed) continue;
+			const cols = parseCSVLine(trimmed);
+			// CSV order: title, link, tags, type, local?
+			const link = cols[1] ?? '';
+			const localFlag = (cols[4] ?? '').toLowerCase() === 'true';
+			const isDelete = toDelete.has(link);
+			if (isDelete) {
+				// delete actual file if local
+				const seemsLocalPath = !!link && !/^https?:\/\//i.test(link);
+				if (localFlag || seemsLocalPath) localFilesToDelete.push(link);
+			} else {
+				kept.push(trimmed);
+			}
+		}
+
+		await invoke('save_file', { path: csvPath, content: kept.join('\n') });
+
+		for (const p of localFilesToDelete) {
+			await invoke('delete_path', { path: p }).catch(err =>
+				console.error(`Failed to delete local file: ${p}`, err)
+			);
+		}
+
+		return true;
+	} catch (error) {
+		console.error(`Failed to delete documents for course ${courseName}:`, error);
+		return false;
+	}
+}
+
+export async function DeleteVideosFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
+	try {
+		const name = courseName.toLowerCase().replace(/-/g, ' ');
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\videos.csv`;
+
+		const csvContent = await invoke<string>('read_file', { path: csvPath }).catch(() => '');
+		if (!csvContent) return false;
+
+		const parseCSVLine = (line: string) => {
+			const regex = /"([^"]*)"|([^,]+)/g;
+			const result: string[] = [];
+			let match;
+			while ((match = regex.exec(line)) !== null) result.push(match[1] ?? match[2] ?? '');
+			return result;
+		};
+
+		const toDelete = new Set(linksToDelete.filter(Boolean));
+		const lines = csvContent.split('\n');
+		const header = lines[0] ?? '';
+		const kept: string[] = [header];
+
+		for (const line of lines.slice(1)) {
+			const trimmed = line.trim();
+			if (!trimmed) continue;
+			// CSV: title,img,duration,count,tags,link
+			const cols = parseCSVLine(trimmed);
+			const link = cols[5] ?? '';
+			if (!toDelete.has(link)) kept.push(trimmed);
+		}
+
+		await invoke('save_file', { path: csvPath, content: kept.join('\n') });
+		return true;
+	} catch (error) {
+		console.error(`Failed to delete videos for course ${courseName}:`, error);
+		return false;
+	}
+}
+
+export async function DeleteToolsFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
+	try {
+		const name = courseName.toLowerCase().replace(/-/g, ' ');
+		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+			parent ? parent + '\\' + name : name
+		}\\tools.csv`;
+
+		const csvContent = await invoke<string>('read_file', { path: csvPath }).catch(() => '');
+		if (!csvContent) return false;
+
+		const parseCSVLine = (line: string) => {
+			const regex = /"([^"]*)"|([^,]+)/g;
+			const result: string[] = [];
+			let match;
+			while ((match = regex.exec(line)) !== null) result.push(match[1] ?? match[2] ?? '');
+			return result;
+		};
+
+		const toDelete = new Set(linksToDelete.filter(Boolean));
+		const lines = csvContent.split('\n');
+		const header = lines[0] ?? '';
+		const kept: string[] = [header];
+
+		for (const line of lines.slice(1)) {
+			const trimmed = line.trim();
+			if (!trimmed) continue;
+			// CSV: title,description,link,tags
+			const cols = parseCSVLine(trimmed);
+			const link = cols[2] ?? '';
+			if (!toDelete.has(link)) kept.push(trimmed);
+		}
+
+		await invoke('save_file', { path: csvPath, content: kept.join('\n') });
+		return true;
+	} catch (error) {
+		console.error(`Failed to delete tools for course ${courseName}:`, error);
+		return false;
+	}
+}
+

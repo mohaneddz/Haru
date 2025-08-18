@@ -1,36 +1,88 @@
-import { For } from 'solid-js';
-import { openUrl } from '@tauri-apps/plugin-opener'; // 1. Import the opener plugin
+import { For, Accessor, Setter, createSignal } from 'solid-js';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import type { Video } from '@/types/home/resource';
 
-// Note: Ensure your `Video` type includes a `link` property, e.g., `link: string;`
+interface Props extends Video {
+  selection: Accessor<boolean>;
+  setSelection: Setter<boolean>;
+  onSelect: (selected: boolean) => void;
+  isSelected: Accessor<boolean>;
+}
 
-export default function VideoCard(props: Video) {
+export default function VideoCard(props: Props) {
   const isPlaylist = (props.count ?? 0) > 1;
+  const [longPressTimeout, setLongPressTimeout] = createSignal<number | null>(null);
+  let didLongPress = false;
 
   /**
    * Handles the click event to open the video link externally.
    * @param event The mouse event.
    */
   const handleClick = (event: MouseEvent) => {
-    // Prevent the <a> tag's default behavior (like trying to navigate within the app)
-    event.preventDefault();
+    // If this was a long press, ignore the click
+    if (didLongPress) {
+      didLongPress = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
 
-    // Use the Tauri API to open the link in the user's default browser
+    // In selection mode, toggle the selection state
+    if (props.selection()) {
+      event.preventDefault();
+      event.stopPropagation();
+      props.onSelect?.(!props.isSelected());
+      return;
+    }
+
+    // Open the link in the user's default browser
+    event.preventDefault();
     if (props.link) {
       void openUrl(props.link);
     } else {
-      console.warn('VideoCard was clicked, but no link is available in props.');
+      console.warn('VideoCard clicked, but no link is available.');
+    }
+  };
+
+  /**
+   * Handles the start of a long press gesture.
+   */
+  const handleLongPressStart = () => {
+    if (props.setSelection) {
+      const timeout = window.setTimeout(() => {
+        props.setSelection(true);
+        props.onSelect?.(true);
+        didLongPress = true;
+      }, 500);
+      setLongPressTimeout(timeout);
+    }
+  };
+
+  /**
+   * Handles the end of a long press gesture.
+   */
+  const handleLongPressEnd = () => {
+    if (longPressTimeout()) {
+      clearTimeout(longPressTimeout()!);
+      setLongPressTimeout(null);
     }
   };
 
   return (
-    <a
-      class="p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group"
-      style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
-      href={props.link} // Use the actual link for the href attribute
-      onClick={handleClick} // 2. Add the custom click handler
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
+    <div
+      class={`p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden group
+        shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] hover:shadow-[0_16px_64px_0_rgba(0,0,0,0.55)]
+        ${props.selection()
+          ? props.isSelected()
+            ? 'ring-4 ring-primary/60 shadow-none'
+            : 'ring-4 ring-sidebar-light-2/60 shadow-none'
+          : ''}`}
+      onClick={handleClick}
+      onMouseDown={handleLongPressStart}
+      onMouseUp={handleLongPressEnd}
+      onMouseLeave={handleLongPressEnd}
+      onTouchStart={handleLongPressStart}
+      onTouchEnd={handleLongPressEnd}
     >
       <div class="relative bg-background-light-3 rounded-lg shadow-md overflow-hidden aspect-[5/3] w-full group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)] transition-shadow duration-300">
         <div class="absolute inset-0 w-full h-full z-10 bg-gradient-to-t 
@@ -75,6 +127,6 @@ export default function VideoCard(props: Video) {
           </div>
         )}
       </div>
-    </a>
+    </div>
   );
 }

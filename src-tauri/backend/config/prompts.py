@@ -100,35 +100,61 @@ CONTEXT:
 Now, generate the single, raw JSON object for the module "{module_name}" using the CONTEXT. Follow all MANDATORY RULES exactly.
 """
 
-def get_mindmap_user_prompt(module_name: str, syllabus_json: str, context_string: str) -> str:
+def get_mindmap_user_prompt(module_name: str, syllabus_str: str) -> str:
     """
-    Prompt: turn syllabus descriptions + context into concepts.json
-    Output shape:
-    {"concepts":[ {"id":"Concept Name","description":"...", "dependencies":["Other Concept"], "date_learned":""}, ... ]}
+    Generates the improved, example-driven prompt for the LLM.
     """
-    # syllabus_json will be inserted as a JSON string; escape braces for f-string literal.
-    return f"""You are a precise JSON generator that builds a concept graph for a learning roadmap.
+    return f"""
+You are an expert curriculum designer. Your task is to generate a JSON object containing a list of concepts for the module "{module_name}".
 
-INPUT:
-- Module name: "{module_name}"
-- Syllabus JSON: {syllabus_json}
-- Additional Context: {context_string}
+Produce one JSON object: {{ "concepts": [ ... ] }} and nothing else.
 
-TASK:
-- Produce a single JSON object ONLY with key "concepts" whose value is an array of objects.
-- Each object must have:
-  - "id": canonical concept name (Title Case, short)
-  - "description": 10-60 word plain-English explanation the student will read (no sources)
-  - "dependencies": array of "id" strings naming prerequisite concepts (use only concepts present in the syllabus or created by you logically)
-  - "date_learned": "" (leave empty)
-- Provide 30-120 total concepts spanning fundamentals -> advanced where appropriate.
-- Do NOT include duplicate concepts (canonicalize names).
-- The graph SHOULD be acyclic. If you cannot ensure acyclic, return exact JSON: {{"error":"cannot_generate_concepts_graph"}}
-- If you cannot follow the rules, return exact JSON: {{"error":"cannot_generate_concepts_graph"}}
+Each concept object in the list MUST have EXACTLY these keys:
+- "name"            : string (A unique, descriptive title for the concept)
+- "description"     : string (A concise, one-sentence explanation, max 120 chars)
+- "dependencies"    : array of strings (Names of other concepts that are prerequisites. Follow rules below.)
+- "subtopic_number" : string (The syllabus number it relates to, e.g., "1.1", "2.3")
+- "date_learned"    : null (The JSON null literal)
 
-OUTPUT example:
-{{"concepts":[{{"id":"Linear Regression","description":"Short desc...","dependencies":["Statistics Basics"],"date_learned":""}}]}}
-Now generate the single JSON object for the module: "{module_name}".
+Key Guidelines for Dependencies:
+1.  **COUNT**: Each concept should have 0, 1, or at most 2 dependencies. Use an empty list `[]` for foundational concepts.
+2.  **SCOPE**: A dependency MUST be from the *same chapter* or a *PREVIOUS chapter*. For example, a concept from subtopic "3.2" can depend on concepts from "3.1" or "2.4", but NOT from "4.1".
+3.  **VALIDITY**: Every name in a `dependencies` list must exactly match another concept's `name` in this output.
+4.  **LOGIC**: Dependencies must be logical prerequisites. Avoid creating cycles (e.g., A -> B -> A).
+
+Here is a small example of the correct format and logic:
+{{
+  "concepts": [
+    {{
+      "name": "What is a Variable?",
+      "description": "A storage location paired with an associated symbolic name.",
+      "dependencies": [],
+      "subtopic_number": "1.1",
+      "date_learned": null
+    }},
+    {{
+      "name": "Primitive Data Types",
+      "description": "The most basic data types available, such as integers, booleans, and strings.",
+      "dependencies": ["What is a Variable?"],
+      "subtopic_number": "1.2",
+      "date_learned": null
+    }},
+    {{
+      "name": "Using Functions",
+      "description": "A block of code which only runs when it is called to perform an action.",
+      "dependencies": ["Primitive Data Types", "What is a Variable?"],
+      "subtopic_number": "2.1",
+      "date_learned": null
+    }}
+  ]
+}}
+
+Syllabus to process:
+---
+{syllabus_str}
+---
+
+Generate the complete JSON object now.
 """
 
 LLM_PROMPT_TEMPLATE_BASIC = """You are a helpful AI assistant.  

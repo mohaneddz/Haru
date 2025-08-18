@@ -1,6 +1,7 @@
-import { createSignal, onMount } from 'solid-js';
+import { Accessor, createSignal, onMount, Setter, Show, createEffect } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { useNavigate } from '@solidjs/router';
 
 interface Props {
   title: string;
@@ -8,14 +9,28 @@ interface Props {
   link?: string;
   offline?: boolean;
   tags?: string[];
+  selection: Accessor<boolean>;
+  setSelection: Setter<boolean>;
+  onSelect: (selected: boolean) => void;
+  isSelected: Accessor<boolean>;
 }
 
 const DOCUMENT_PLACEHOLDER_IMG = "/default-document.jpg";
 
 export default function DocumentCard(props: Props) {
+
+  const navigate = useNavigate();
+
   const [thumbnail, setThumbnail] = createSignal<string | null>(null);
   const [loading, setLoading] = createSignal(false);
-  const [thumbError, setThumbError] = createSignal(false);
+  const [_, setThumbError] = createSignal(false);
+  const [longPressTimeout, setLongPressTimeout] = createSignal<number | null>(null);
+  
+  // FIX: Use the prop to initialize the local state. This makes the component's
+  // visual state consistent with the parent's state from the start.
+  const [isSelectedForUI, setIsSelectedForUI] = createSignal(props.isSelected());
+
+  let didLongPress = false;
 
   const isLocal = !!props.offline;
   const safeLink = props.link ?? '';
@@ -48,7 +63,7 @@ export default function DocumentCard(props: Props) {
             setThumbnail(data.thumbnail);
           } else {
             if (data.error) // console.warn(`Server error: ${data.error}`);
-            throw new Error('No thumbnail in server response');
+              throw new Error('No thumbnail in server response');
           }
         } catch (err) {
           // console.warn('Backend thumbnail fetch failed, falling back to thum.io:', err);
@@ -69,37 +84,86 @@ export default function DocumentCard(props: Props) {
   const internalHref = `/pdf?path=${encodedLocalPath}`;
 
   const handleClick = (event: MouseEvent) => {
+    if (didLongPress) {
+      didLongPress = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    // FIX: This block is now corrected
+    if (props.selection()) {
+      event.preventDefault();
+      event.stopPropagation(); // Stop the event from propagating further
+      
+      const newState = !isSelectedForUI(); // Determine the new state
+      setIsSelectedForUI(newState);      // Update the local UI state
+      props.onSelect?.(newState);          // Notify the parent component
+      return;
+    }
+
     if (!isLocal && safeLink) {
       event.preventDefault();
       event.stopPropagation();
       void openUrl(safeLink);
+    } else {
+      navigate(internalHref);
     }
   };
 
+  const handleLongPressStart = () => {
+    if (props.setSelection) {
+      const timeout = window.setTimeout(() => {
+        props.setSelection(true);
+        // When long press triggers selection mode, this item should be the first one selected.
+        setIsSelectedForUI(true);
+        props.onSelect?.(true);
+        didLongPress = true;
+      }, 500);
+      setLongPressTimeout(timeout);
+    }
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimeout()) {
+      clearTimeout(longPressTimeout()!);
+      setLongPressTimeout(null);
+    }
+  };
+
+  // Keep in sync with parent selection state
+  createEffect(() => {
+    setIsSelectedForUI(props.isSelected());
+  });
+
   return (
-    <a
-      href={isLocal ? internalHref : 'javascript:void(0)'}
-      class="p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-150 hover:scale-105 active:scale-100 overflow-hidden group w-full max-w-[280px] h-[360px]"
-      target={undefined}
-      rel={undefined}
+    <div
+      class={`cursor-pointer p-0.5 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg shadow-md hover:shadow-lg transition duration-150 hover:scale-105 active:scale-100 overflow-hidden group w-full max-w-[280px] h-[360px] ${props.selection()
+        ? isSelectedForUI()
+          ? 'ring-4 ring-primary/60 shadow-none'
+          : 'ring-4 ring-sidebar-light-2/60 shadow-none'
+        : ''
+        }`}
       onClick={handleClick}
+      onMouseDown={handleLongPressStart}
+      onMouseUp={handleLongPressEnd}
+      onMouseLeave={handleLongPressEnd}
+      onTouchStart={handleLongPressStart}
+      onTouchEnd={handleLongPressEnd}
     >
       <div class="relative rounded-lg overflow-hidden bg-background-light-3 w-full h-full transition-shadow duration-300 group-hover:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)]">
         {thumbnail() ? (
-          // MODIFICATION START: Added a white background container and changed image to object-contain
           <div class="absolute inset-0 w-full h-full bg-white z-0">
             <img
               src={thumbnail()!}
               alt={`${props.title} thumbnail`}
-              class="w-full h-full object-contain" // Changed from 'absolute inset-0... object-cover'
+              class="w-full h-full object-contain"
               onError={() => {
-                // console.warn(`Failed to load thumbnail from: ${thumbnail()}`);
                 setThumbError(true);
                 setThumbnail(DOCUMENT_PLACEHOLDER_IMG);
               }}
             />
           </div>
-          // MODIFICATION END
         ) : (
           <div class="absolute inset-0 w-full h-full bg-sidebar-light-3 z-0 flex items-center justify-center">
             {loading() ? (
@@ -129,8 +193,18 @@ export default function DocumentCard(props: Props) {
           </span>
         </div>
 
+        <Show when={isLocal}>
+          <div class="absolute top-0 left-2 z-20">
+            <span
+              class={`text-[0.6rem] font-medium px-2 py-0.5 bg-black/60 rounded uppercase ${isLocal ? 'text-accent' : 'text-gray-300'}`}
+            >
+              {isLocal ? 'Local' : 'Remote'}
+            </span>
+          </div>
+        </Show>
+
         <div class="absolute bottom-0 left-0 right-0 z-20 px-4 py-4 flex flex-col gap-2 translate-y-8 group-hover:-translate-y-4 transition-transform duration-300">
-          <p class="text-sm text-nowrap  font-bold text-accent line-clamp-2 transition-colors">
+          <p class="text-sm text-nowrap font-bold text-accent line-clamp-2 transition-colors">
             {props.title}
           </p>
           {props.tags && props.tags.length > 0 && (
@@ -149,6 +223,6 @@ export default function DocumentCard(props: Props) {
           )}
         </div>
       </div>
-    </a>
+    </div>
   );
 }

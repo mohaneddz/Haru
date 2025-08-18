@@ -1,7 +1,6 @@
 import asyncio
 import logging
-import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 def sync_ddgs_search(query: str, max_results: int):
     """
@@ -62,57 +61,96 @@ def safe_json_extract(raw: str) -> str:
     """Return substring that starts with first { and ends at last }."""
     start = raw.find('{')
     end = raw.rfind('}')
-    return raw[start:end+1] if (start != -1 and end != -1 and end > start) else raw
+    return raw[start:end+1] if (start != -1 and end != -1 and end > start) else ""
 
-def canonicalize_name(name: str) -> str:
-    s = name.strip()
-    s = re.sub(r'\s+', ' ', s)
-    s = re.sub(r'[^\w\s-]', '', s)  # remove punctuation
-    s = s.title()
-    return s
-
-def make_id(name: str) -> str:
-    return re.sub(r'\W+', '_', name.strip().lower())
-
-def dedupe_concepts(concepts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Merge concepts with same canonical id, preferring longer descriptions."""
-    seen = {}
+def clean_dependencies(concepts: list[dict]) -> list[dict]:
+    """
+    Removes self-references, unmatched dependencies, and duplicates.
+    """
+    name_set = {c["name"] for c in concepts}
     for c in concepts:
-        cid = make_id(c['id'])
-        if cid not in seen:
-            seen[cid] = c
-        else:
-            # merge descriptions, prefer existing if longer
-            if len(c.get('description','')) > len(seen[cid].get('description','')):
-                seen[cid]['description'] = c['description']
-            # merge dependencies
-            deps = set(seen[cid].get('dependencies',[])) | set(c.get('dependencies',[]))
-            seen[cid]['dependencies'] = list(deps)
-    return list(seen.values())
+        if "dependencies" not in c or not isinstance(c["dependencies"], list):
+            c["dependencies"] = []
+            continue
 
-def detect_cycle(concepts: List[Dict[str, Any]]) -> List[str]:
-    """Return cycle nodes if cycle exists, else empty list. Simple DFS."""
-    graph = {make_id(c['id']): [make_id(d) for d in c.get('dependencies',[])] for c in concepts}
-    visited = {}
-    stack = []
-    cycles = []
+        seen = set()
+        unique_deps = []
+        for dep in c["dependencies"]:
+            if dep not in seen and dep != c["name"] and dep in name_set:
+                seen.add(dep)
+                unique_deps.append(dep)
+        c["dependencies"] = unique_deps
+    return concepts
+
+def enforce_dependency_rules(concepts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Enforces that dependencies only refer to concepts in the same or previous chapters
+    and that there are at most 2 dependencies per concept.
+    """
+    concept_to_chapter_map: Dict[str, int] = {}
+    for concept in concepts:
+        try:
+            # Safely parse chapter number (e.g., "1" from "1.2")
+            chapter_num = int(concept.get("subtopic_number", "0.0").split('.')[0])
+            concept_to_chapter_map[concept["name"]] = chapter_num
+        except (ValueError, IndexError):
+            concept_to_chapter_map[concept["name"]] = 0 # Default to 0 on parsing error
+            logging.warning("Could not parse chapter from subtopic: '%s' for concept: '%s'", concept.get("subtopic_number"), concept.get("name"))
+
+    for concept in concepts:
+        current_chapter = concept_to_chapter_map.get(concept["name"], 0)
+        
+        valid_deps: List[str] = []
+        for dep_name in concept.get("dependencies", []):
+            dep_chapter = concept_to_chapter_map.get(dep_name)
+            
+            # Check if dependency exists and its chapter is valid
+            if dep_chapter is not None and dep_chapter <= current_chapter:
+                valid_deps.append(dep_name)
+            else:
+                logging.info(
+                    "Dropping dependency '%s' for concept '%s' due to chapter rule.",
+                    dep_name, concept["name"]
+                )
+        
+        # Enforce the maximum of 2 dependencies
+        if len(valid_deps) > 2:
+            logging.info("Truncating dependencies for concept '%s' to 2.", concept["name"])
+            concept["dependencies"] = valid_deps[:2]
+        else:
+            concept["dependencies"] = valid_deps
+            
+    return concepts
+
+def detect_cycle_by_name(concepts: list[dict]) -> Union[list[str], None]:
+    """
+    Detects cycles in the dependency graph. Returns a list of nodes in the cycle
+    or None if no cycle is found.
+    """
+    graph = {c["name"]: c.get("dependencies", []) for c in concepts}
+    visiting = set()  # Nodes currently in the recursion stack
+    visited = set()   # All nodes that have been fully explored
 
     def dfs(node):
-        if visited.get(node,0) == 1:
-            # found back edge
-            cycles.append(node)
-            return True
-        if visited.get(node,0) == 2:
-            return False
-        visited[node] = 1
-        for nei in graph.get(node,[]):
-            if dfs(nei):
-                return True
-        visited[node] = 2
-        return False
+        visiting.add(node)
+        
+        for neighbor in graph.get(node, []):
+            if neighbor in visiting:
+                # Cycle detected
+                return [node, neighbor]
+            if neighbor not in visited:
+                cycle = dfs(neighbor)
+                if cycle:
+                    # Propagate cycle up
+                    return cycle if cycle[0] == neighbor else [node] + cycle
+        
+        visiting.remove(node)
+        visited.add(node)
+        return None
 
-    for n in graph:
-        if visited.get(n,0) == 0:
-            if dfs(n):
-                break
-    return cycles
+    for node_name in graph:
+        if node_name not in visited:
+            cycle_path = dfs(node_name)
+            if cycle_path:
+                return cycle_path
+    return None    

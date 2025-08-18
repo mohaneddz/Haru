@@ -1,10 +1,10 @@
 import { createSignal, onCleanup } from 'solid-js';
-import { Node, Transform } from '@/types/home/roadmap';
+import { oldNode, Transform } from '@/types/home/roadmap';
 import ConceptTooltip from '@/components/01 - Home/Canvas/ConceptTooltip';
 
-interface Props extends Node {
+interface Props extends oldNode {
   transform: Transform;
-  onMouseDown: (e: MouseEvent, node: Node) => void;
+  onMouseDown: (e: MouseEvent, node: oldNode) => void;
   onTooltipToggle?: (nodeId: string | null) => void;
   activeTooltipId?: string | null;
   onDelete?: (nodeId: string) => void;

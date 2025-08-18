@@ -1,6 +1,8 @@
 import asyncio
 import json
 import logging
+from typing import List, Dict, Any
+
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
@@ -17,7 +19,7 @@ from utils.chat_utils import create_llm_payload,handle_non_streaming_llm_respons
 from utils.search_utils import ddgs_search_async,normalize_url,crawl_webpages_hybrid,process_crawled_results
 from utils.web_utils import ContentExtractor
 
-from utils.document_utils import ddgs_search_full_async, dedupe_concepts, detect_cycle, canonicalize_name, safe_json_extract
+from utils.document_utils import ddgs_search_full_async, detect_cycle_by_name , clean_dependencies, safe_json_extract, enforce_dependency_rules
 from utils.video_utils import (
     extract_video_metadata_from_url,
     is_potential_video_link,
@@ -504,63 +506,126 @@ async def module_syllabus(request: Request):
         logging.error(f"Unexpected error during syllabus generation: {e}")
         return ORJSONResponse(status_code=500, content={"error": "Internal server error during syllabus generation."})
     
-@app.post("/generate-concepts")
-async def generate_concepts(request: Request):
-    payload_body = await request.json()
-    syllabus_json = payload_body.get("syllabus_json")
-    module_name = payload_body.get("module_name", "Module")
-    context_string = payload_body.get("context_string", "")[:20000]
 
-    if not syllabus_json:
-        return ORJSONResponse(status_code=400, content={"error":"syllabus_json is required"})
+@app.post("/module-concepts")
+async def module_concepts(request: Request):
+    try:
+        payload_body = await request.json()
+        module_name = payload_body.get("moduleName")
+        syllabus = payload_body.get("syllabus")
+        if not syllabus or not module_name:
+            return ORJSONResponse(status_code=400, content={"error": "moduleName and syllabus are required"})
+    except json.JSONDecodeError:
+        return ORJSONResponse(status_code=400, content={"error": "Invalid JSON payload"})
 
-    # stringify the syllabus JSON safely
-    syllabus_str = json.dumps(syllabus_json, ensure_ascii=True)
+    logging.info(f"Received concept generation request for module: {module_name}")
+
+    syllabus_str = ""
+    try:
+        for chapter_obj in syllabus:
+            for chapter_title, subtopics_list in chapter_obj.items():
+                syllabus_str += f"Chapter: {chapter_title}\n"
+                for subtopic_obj in subtopics_list:
+                    for subtopic_title, subtopic_desc in subtopic_obj.items():
+                        syllabus_str += f"- {subtopic_title}: {subtopic_desc}\n"
+                syllabus_str += "\n"
+    except Exception as e:
+        logging.error(f"Failed to parse the provided syllabus structure: {e}")
+        return ORJSONResponse(status_code=400, content={"error": "Invalid syllabus format provided."})
 
     messages = [
-        {"role":"system","content":"You are a strict JSON generator that builds concept dependency graphs."},
-        {"role":"user","content": get_mindmap_user_prompt(module_name, syllabus_str, context_string)}
+        {"role": "system", "content": "You are a helpful assistant that generates JSON data for educational concept maps. Follow instructions exactly."},
+        {"role": "user", "content": get_mindmap_user_prompt(module_name, syllabus_str)}
     ]
-    payload = await create_llm_payload(messages, stream=False, llm_config={"model":DEFAULT_MODEL,"temperature":0.15,"max_tokens":8192})
-    raw = ""
+    
+    # --- LLM Call ---
+    payload = await create_llm_payload(
+        messages,
+        stream=False,
+        llm_config={"model": DEFAULT_MODEL, "temperature": 0.1, "max_tokens": 8192}
+    )
+
+    raw_output = ""
     try:
-        resp = await handle_non_streaming_llm_response(http_client, payload, LLAMA_SERVER_URL, retries=1)
-        raw = resp.get("content","").strip()
-        clean = safe_json_extract(raw)
-        parsed = json.loads(clean)
+        resp = await handle_non_streaming_llm_response(
+            http_client, payload, LLAMA_SERVER_URL, retries=1
+        )
+        raw_output = resp.get("content", "").strip()
 
-        # quick validation
-        if parsed.get("error"):
-            return ORJSONResponse(status_code=500, content=parsed)
-
-        concepts = parsed.get("concepts", [])
+        clean_json_str = safe_json_extract(raw_output)
+        parsed_json = json.loads(clean_json_str)
+        concepts = parsed_json.get("concepts", [])
         if not isinstance(concepts, list):
-            raise ValueError("concepts must be a list")
+            raise ValueError("'concepts' key must contain a list")
 
-        # canonicalize & dedupe
+        # --- START: Data Processing Pipeline ---
+
+        # 1. Normalize and Deduplicate
+        normalized: List[Dict[str, Any]] = []
+        seen = set()
         for c in concepts:
-            c['id'] = canonicalize_name(c.get('id',''))
-            c['description'] = c.get('description','').strip()
-            c['dependencies'] = [canonicalize_name(d) for d in c.get('dependencies',[])]
-            c.setdefault('date_learned','')
+            name = " ".join((c.get("name") or "").strip().split())
+            if not name or name.lower() in seen:
+                continue
+            
+            seen.add(name.lower())
+            deps = c.get("dependencies") or []
+            normalized.append({
+                "name": name,
+                "description": (c.get("description") or "").strip(),
+                "dependencies": [d.strip() for d in deps if isinstance(d, str) and d.strip()],
+                "subtopic_number": (c.get("subtopic_number") or "").strip(),
+                "date_learned": None
+            })
 
-        concepts = dedupe_concepts(concepts)
+        # 2. Fix Dependency Name References (case-insensitive)
+        name_map = {c["name"].lower(): c["name"] for c in normalized}
+        for c in normalized:
+            fixed_deps = [name_map.get(d.lower()) for d in c["dependencies"]]
+            c["dependencies"] = [d for d in fixed_deps if d] # Remove None entries for unmatched deps
 
-        cycles = detect_cycle(concepts)
+        # 3. *** THIS IS THE NEW, CRITICAL STEP ***
+        # Enforce the chapter scope and max dependency count rules.
+        processed_concepts = enforce_dependency_rules(normalized)
+
+        # 4. Final Cleanup (remove self-references, unmatched deps, and duplicates)
+        processed_concepts = clean_dependencies(processed_concepts)
+
+        # 5. Cycle Detection
+        cycles = detect_cycle_by_name(processed_concepts)
         if cycles:
             logging.warning("Cycle detected in generated concepts: %s", cycles)
-            # best effort: return with error tag for UI review
-            return ORJSONResponse(status_code=500, content={"error":"cycle_detected_in_concepts", "cycle_nodes": cycles, "concepts": concepts})
+            return ORJSONResponse(
+                content={
+                    "error": "cycle_detected_in_concepts",
+                    "cycle_nodes": cycles,
+                    "concepts": processed_concepts,
+                },
+            )
 
-        # return final concepts.json
-        return ORJSONResponse(content={"concepts": concepts})
+        # 6. Enforce Minimum Count
+        if len(processed_concepts) < 50:
+            logging.warning("Generated too few concepts: %d", len(processed_concepts))
+            return ORJSONResponse(
+                content={
+                    "error": "too_few_concepts",
+                    "message": "LLM returned fewer than the required 50 concepts.",
+                    "count": len(processed_concepts),
+                    "concepts": processed_concepts,
+                },
+            )
+
+        logging.info(f"Successfully generated and validated {len(processed_concepts)} concepts for {module_name}")
+        return ORJSONResponse(content={"concepts": processed_concepts})
+
     except json.JSONDecodeError as e:
         logging.error("Concepts JSON decode failed: %s", e)
-        logging.error("Raw LLM output:\n%s", raw)
-        return ORJSONResponse(status_code=500, content={"error":"The model produced invalid concepts JSON."})
-    except Exception as e:
-        logging.exception("Unexpected error in /generate-concepts")
-        return ORJSONResponse(status_code=500, content={"error":"Internal server error."})
+        logging.error("Raw LLM output:\n%s", raw_output)
+        return ORJSONResponse(status_code=500, content={"error": "The model produced invalid concepts JSON."})
+    except Exception:
+        logging.exception("An unexpected error occurred in /module-concepts")
+        return ORJSONResponse(status_code=500, content={"error": "An internal server error occurred."})
+
 # MAIN ==========================
 
 if __name__ == "__main__":

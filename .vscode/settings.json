@@ -2,9 +2,5 @@
   "emmet.includeLanguages": {
     "typescriptreact": "html",
     "typescript": "html"
-  },
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/chroma_db": true
   }
 }

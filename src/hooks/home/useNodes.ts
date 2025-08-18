@@ -1,9 +1,9 @@
 import { createSignal, onMount } from 'solid-js';
-import { Node, Connection, Transform, MousePosition } from '@/types/home/roadmap';
-import { loadNodesFromCSV } from '@/utils/home/canvas/loadNodes';
+import { oldNode, Connection, Transform, MousePosition } from '@/types/home/roadmap';
+import { loadNodesFromCSV } from '@/utils/home/canvas/nodesUtils';
 
 export function useNodes() {
-    const [nodes, setNodes] = createSignal<Node[]>([]);
+    const [nodes, setNodes] = createSignal<oldNode[]>([]);
     const [connections, setConnections] = createSignal<Connection[]>([]);
     const [draggedNodeId, setDraggedNodeId] = createSignal<string | null>(null);
 
@@ -14,11 +14,9 @@ export function useNodes() {
         setConnections(csvConnections);
     });
 
-    // ... rest of your existing methods ...
-
     const handleNodeMouseDown = (
         e: MouseEvent,
-        node: Node,
+        node: oldNode,
         setLastMouse: (pos: MousePosition) => void,
         canvasRef: HTMLCanvasElement | null
     ): void => {
@@ -58,7 +56,7 @@ export function useNodes() {
         const newX = (canvasRef.width / 2 - transform.x) / transform.scale - 75;
         const newY = (canvasRef.height / 2 - transform.y) / transform.scale - 35;
 
-        const newNode: Node = {
+        const newNode: oldNode = {
             id: `node-${Date.now()}`,
             x: newX,
             y: newY,
@@ -102,6 +100,7 @@ export function useNodes() {
         setNodes,
         connections,
         draggedNodeId,
+        setConnections,
         handleNodeMouseDown,
         handleNodeDrag,
         addNode,

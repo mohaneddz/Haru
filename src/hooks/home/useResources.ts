@@ -1,14 +1,29 @@
 import { createSignal, onMount } from 'solid-js';
 import type { FilterState } from '@/types/misc/filters';
+import {availableTags, availableFields, availableTypes} from '@/config/resourcesFilters';
 
-import { loadVideos, loadTools, loadDocuments, AppendDocumentsFile, AppendVideosFile, AppendToolsFile } from '@/utils/home/courses/resourcessUtils';
+import {
+	loadVideos,
+	loadTools,
+	loadDocuments,
+	AppendDocumentsFile,
+	AppendVideosFile,
+	AppendToolsFile,
+	DeleteDocumentsFile,
+	DeleteVideosFile,
+	DeleteToolsFile,
+} from '@/utils/home/courses/resourcessUtils';
 import type { Document, Video, Tool } from '@/types/home/resource';
 
 export default function useResources() {
-
 	const [showDocuments, setShowDocuments] = createSignal(true);
 	const [showVideos, setShowVideos] = createSignal(true);
 	const [showTools, setShowTools] = createSignal(true);
+
+	const [selection, setSelection] = createSignal<boolean>(false);
+	const [selectedDocuments, setSelectedDocuments] = createSignal<string[]>([]);
+	const [selectedVideos, setSelectedVideos] = createSignal<string[]>([]);
+	const [selectedTools, setSelectedTools] = createSignal<string[]>([]);
 
 	const [filteredDocuments, setFilteredDocuments] = createSignal<Document[] | null>([]);
 	const [filteredVideos, setFilteredVideos] = createSignal<Video[] | null>([]);
@@ -19,7 +34,7 @@ export default function useResources() {
 
 	const [_, setIsLoading] = createSignal(false);
 	const [__, setError] = createSignal<string | null>(null);
-	
+
 	const [appendedDocuments, setAppendedDocuments] = createSignal<boolean>(false);
 	const [appendedVideos, setAppendedVideos] = createSignal<boolean>(false);
 	const [appendedTools, setAppendedTools] = createSignal<boolean>(false);
@@ -75,7 +90,7 @@ export default function useResources() {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				"module_name": moduleName(),
+				module_name: moduleName(),
 			}),
 		};
 		try {
@@ -91,7 +106,9 @@ export default function useResources() {
 		} catch (err) {
 			// 6. Handle network errors or errors thrown from the response check
 			console.error('Failed to search for resources:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+			setError(
+				err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
+			);
 		} finally {
 			// 7. Deactivate loading indicator regardless of outcome
 			setIsLoading(false);
@@ -100,9 +117,11 @@ export default function useResources() {
 
 	async function appendDocuments() {
 		const newDocuments = await searchResources();
+		if (!newDocuments || !Array.isArray(newDocuments)) return;
+
 		const fullDocuments = Array.from(
 			new Map(
-				[...(filteredDocuments() || []), ...newDocuments].map(doc => [doc.link, doc])
+				[...(filteredDocuments() || []), ...newDocuments].map((doc: Document) => [String(doc.link ?? ''), doc])
 			).values()
 		);
 		setFilteredDocuments(fullDocuments);
@@ -122,7 +141,11 @@ export default function useResources() {
 			setAppendedDocuments(false);
 		} catch (err) {
 			console.error('Failed to save documents:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred while saving documents.');
+			setError(
+				err instanceof Error
+					? err.message
+					: 'An unexpected error occurred while saving documents.'
+			);
 		}
 	}
 
@@ -154,7 +177,9 @@ export default function useResources() {
 			return data;
 		} catch (err) {
 			console.error('Failed to search for videos:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+			setError(
+				err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -165,9 +190,7 @@ export default function useResources() {
 		if (!newVideos || !Array.isArray(newVideos)) return;
 
 		const fullVideos = Array.from(
-			new Map(
-				[...(filteredVideos() || []), ...newVideos].map((v: Video) => [v.link, v])
-			).values()
+			new Map([...(filteredVideos() || []), ...newVideos].map((v: Video) => [String(v.link ?? ''), v])).values()
 		);
 		setFilteredVideos(fullVideos);
 		setAppendedVideos(true);
@@ -186,7 +209,9 @@ export default function useResources() {
 			setAppendedVideos(false);
 		} catch (err) {
 			console.error('Failed to save videos:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred while saving videos.');
+			setError(
+				err instanceof Error ? err.message : 'An unexpected error occurred while saving videos.'
+			);
 		}
 	}
 
@@ -218,7 +243,9 @@ export default function useResources() {
 			return data as Tool[];
 		} catch (err) {
 			console.error('Failed to search for tools:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+			setError(
+				err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -229,9 +256,7 @@ export default function useResources() {
 		if (!newTools || !Array.isArray(newTools)) return;
 
 		const fullTools = Array.from(
-			new Map(
-				[...(filteredTools() || []), ...newTools].map((t: Tool) => [t.link, t])
-			).values()
+			new Map([...(filteredTools() || []), ...newTools].map((t: Tool) => [String(t.link ?? ''), t])).values()
 		);
 		setFilteredTools(fullTools);
 		setAppendedTools(true);
@@ -250,68 +275,62 @@ export default function useResources() {
 			setAppendedTools(false);
 		} catch (err) {
 			console.error('Failed to save tools:', err);
-			setError(err instanceof Error ? err.message : 'An unexpected error occurred while saving tools.');
+			setError(
+				err instanceof Error ? err.message : 'An unexpected error occurred while saving tools.'
+			);
 		}
 	}
 
-	const availableTags = [
-		'fundamentals',
-		'course',
-		'exercise',
-		'supplement',
-		'reference',
-		'advanced',
-		'beginner',
-		'matlab',
-		'python',
-		'lab',
-		'theory',
-		'practical',
-		'audio',
-		'biomedical',
-		'communication',
-		'image',
-		'radar',
-		'sensors',
-		'speech',
-		'wireless',
-		'fourier',
-		'filtering',
-		'sampling',
-		'transform',
-		'spectral',
-		'adaptive',
-		'tutorial',
-		'software',
-		'tools',
-		'programming',
-		'simulation',
-	];
+	async function DeleteDocument() {
+		const links = selectedDocuments();
+		if (!links || links.length === 0) {
+			setError('No documents selected for deletion.');
+			return;
+		}
+		try {
+			await DeleteDocumentsFile(parentFolder(), moduleName(), links);
+			// prune from UI (only remove when item has a link and it matches a selected link)
+			setFilteredDocuments((prev) => (prev ?? []).filter(d => !(d.link && links.includes(String(d.link)))));
+			setSelectedDocuments([]);
+			console.log('Documents deleted successfully');
+		} catch (err) {
+			console.error('Failed to delete documents:', err);
+			setError(err instanceof Error ? err.message : 'An unexpected error occurred while deleting documents.');
+		}
+	}
 
-	const availableFields = [
-		'Signal Processing',
-		'Digital Communications',
-		'Biomedical Engineering',
-		'Audio Processing',
-		'Image Processing',
-		'Radar Systems',
-		'Machine Learning',
-		'Software Development',
-		'Mathematics',
-		'Programming',
-	];
+	async function DeleteVideos() {
+		const links = selectedVideos();
+		if (!links || links.length === 0) return;
+		try {
+			await DeleteVideosFile(parentFolder(), moduleName(), links);
+			setFilteredVideos((prev) => (prev ?? []).filter(v => !(v.link && links.includes(String(v.link)))));
+			setSelectedVideos([]);
+			console.log('Videos deleted successfully');
+		} catch (err) {
+			console.error('Failed to delete videos:', err);
+			setError(err instanceof Error ? err.message : 'An unexpected error occurred while deleting videos.');
+		}
+	}
 
-	const availableTypes = [
-		'Exercises',
-		'Book',
-		'Sheet',
-		'Paper',
-		'Notes',
-		'Video',
-		'Playlist',
-		'Software',
-		'Tool',
-	];
+	async function DeleteTools() {
+		const links = selectedTools();
+		if (!links || links.length === 0) return;
+		try {
+			await DeleteToolsFile(parentFolder(), moduleName(), links);
+			setFilteredTools((prev) => (prev ?? []).filter(t => !(t.link && links.includes(String(t.link)))));
+			setSelectedTools([]);
+			console.log('Tools deleted successfully');
+		} catch (err) {
+			console.error('Failed to delete tools:', err);
+			setError(err instanceof Error ? err.message : 'An unexpected error occurred while deleting tools.');
+		}
+	}
+
+	async function DeleteSelection() {
+		await Promise.all([DeleteDocument(), DeleteVideos(), DeleteTools()]);
+		setSelection(false);
+	}
 
 	return {
 		showDocuments,
@@ -342,6 +361,12 @@ export default function useResources() {
 		saveTools,
 		appendedDocuments,
 		appendedVideos,
-		appendedTools
+		appendedTools,
+		selection,
+		setSelection,
+		DeleteSelection,
+		selectedDocuments, setSelectedDocuments,
+		selectedVideos, setSelectedVideos,
+		selectedTools, setSelectedTools,
 	};
 }

@@ -1,0 +1,259 @@
+{
+    "error": "too_few_concepts",
+    "message": "LLM returned fewer than the required 50 concepts.",
+    "count": 36,
+    "concepts": [
+        {
+            "name": "Introduction to Computer Vision",
+            "description": "A field of Artificial Intelligence focused on enabling computers to interpret images and videos.",
+            "dependencies": [],
+            "subtopic_number": "1.0",
+            "date_learned": null
+        },
+        {
+            "name": "What is Computer Vision?",
+            "description": "Computer vision aims to mimic human visual perception by allowing computers to ‘see’ and interpret images.",
+            "dependencies": [],
+            "subtopic_number": "1.1",
+            "date_learned": null
+        },
+        {
+            "name": "Historical Development of Computer Vision",
+            "description": "Computer vision has evolved from early pattern recognition to modern deep learning techniques.",
+            "dependencies": [],
+            "subtopic_number": "1.2",
+            "date_learned": null
+        },
+        {
+            "name": "Applications of Computer Vision",
+            "description": "Computer vision is used in diverse industries like self-driving cars, medical imaging, and security systems.",
+            "dependencies": [],
+            "subtopic_number": "1.3",
+            "date_learned": null
+        },
+        {
+            "name": "Fundamental Image Concepts",
+            "description": "Understanding basic image elements such as pixels, images, features, and their representations.",
+            "dependencies": [],
+            "subtopic_number": "1.4",
+            "date_learned": null
+        },
+        {
+            "name": "Image Formation Processes",
+            "description": "Learning how images are created using cameras and various sensors.",
+            "dependencies": [],
+            "subtopic_number": "1.5",
+            "date_learned": null
+        },
+        {
+            "name": "Digital Image Representation",
+            "description": "How images are represented digitally using pixels and color models.",
+            "dependencies": [],
+            "subtopic_number": "2.1",
+            "date_learned": null
+        },
+        {
+            "name": "Color Models in Images",
+            "description": "Understanding different color models like RGB and grayscale used in digital images.",
+            "dependencies": [],
+            "subtopic_number": "2.2",
+            "date_learned": null
+        },
+        {
+            "name": "Image Filtering Techniques",
+            "description": "Smoothing, sharpening, and edge detection filters applied to images.",
+            "dependencies": [],
+            "subtopic_number": "2.3",
+            "date_learned": null
+        },
+        {
+            "name": "Image Segmentation Methods",
+            "description": "Dividing an image into meaningful regions or segments.",
+            "dependencies": [],
+            "subtopic_number": "2.4",
+            "date_learned": null
+        },
+        {
+            "name": "Image Enhancement Techniques",
+            "description": "Improving image quality through contrast and brightness adjustments.",
+            "dependencies": [],
+            "subtopic_number": "2.5",
+            "date_learned": null
+        },
+        {
+            "name": "Image Compression Methods",
+            "description": "Lossy and lossless compression techniques like JPEG and PNG.",
+            "dependencies": [],
+            "subtopic_number": "2.5",
+            "date_learned": null
+        },
+        {
+            "name": "Edge Detection Algorithms",
+            "description": "Algorithms used to identify edges in images, such as Canny and Sobel.",
+            "dependencies": [],
+            "subtopic_number": "3.1",
+            "date_learned": null
+        },
+        {
+            "name": "Corner Detection Methods",
+            "description": "Detecting corners and keypoints in images using the Harris corner detector.",
+            "dependencies": [],
+            "subtopic_number": "3.2",
+            "date_learned": null
+        },
+        {
+            "name": "Image Feature Descriptors",
+            "description": "Generating descriptors to represent image features, like SIFT and SURF.",
+            "dependencies": [],
+            "subtopic_number": "3.3",
+            "date_learned": null
+        },
+        {
+            "name": "Feature Matching Algorithms",
+            "description": "Algorithms for matching features between different images, such as Brute-Force and FLANN.",
+            "dependencies": [],
+            "subtopic_number": "3.4",
+            "date_learned": null
+        },
+        {
+            "name": "Template Matching Technique",
+            "description": "Locating instances of a template image within a larger image.",
+            "dependencies": [],
+            "subtopic_number": "3.5",
+            "date_learned": null
+        },
+        {
+            "name": "Camera Models – Pinhole Camera",
+            "description": "Understanding the pinhole camera model, a fundamental concept in camera geometry.",
+            "dependencies": [],
+            "subtopic_number": "4.1",
+            "date_learned": null
+        },
+        {
+            "name": "Camera Models – Perspective Camera",
+            "description": "Understanding the perspective camera model, a more realistic representation of cameras.",
+            "dependencies": [],
+            "subtopic_number": "4.2",
+            "date_learned": null
+        },
+        {
+            "name": "Camera Calibration Process",
+            "description": "Determining the camera parameters like focal length and principal point.",
+            "dependencies": [],
+            "subtopic_number": "4.3",
+            "date_learned": null
+        },
+        {
+            "name": "Stereo Vision – Depth Estimation",
+            "description": "Using multiple cameras to estimate depth information in a scene.",
+            "dependencies": [],
+            "subtopic_number": "4.4",
+            "date_learned": null
+        },
+        {
+            "name": "Camera Motion Estimation",
+            "description": "Estimating the movement of a camera from video sequences.",
+            "dependencies": [],
+            "subtopic_number": "4.5",
+            "date_learned": null
+        },
+        {
+            "name": "Camera Tracking Techniques",
+            "description": "Tracking the position of a camera within a scene using video sequences.",
+            "dependencies": [],
+            "subtopic_number": "4.5",
+            "date_learned": null
+        },
+        {
+            "name": "Convolutional Neural Networks (CNNs)",
+            "description": "Introduction to CNNs and their architecture, a core component of deep learning for computer vision.",
+            "dependencies": [],
+            "subtopic_number": "5.1",
+            "date_learned": null
+        },
+        {
+            "name": "CNN Architectures – AlexNet",
+            "description": "Overview of the AlexNet CNN architecture, a pioneering deep learning model.",
+            "dependencies": [],
+            "subtopic_number": "5.2",
+            "date_learned": null
+        },
+        {
+            "name": "CNN Architectures – VGG",
+            "description": "Overview of the VGG CNN architecture, known for its simplicity and effectiveness.",
+            "dependencies": [],
+            "subtopic_number": "5.3",
+            "date_learned": null
+        },
+        {
+            "name": "CNN Architectures – ResNet",
+            "description": "Overview of the ResNet CNN architecture, addressing the vanishing gradient problem.",
+            "dependencies": [],
+            "subtopic_number": "5.4",
+            "date_learned": null
+        },
+        {
+            "name": "Image Classification with CNNs",
+            "description": "Training CNNs to classify images into different categories.",
+            "dependencies": [],
+            "subtopic_number": "5.3",
+            "date_learned": null
+        },
+        {
+            "name": "Object Detection with CNNs",
+            "description": "Introduction to object detection techniques using CNNs, such as YOLO and Faster R-CNN.",
+            "dependencies": [],
+            "subtopic_number": "5.4",
+            "date_learned": null
+        },
+        {
+            "name": "Semantic Image Segmentation with CNNs",
+            "description": "Using CNNs for semantic segmentation, assigning a class label to each pixel in an image.",
+            "dependencies": [],
+            "subtopic_number": "5.5",
+            "date_learned": null
+        },
+        {
+            "name": "Generative Adversarial Networks (GANs)",
+            "description": "Introduction to GANs, a type of generative model used for creating new data similar to the training data.",
+            "dependencies": [],
+            "subtopic_number": "6.1",
+            "date_learned": null
+        },
+        {
+            "name": "Variational Autoencoders (VAEs)",
+            "description": "Introduction to VAEs, another type of generative model that learns a probabilistic representation of the data.",
+            "dependencies": [],
+            "subtopic_number": "6.2",
+            "date_learned": null
+        },
+        {
+            "name": "Neural Scene Representations",
+            "description": "Learning representations of 3D scenes from images using neural networks.",
+            "dependencies": [],
+            "subtopic_number": "6.3",
+            "date_learned": null
+        },
+        {
+            "name": "Optical Flow Estimation",
+            "description": "Estimating the motion vectors in a video sequence using optical flow techniques.",
+            "dependencies": [],
+            "subtopic_number": "6.4",
+            "date_learned": null
+        },
+        {
+            "name": "Visual Tracking",
+            "description": "Tracking the movement of objects in video sequences using visual cues.",
+            "dependencies": [],
+            "subtopic_number": "6.5",
+            "date_learned": null
+        },
+        {
+            "name": "Robotics and Computer Vision Integration",
+            "description": "Combining computer vision with robotics for perception and control in robotic systems.",
+            "dependencies": [],
+            "subtopic_number": "6.6",
+            "date_learned": null
+        }
+    ]
+}

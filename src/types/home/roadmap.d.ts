@@ -10,7 +10,7 @@ export interface MousePosition {
 	y: number;
 }
 
-export interface Node {
+export interface oldNode {
 	id: string;
 	x: number;
 	y: number;
@@ -20,6 +20,15 @@ export interface Node {
 	learned?: boolean;
 	learnedDate?: Date;
 	details?: string;
+}
+
+export interface Node{
+	id: string;
+	name: string;
+	description: string;
+	dependencies?: string[];
+	sub_topic_num?: string;
+	learnedDate?: Date;
 }
 
 export interface Connection {

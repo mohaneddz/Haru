@@ -19,37 +19,37 @@ export default function Concept(props: Props) {
   let hoverTimeout: ReturnType<typeof setTimeout>;
 
   const isTooltipPinned = () => props.activeTooltipId === props.id;
-  const shouldShowTooltip = () => 
-    !isDragging() && 
-    !props.draggedNodeId && 
+  const shouldShowTooltip = () =>
+    !isDragging() &&
+    !props.draggedNodeId &&
     (isHovered() || isTooltipPinned());
 
   const handleMouseDown = (e: MouseEvent) => {
     // Handle different mouse buttons
     if (e.button === 0) { // Left click
       e.stopPropagation();
-      
+
       setIsDragging(true);
       setIsHovered(false);
       clearTimeout(hoverTimeout);
-      
+
       if (isTooltipPinned()) {
         props.onTooltipToggle?.(null);
       } else {
         props.onTooltipToggle?.(props.id);
       }
-      
+
       props.onMouseDown(e, props);
     } else if (e.button === 1) { // Middle click
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Delete the node
       props.onDelete?.(props.id);
     } else if (e.button === 2) { // Right click
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Toggle learned status
       if (props.learned) {
         props.onMarkNotLearned?.(props.id);
@@ -88,7 +88,7 @@ export default function Concept(props: Props) {
 
   const getNodeClasses = () => {
     const baseClasses = "absolute flex cursor-grab hover:cursor-grab active:cursor-grabbing rounded-md z-10 select-none justify-center items-center text-center";
-    
+
     if (props.learned) {
       return `${baseClasses} bg-accent hover:bg-accent-dark-1 active:brightness-90`;
     } else {
@@ -99,14 +99,14 @@ export default function Concept(props: Props) {
   return (
     <>
       <div
-        class={getNodeClasses()}
+        class={`${getNodeClasses()} absolute flex cursor-grab active:cursor-grabbing rounded-md z-10 select-none justify-center items-center text-center border border-white text-sm leading-[1.2] whitespace-normal break-words capitalize p-2`}
         style={{
           left: `${props.transform.x + props.x * props.transform.scale}px`,
           top: `${props.transform.y + props.y * props.transform.scale}px`,
           width: `${props.width * props.transform.scale}px`,
-          height: `${props.height * props.transform.scale}px`,
-          border: `${1 / props.transform.scale}px solid #FFFFFF`,
+          'min-height': `${props.height * props.transform.scale}px`,
           'font-size': `${14 * props.transform.scale}px`,
+          padding: `${8 * props.transform.scale}px`,
         }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -133,4 +133,5 @@ export default function Concept(props: Props) {
       )}
     </>
   );
+
 };

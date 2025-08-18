@@ -1,9 +1,13 @@
-import Concept from '@/components/01 - Home/Canvas/Concept';
+import Concept from '@/components/01 - Home/Canvas/ConceptNode';
 import CanvasControls from '@/components/01 - Home/Canvas/CanvasControls';
 import CanvasToolbar from '@/components/01 - Home/Canvas/CanvasToolbar';
 
 import useProgress from '@/hooks/home/useProgress';
+
 import Earth from 'lucide-solid/icons/earth';
+import Check from 'lucide-solid/icons/check';
+
+import { Show } from 'solid-js';
 
 export default function Progress() {
   const {
@@ -17,7 +21,9 @@ export default function Progress() {
     handleDeleteNode,
     handleMarkNotLearned,
     handleMarkLearned,
-    createConcepts
+    createConcepts,
+    changed,
+    saveConcepts,
   } = useProgress();
 
   return (
@@ -57,10 +63,24 @@ export default function Progress() {
           }}
         />
       </div>
-      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-8 bg-primary rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
-        onclick={createConcepts}>
-        <Earth class="w-6 h-6 text-text " />
-      </div>
+      <Show
+        when={changed()}
+        fallback={
+          <div
+            class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-8 bg-primary rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+            onClick={createConcepts}
+          >
+            <Earth class="w-6 h-6 text-text " />
+          </div>
+        }
+      >
+        <div
+          class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-12 right-8 bg-primary rounded-full p-2 hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200"
+          onClick={saveConcepts}
+        >
+          <Check class="w-6 h-6 text-text " />
+        </div>
+      </Show>
     </div>
   );
 }

@@ -294,19 +294,35 @@ async def build_llm_payload(search_context: str, query: str, original_payload: d
     
     user_prompt = "\n".join(user_prompt_parts)
 
-    # 3. Assemble the final messages list
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
-    ]
+    # Normalize and include last 10 history messages (if provided)
+    raw_history = (original_payload.get("messages") or original_payload.get("history") or [])
+    recent_history = raw_history[-10:] if isinstance(raw_history, list) else []
+
+    def _normalize_msg(msg: dict) -> dict:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if isinstance(content, list):
+            parts = [p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") in ("text", "input_text")]
+            content = " ".join(parts)
+        # cap length to avoid overly long turns
+        return {
+            "role": role if role in ("user", "assistant", "system") else "user",
+            "content": str(content)[:1000]
+        }
+
+    normalized_history = [_normalize_msg(m) for m in recent_history if isinstance(m, dict) and m.get("content") is not None]
+
+    # 3. Assemble the final messages list with history before the final prompt
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.extend(normalized_history)
+    messages.append({"role": "user", "content": user_prompt})
 
     # 4. Construct the final payload, respecting parameters from the original request
-    # This allows users to specify things like temperature, max_tokens, or a specific model.
     llm_payload = {
-        "model": original_payload.get("model", "mistral-large-latest"), # Fallback to a default
+        "model": original_payload.get("model", "mistral-large-latest"),
         "messages": messages,
-        "temperature": original_payload.get("temperature", 0.2), # Lower temp for more factual answers
-        "max_tokens": original_payload.get("max_tokens", 1500), # Allow for longer, detailed answers
+        "temperature": original_payload.get("temperature", 0.2),
+        "max_tokens": original_payload.get("max_tokens", 1500),
         "stream": original_payload.get("stream", False)
     }
 

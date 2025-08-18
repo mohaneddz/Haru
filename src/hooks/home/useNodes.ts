@@ -1,18 +1,10 @@
-import { createSignal, onMount } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { oldNode, Connection, Transform, MousePosition } from '@/types/home/roadmap';
-import { loadNodesFromCSV } from '@/utils/home/canvas/nodesUtils';
 
 export function useNodes() {
     const [nodes, setNodes] = createSignal<oldNode[]>([]);
     const [connections, setConnections] = createSignal<Connection[]>([]);
     const [draggedNodeId, setDraggedNodeId] = createSignal<string | null>(null);
-
-    // Load nodes from CSV on mount
-    onMount(async () => {
-        const { nodes: csvNodes, connections: csvConnections } = await loadNodesFromCSV();
-        setNodes(csvNodes);
-        setConnections(csvConnections);
-    });
 
     const handleNodeMouseDown = (
         e: MouseEvent,

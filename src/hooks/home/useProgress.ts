@@ -5,12 +5,21 @@ import { oldNode } from '@/types/home/roadmap';
 
 // Corrected imports as you provided
 import { CanvasRenderer } from '@/utils/home/canvas/canvaUtils';
-import { processConceptData } from '@/utils/home/canvas/nodesUtils';
+import { processConceptData, loadConceptsData, saveConceptsData as writeConceptsData, BackendConcept } from '@/utils/home/canvas/nodesUtils';
 import { loadSyllabusFile } from '@/utils/home/courses/syllabusUtils';
 
 export default function useProgress() {
+
 	const [moduleName, setModuleName] = createSignal('');
 	const [parentFolder, setParentFolder] = createSignal('');
+	const [changed, setChanged] = createSignal(false);
+
+	// We keep concepts only when needed; no need to read the signal value
+	const [, setConcepts] = createSignal<BackendConcept[]>([]);
+
+	// Make node manager available before we load on mount
+	const canvas = useCanvas();
+	const nodeManager = useNodes();
 
 	onMount(() => {
 		const segments = location.pathname.split('/').filter(Boolean);
@@ -23,14 +32,64 @@ export default function useProgress() {
 			const parentname = pathParts.pop() || '';
 			setModuleName(modulename);
 			setParentFolder(parentname);
+
+			// Load saved concepts on mount
+			void (async () => {
+				try {
+					const loaded = await loadConceptsData(parentname, modulename);
+					if (Array.isArray(loaded) && loaded.length > 0) {
+						setConcepts(loaded);
+						const { nodes, connections } = processConceptData({ concepts: loaded });
+						nodeManager.setNodes(nodes);
+						nodeManager.setConnections(connections);
+						setChanged(false);
+					}
+				} catch (e) {
+					console.error('Failed to initialize concepts from disk:', e);
+				}
+			})();
 		}
 	});
 
-	const canvas = useCanvas();
-	const nodeManager = useNodes();
 	const [activeTooltipId, setActiveTooltipId] = createSignal<string | null>(null);
 
 	let renderer: CanvasRenderer | null = null;
+
+	// Helper to build BackendConcept[] from current state
+	const buildConceptsFromState = (): BackendConcept[] => {
+		const n = nodeManager.nodes();
+		const c = nodeManager.connections();
+
+		// Build dependency map: toNodeId -> [fromNodeIds]
+		const deps = new Map<string, string[]>();
+		for (const conn of c) {
+			const arr = deps.get(conn.toNodeId) ?? [];
+			arr.push(conn.fromNodeId);
+			deps.set(conn.toNodeId, arr);
+		}
+
+		return n.map((node) => ({
+			name: node.text ?? '',
+			description: node.details ?? '',
+			dependencies: deps.get(node.id) ?? [],
+			subtopic_number: node.id,
+			date_learned: node.learned
+				? (node.learnedDate ? node.learnedDate.toISOString() : new Date().toISOString())
+				: null,
+		}));
+	};
+
+	// Persist full concepts when user confirms
+	async function saveConcepts() {
+		try {
+			const concepts = buildConceptsFromState();
+			await writeConceptsData(parentFolder(), moduleName(), concepts);
+			setConcepts(concepts);
+			setChanged(false);
+		} catch (e) {
+			console.error('Failed to save concepts:', e);
+		}
+	}
 
 	// --- Event Handlers ---
 	const handleMouseMove = (e: MouseEvent): void => {
@@ -69,16 +128,33 @@ export default function useProgress() {
 	const handleDeleteNode = (nodeId: string): void => {
 		nodeManager.deleteNode(nodeId);
 		setActiveTooltipId(null);
+		// Do not auto-save deletes unless confirmed via check
 	};
 
-	const handleMarkNotLearned = (nodeId: string): void => {
+	const handleMarkNotLearned = async (nodeId: string): Promise<void> => {
 		nodeManager.markAsNotLearned(nodeId);
 		setActiveTooltipId(null);
+		// Persist learned status immediately
+		try {
+			const concepts = buildConceptsFromState();
+			await writeConceptsData(parentFolder(), moduleName(), concepts);
+			setConcepts(concepts);
+		} catch (e) {
+			console.error('Failed to persist learned status:', e);
+		}
 	};
 
-	const handleMarkLearned = (nodeId: string): void => {
+	const handleMarkLearned = async (nodeId: string): Promise<void> => {
 		nodeManager.markAsLearned(nodeId);
 		setActiveTooltipId(null);
+		// Persist learned status immediately
+		try {
+			const concepts = buildConceptsFromState();
+			await writeConceptsData(parentFolder(), moduleName(), concepts);
+			setConcepts(concepts);
+		} catch (e) {
+			console.error('Failed to persist learned status:', e);
+		}
 	};
 
 	// --- Canvas Drawing ---
@@ -184,6 +260,9 @@ export default function useProgress() {
 			const data = await response.json();
 			
 			if (data && data.concepts) {
+				// Store concepts and render nodes
+				setChanged(true);
+				setConcepts(data.concepts as BackendConcept[]);
 				const { nodes, connections } = processConceptData(data);
 				nodeManager.setNodes(nodes);
 				nodeManager.setConnections(connections);
@@ -208,5 +287,7 @@ export default function useProgress() {
 		handleMarkNotLearned,
 		handleMarkLearned,
 		createConcepts,
+		changed,
+		saveConcepts,
 	};
 }

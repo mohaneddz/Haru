@@ -30,7 +30,7 @@ export default function useTutor() {
 	let abortController = new AbortController();
 
 	// LLM helpers (moved here via hook)
-	const { appendMasterPrompt, buildHistoryForBackend, processStreamedResponse } = useLLM();
+	const { buildHistoryForBackend, processStreamedResponse } = useLLM();
 
 	// Small formatter used when updating the assistant message text while streaming
 	const formatTextWithCitations = (text: string): string => {
@@ -65,7 +65,6 @@ export default function useTutor() {
 		abortController.abort();
 		if (voice()) stopVoiceServices();
 	});
-
 
 	async function handleBackendError(response: Response, botMessageId: number) {
 		const errorText = await response.text();
@@ -104,14 +103,16 @@ export default function useTutor() {
 	async function sendQueryWithSources(
 		endpoint: '/rag' | '/ask_search',
 		messageText: string,
-		signal: AbortSignal
+		signal: AbortSignal,
+		history?: { role: string; content: string }[] // added
 	) {
 		const botMessageId = getNextId();
 		appendBotMessage(botMessageId);
-		const body =
-			endpoint === '/rag'
-				? { query: messageText, stream: true }
-				: { prompt: messageText, stream: true };
+		const body = {
+			query: messageText,
+			stream: true,
+			messages: history ?? [], // include history for rephrasing
+		};
 
 		let port = 5000;
 		if (endpoint === '/rag') port = 5001;
@@ -131,14 +132,22 @@ export default function useTutor() {
 			await processStreamedResponse(response, signal, {
 				onSources: (payload) => {
 					setMessages((prev) =>
-						prev.map((m) => (m.id === botMessageId ? { ...m, sources: payload } : m))
+						prev.map((m) =>
+							m.id === botMessageId ? { ...m, sources: payload } : m
+						)
 					);
 				},
 				onToken: (newRawText) => {
 					setMessages((prev) =>
 						prev.map((m) =>
 							m.id === botMessageId
-								? { ...m, rawText: newRawText, text: formatTextWithCitations(newRawText) }
+								? {
+										...m,
+										rawText: newRawText,
+										text: formatTextWithCitations(
+											newRawText
+										),
+								  }
 								: m
 						)
 					);
@@ -176,14 +185,22 @@ export default function useTutor() {
 			await processStreamedResponse(response, signal, {
 				onSources: (payload) => {
 					setMessages((prev) =>
-						prev.map((m) => (m.id === botMessageId ? { ...m, sources: payload } : m))
+						prev.map((m) =>
+							m.id === botMessageId ? { ...m, sources: payload } : m
+						)
 					);
 				},
 				onToken: (newRawText) => {
 					setMessages((prev) =>
 						prev.map((m) =>
 							m.id === botMessageId
-								? { ...m, rawText: newRawText, text: formatTextWithCitations(newRawText) }
+								? {
+										...m,
+										rawText: newRawText,
+										text: formatTextWithCitations(
+											newRawText
+										),
+								  }
 								: m
 						)
 					);
@@ -222,9 +239,12 @@ export default function useTutor() {
 
 		try {
 			if (rag()) {
-				await sendQueryWithSources('/rag', messageText, signal);
+				// Build history for backend and pass to /rag
+				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1));
+				await sendQueryWithSources('/rag', messageText, signal, historyForBackend);
 			} else if (web()) {
-				await sendQueryWithSources('/ask_search', messageText, signal);
+				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1));
+				await sendQueryWithSources('/ask_search', messageText, signal, historyForBackend); // pass it in
 			} else {
 				const historyForBackend = buildHistoryForBackend(currentMessages.slice(0, -1));
 				await sendStandardQuestion(messageText, historyForBackend, signal, messagePaths);
@@ -294,17 +314,14 @@ export default function useTutor() {
 		setMode,
 		web,
 		rag,
-		toggleWeb,
-		toggleRag,
-
-		// Voice state and actions
-		voice,
-		toggleVoice,
 		transcript,
 		voiceStatus,
-
 		// aliases
 		deleteImage: removeImage,
 		deleteAllImages: clearImages,
+		voice,
+		toggleVoice,
+		toggleWeb,
+		toggleRag,
 	};
 }

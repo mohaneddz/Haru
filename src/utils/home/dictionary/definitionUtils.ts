@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 export const loadDefinitions = async () => {
     try {
-        const csvText = await invoke('read_file', { path: 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Dictionary\\definitions.csv' }) as string;
+        const csvText = await invoke('read_file', { path: 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Dictionary\\definitions.csv' }) as string;
         const lines = csvText.trim().split('\n');
 
         // Skip the header line

@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 export async function loadCourseData(parent: string, course: string): Promise<CourseInfo> {
 	try {
-		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent}\\${course}`;
+		const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent}\\${course}`;
 		const fullpath = `${path}\\metadata.json`;
 		// console.log('Path:', fullpath);
 		const metadataResponse = await invoke('read_file', { path: fullpath });
@@ -37,7 +37,7 @@ export async function loadCourseData(parent: string, course: string): Promise<Co
 
 export async function loadCourses(folder: string): Promise<CourseInfo[]> {
 	const title = folder.toLocaleLowerCase();
-	const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${title}`;
+	const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${title}`;
 	try {
 		const response: string[] = await invoke('read_dir_recursive', { path });
 
@@ -78,7 +78,7 @@ export async function loadCourses(folder: string): Promise<CourseInfo[]> {
 }
 
 export async function loadCoursesSections(): Promise<string[]> {
-	const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules`;
+	const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules`;
 
 	try {
 		const response: string[] = await invoke('read_dir_recursive', { path, depth: 2 });

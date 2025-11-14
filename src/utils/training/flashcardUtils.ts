@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 export const loadFlashDecks = async () => {
     try {
         // read the decks.json
-        const data = await invoke('read_file', { path: 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Flashcards\\decks.json' }) as string;
+        const data = await invoke('read_file', { path: 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Flashcards\\decks.json' }) as string;
         console.log(`Loaded flash decks data: ${data}`);
         const decks = JSON.parse(data);
         console.log(`Loaded flash decks: ${JSON.stringify(decks)}`);
@@ -16,7 +16,7 @@ export const loadFlashDecks = async () => {
 
 export const loadFlashcards = async (id: number) => {
     try {
-        const csvText = await invoke('read_file', { path: `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Flashcards\\${id}.csv` }) as string;
+        const csvText = await invoke('read_file', { path: `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Flashcards\\${id}.csv` }) as string;
         const lines = csvText.trim().split('\n');
 
         // Skip the header line

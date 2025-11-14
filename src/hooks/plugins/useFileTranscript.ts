@@ -149,7 +149,7 @@ export default function useTranscript() {
 
 	async function saveTranscript() {
 		try {
-			const dir = 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Transcripts';
+			const dir = 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Transcripts';
 			// get the name of the file from it's original path
 			const fileName = filePath().split('\\').pop()?.split('.').shift() + `.md` || 'Transcript';
 			const savePath: string = await invoke('create_file', { dir });

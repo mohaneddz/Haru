@@ -34,7 +34,7 @@ export default function DocumentCard(props: Props) {
 
   const isLocal = !!props.offline;
   const safeLink = props.link ?? '';
-  const examplePdf = 'D:\\Programming\\Projects\\Tauri\\haru\\public\\pdf\\example.pdf';
+  const examplePdf = 'D:\\Programming\\Tauri\\haru\\public\\pdf\\example.pdf';
   const localPdfPath = isLocal ? (safeLink || examplePdf) : '';
 
   onMount(async () => {

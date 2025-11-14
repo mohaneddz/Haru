@@ -11,15 +11,15 @@ static TTS_PROCESS: OnceCell<Mutex<Option<Child>>> = OnceCell::new();
 static STT_PROCESS: OnceCell<Mutex<Option<Child>>> = OnceCell::new();
 
 // adjust this if your backend folder is elsewhere
-const BACKEND_DIR: &str = r"D:\Programming\Projects\Tauri\haru\src-tauri\backend";
+const BACKEND_DIR: &str = r"D:\Programming\Tauri\haru\src-tauri\backend";
 
 #[tauri::command]
 pub async fn run_fasttext() -> Result<String, String> {
-    let output = Command::new(r"D:\Programming\Projects\Tauri\haru\src-tauri\models\fasttext.exe")
+    let output = Command::new(r"D:\Programming\Tauri\haru\src-tauri\models\fasttext.exe")
         .args([
             "predict",
-            r"D:\Programming\Projects\Tauri\haru\src-tauri\weights\model.bin",
-            r"D:\Programming\Projects\Tauri\haru\src-tauri\weights\input.txt",
+            r"D:\Programming\Tauri\haru\src-tauri\weights\model.bin",
+            r"D:\Programming\Tauri\haru\src-tauri\weights\input.txt",
         ])
         .output()
         .await
@@ -49,15 +49,15 @@ pub async fn run_app(process: String, port: Option<u16>, multimodel: Option<bool
             return Err("LLM is already running".to_string());
         }
 
-        let mut cmd = Command::new(r"D:\Programming\Projects\Tauri\haru\src-tauri\lib\llama-server.exe");
+        let mut cmd = Command::new(r"D:\Programming\Tauri\haru\src-tauri\lib\llama-server.exe");
         let mut args = vec![
             "-m",
-            r"D:\Programming\Projects\Tauri\haru\src-tauri\weights\gemma-3-4b-it-q4_0.gguf",
+            r"D:\Programming\Tauri\haru\src-tauri\weights\gemma-3-4b-it-q4_0.gguf",
         ];
 
         if multimodel.unwrap_or(false) {
             args.push("--mmproj");
-            args.push(r"D:\Programming\Projects\Tauri\haru\src-tauri\weights\mmproj-model-f16-4B.gguf");
+            args.push(r"D:\Programming\Tauri\haru\src-tauri\weights\mmproj-model-f16-4B.gguf");
         }
 
         args.extend(&["-ngl", "99", "-c", "8192", "-t", "6"]);

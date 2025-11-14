@@ -6,7 +6,7 @@ type Chapter = Record<string, Array<Record<string, string>>>;
 
 export async function loadSyllabusFile(parent: string, courseName: string): Promise<Chapter[] | null> {
     const name = courseName.toLowerCase().replace(/-/g, ' ');
-    const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\metadata.json`;
+    const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\metadata.json`;
     
     try {
         console.log(path);
@@ -28,7 +28,7 @@ export async function loadSyllabusFile(parent: string, courseName: string): Prom
 
 export async function saveSyllabusFile(parent: string, courseName: string, dataToSave: Syllabus): Promise<void> {
     const name = courseName.toLowerCase().replace(/-/g, ' ');
-    const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\metadata.json`;
+    const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${parent ? parent + '\\' + name : name}\\metadata.json`;
 
     try {
         const response = await invoke('read_file', { path });

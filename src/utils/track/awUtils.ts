@@ -85,6 +85,23 @@ async function getEventsFromDb(start: Date, end: Date): Promise<CategorizedEvent
 	return result.map((row) => ({ ...row, data: JSON.parse(row.data) }));
 }
 
+// New helper: write a FastText input file generated from DB events for a time window
+async function createFastTextInputFileFromDb(start: Date, end: Date): Promise<void> {
+	try {
+		const dbEvents = await getEventsFromDb(start, end);
+		const inputContent = dbEvents
+			.map((event) => `${(event.data.app || 'other').replace(/\.exe$/i, '')} -- ${event.data.title || 'other'}`)
+			.join('\n');
+		// If there were no events in DB, write a minimal placeholder so the pipeline still has a file.
+		const finalContent = inputContent || 'other -- no_title';
+		console.log(`Saving FastText input file with ${dbEvents.length} events...`);
+		await invoke('save_file', { path: FASTTEXT_INPUT_PATH, content: finalContent });
+		console.log('FastText input file written from local DB.');
+	} catch (error) {
+		console.error('Failed to create FastText input file from DB:', error);
+	}
+}
+
 // =================================================================================
 // CORE DATA FETCHING & PROCESSING (ROBUST VERSION)
 // =================================================================================
@@ -105,6 +122,10 @@ export async function getActivityWatchEvents(start: Date, end: Date): Promise<Ca
 			const historicalStartDateStr = await fetchFirstEventTimestampFromServer();
 			if (historicalStartDateStr) {
 				syncStartDate = new Date(historicalStartDateStr);
+			} else {
+				// Fallback: if server couldn't report first event, start from the requested view start
+				console.warn('Could not determine server start; falling back to requested start date for sync.');
+				syncStartDate = new Date(start);
 			}
 		}
 
@@ -121,7 +142,29 @@ export async function getActivityWatchEvents(start: Date, end: Date): Promise<Ca
 		console.log(
 			`Sync complete. Querying local DB for user view: ${start.toISOString()} to ${end.toISOString()}`
 		);
-		return await getEventsFromDb(start, end);
+		// Get events from DB for the requested window
+		let eventsFromDb = await getEventsFromDb(start, end);
+
+		// If there are no events locally for this range – try a server fetch for the requested window,
+		// categorize and insert the events, then re-query the DB. This ensures the FastText input can be created.
+		if (eventsFromDb.length === 0) {
+			console.info('Local DB empty for requested window; attempting server fetch fallback...');
+			const serverEvents = await fetchEventsFromServer(start, end);
+			if (serverEvents.length > 0) {
+				console.info(`Fetched ${serverEvents.length} events directly from server; running categorization and inserting into DB.`);
+				const categorizedEvents = await processEventsWithFastText(serverEvents);
+				await insertEvents(categorizedEvents);
+				// Requery DB for the user's view
+				eventsFromDb = await getEventsFromDb(start, end);
+			} else {
+				console.info('No server events available for the requested window; creating placeholder input file.');
+			}
+		}
+
+		// Always try to ensure a FastText input file is present for the requested view window.
+		await createFastTextInputFileFromDb(start, end);
+
+		return eventsFromDb;
 	} catch (error) {
 		console.error('A critical error occurred in getActivityWatchEvents:', error);
 		return [];
@@ -231,8 +274,11 @@ async function processEventsWithFastText(events: any[]): Promise<CategorizedEven
 		)
 		.join('\n');
 	try {
+		console.log('Saving FastText input file...');	
 		await invoke('save_file', { path: FASTTEXT_INPUT_PATH, content: inputContent });
+		console.log('FastText input file saved. Running FastText inference...');
 		const rawFastTextOutput: string = await invoke('run_fasttext');
+		console.log('FastText inference completed. Processing results...');
 		const categoryLabels = rawFastTextOutput.trim().split('\n').filter(Boolean);
 		if (categoryLabels.length !== events.length) {
 			console.error(

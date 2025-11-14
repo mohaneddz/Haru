@@ -5,7 +5,7 @@ export async function loadVideos(parent: string, courseName: string): Promise<Vi
 	// console.log('Loading video resources');
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\videos.csv`;
 		// console.log(`Loading videos from path: ${path}`);
@@ -56,7 +56,7 @@ export async function loadTools(parent: string, courseName: string): Promise<Too
 	// console.log('Loading tool resources');
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\tools.csv`;
 		// console.log(`Loading tools from path: ${path}`);
@@ -110,7 +110,7 @@ export async function loadDocuments(parent: string, courseName: string): Promise
 	const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'txt', 'md'];
 
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\documents.csv`;
 		// console.log(`Loading CSV documents from path: ${csvPath}`);
@@ -145,7 +145,7 @@ export async function loadDocuments(parent: string, courseName: string): Promise
 		}
 
 		// --- Scan local directory ---
-		const dirPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const dirPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}`;
 		const exists = await invoke<boolean>('verify_folder', { path: dirPath });
@@ -189,7 +189,7 @@ export async function AppendDocumentsFile(parent: string, courseName: string, do
 	console.log(`Appending documents for course ${courseName}`);
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\documents.csv`;
 		const csvContent =
@@ -214,7 +214,7 @@ export async function AppendVideosFile(parent: string, courseName: string, video
 	console.log(`Appending videos for course ${courseName}`);
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\videos.csv`;
 		// CSV columns: title,img,duration,count,tags,link
@@ -247,7 +247,7 @@ export async function AppendToolsFile(parent: string, courseName: string, tools:
 	console.log(`Appending tools for course ${courseName}`);
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
 	try {
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\tools.csv`;
 		const q = (s: string) => `"${(s ?? '').replace(/"/g, '')}"`;
@@ -272,7 +272,7 @@ export async function AppendToolsFile(parent: string, courseName: string, tools:
 export async function DeleteDocumentsFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
 	try {
 		const name = courseName.toLowerCase().replace(/-/g, ' ');
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\documents.csv`;
 
@@ -329,7 +329,7 @@ export async function DeleteDocumentsFile(parent: string, courseName: string, li
 export async function DeleteVideosFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
 	try {
 		const name = courseName.toLowerCase().replace(/-/g, ' ');
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\videos.csv`;
 
@@ -369,7 +369,7 @@ export async function DeleteVideosFile(parent: string, courseName: string, links
 export async function DeleteToolsFile(parent: string, courseName: string, linksToDelete: string[]): Promise<boolean> {
 	try {
 		const name = courseName.toLowerCase().replace(/-/g, ' ');
-		const csvPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+		const csvPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 			parent ? parent + '\\' + name : name
 		}\\tools.csv`;
 

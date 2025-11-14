@@ -30,7 +30,7 @@ export default function useAdvanced() {
 
 	onMount(async () => {
 		try {
-			const path = 'D:\\Programming\\Projects\\Tauri\\haru\\backend\\voices';
+			const path = 'D:\\Programming\\Tauri\\haru\\backend\\voices';
 			const availableVoices = await invoke<string[]>('read_dir_recursive', { path });
 			const processedVoices = availableVoices
 				.filter((voice) => voice.endsWith('.pt'))

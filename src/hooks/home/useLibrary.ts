@@ -183,7 +183,7 @@ export default function useLibrary() {
 		try {
 			const parentFolder = fieldVals()[0];
 			const courseFolder = title();
-			const baseModulesPath = 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules';
+			const baseModulesPath = 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules';
 
 			const difficultyMap: { [key: number]: string } = {
 				1: 'Beginner',

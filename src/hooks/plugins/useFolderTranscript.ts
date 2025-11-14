@@ -15,7 +15,7 @@ export default function useFolderTranscript() {
     const [loadingTranscript, setLoadingTranscript] = createSignal(false);
     const [loadingRefinement, setLoadingRefinement] = createSignal(false);
     
-    const TRANSCRIPTS_DIR = 'D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Transcripts';
+    const TRANSCRIPTS_DIR = 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Transcripts';
 
     // Path helpers
     function normalizeSlashes(p: string) { return p.replace(/\\/g, '/'); }

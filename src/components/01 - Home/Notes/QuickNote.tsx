@@ -15,7 +15,7 @@ interface Props {
 export default function QuickNote(props: Props) {
 
     const [content, setContent] = createSignal(props.content());
-    const notesFolder = "D:\\Programming\\Projects\\Tauri\\haru\\notes";
+    const notesFolder = "D:\\Programming\\Tauri\\haru\\notes";
 
     return (
         <div

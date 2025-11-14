@@ -12,7 +12,7 @@
 	"app": {
 		"windows": [
 			{
-				"title": "haru",
+				"title": "Haru",
 				"width": 1024,
 				"height": 800,
 				"transparent": true,

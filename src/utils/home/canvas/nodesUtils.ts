@@ -119,7 +119,7 @@ export function processConceptData(data: BackendResponse): { nodes: oldNode[]; c
 
 export async function loadConceptsData(parent: string, courseName: string) {
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
-	const dirPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+	const dirPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 		parent ? parent + '\\' + name : name
 	}`;
 	const filePath = `${dirPath}\\concepts.json`;
@@ -148,7 +148,7 @@ export async function loadConceptsData(parent: string, courseName: string) {
 
 export async function saveConceptsData(parent: string, courseName: string, concepts: BackendConcept[]) {
 	const name = courseName.toLowerCase().replace(/-/g, ' ');
-	const dirPath = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+	const dirPath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 		parent ? parent + '\\' + name : name
 	}`;
 
@@ -164,7 +164,7 @@ export async function saveConceptsData(parent: string, courseName: string, conce
 
 // like load videos :
 // try {
-//     const path = `D:\\Programming\\Projects\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
+//     const path = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Modules\\${
 //       parent ? parent + '\\' + name : name
 //     }\\videos.csv`;
 //     // console.log(`Loading videos from path: ${path}`);

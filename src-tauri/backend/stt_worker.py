@@ -212,7 +212,7 @@ async def lifespan(app: FastAPI):
     if http_client:
         await http_client.aclose()
 
-app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)t
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )

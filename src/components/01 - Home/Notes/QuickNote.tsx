@@ -1,6 +1,6 @@
 import CodeMirrorEditor from "@/components/01 - Home/Notes/CodeMirrorEditor";
 import { Accessor } from "solid-js/types/reactive/signal.js";
-import { saveApi } from "@/utils/home/files/filesManip";
+import { saveFile, createDir } from "@/utils/core/appdata";
 import { createSignal } from "solid-js";
 import Checkbox from "@/components/core/Input/Checkbox";
 
@@ -15,7 +15,6 @@ interface Props {
 export default function QuickNote(props: Props) {
 
     const [content, setContent] = createSignal(props.content());
-    const notesFolder = "D:\\Programming\\Tauri\\haru\\notes";
 
     return (
         <div
@@ -27,9 +26,11 @@ export default function QuickNote(props: Props) {
             />
             <CodeMirrorEditor
                 content={content()}
-                onChange={(v) => {
+                onChange={async (v) => {
                     setContent(v);
-                    saveApi(notesFolder + `\\note_${props.index}.md`, v);
+                    await createDir('quick_notes');
+                    await saveFile(`quick_notes/note_${props.index}.md`, v);
+                    props.onChange(v);
                 }}
             />
         </div>

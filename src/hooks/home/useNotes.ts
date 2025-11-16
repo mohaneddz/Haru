@@ -32,6 +32,7 @@ export function useNotes() {
 			setEditing(false);
 		}
 	}
+	
 	function handleEsc(e: KeyboardEvent) {
 		if (editing() && e.key === 'Escape') {
 			setEditing(false);

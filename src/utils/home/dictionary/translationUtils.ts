@@ -1,22 +1,19 @@
-import { invoke } from '@tauri-apps/api/core';
+import { readFile } from '@/utils/core/appdata';
 
-export const loadTranslations = async () => {
-    try {
-        const csvText = await invoke('read_file', { path: 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Dictionary\\translations.csv' }) as string;
-        const lines = csvText.trim().split('\n');
+export async function loadTranslations(): Promise<Translation[]> {
+  const content = await readFile('translations.json');
+  if (!content) return [];
 
-        // Skip the header line
-        const translations = lines.slice(1).map(line => {
-            const firstComma = line.indexOf(',');
-            const secondComma = line.indexOf(',', firstComma + 1);
-            const dateAdded = line.slice(0, firstComma).replace(/^"|"$/g, '');
-            const term = line.slice(firstComma + 1, secondComma).replace(/^"|"$/g, '');
-            const translation = line.slice(secondComma + 1).replace(/^"|"$/g, '');
-            return { dateAdded, term, translation };
-        });
-        return translations;
-    } catch (error) {
-        console.error(`Failed to fetch translation: ${error}`);
-        return [];
+  try {
+    const data = JSON.parse(content);
+    if (Array.isArray(data)) {
+      return data;
+    } else {
+      console.warn('translations.json does not contain a valid array');
+      return [];
     }
-};
+  } catch (error) {
+    console.error('Failed to parse translations.json:', error);
+    return [];
+  }
+}

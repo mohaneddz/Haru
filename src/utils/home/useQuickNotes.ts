@@ -1,15 +1,13 @@
-import { invoke } from '@tauri-apps/api/core';
+import { listFiles, readFile, saveFile, deleteFile, renameFile, createDir } from '@/utils/core/appdata';
 
 export async function loadQuickNotes(): Promise<string[]> {
-	const response = (await invoke('read_dir_recursive', {
-		path: 'D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Notes',
-	})) as string[];
-	const files = response.filter((item: string) => item.endsWith('.md'));
+	const files = await listFiles('quick_notes');
+	const mdFiles = files.filter((item: string) => item.endsWith('.md'));
 	let notes: string[] = [];
-	for (const file of files) {
+	for (const file of mdFiles) {
 		try {
-			const content: string = await invoke('read_file', { path: file });
-			notes.push(content);
+			const content: string | null = await readFile(`quick_notes/${file}`);
+			notes.push(content || '');
 		} catch (error) {
 			console.error('Error reading file:', error);
 			notes.push(''); // Add empty note if reading fails
@@ -19,15 +17,12 @@ export async function loadQuickNotes(): Promise<string[]> {
 }
 
 export async function saveApi(file: string, content: string): Promise<void> {
-	invoke('save_file', { file, content })
-		.then(() => console.log(`Saved ${file} with content:`, content))
-		.catch((err) => console.error(`Error saving ${file}:`, err));
+	saveFile(file, content);
 }
 
-export async function setQuicknotes(updater: (prev: string[]) => string[]): Promise<void> {
-	invoke('update_quicknotes', { updater })
-		.then(() => console.log('Quicknotes updated'))
-		.catch((err) => console.error('Error updating quicknotes:', err));
+export async function setQuicknotes(): Promise<void> {
+	// This might need adjustment if used elsewhere, but for now, keep as is or remove if not needed
+	console.log('setQuicknotes called, but not implemented for AppData');
 }
 
 export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
@@ -41,13 +36,9 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 
 	// Delete all selected files first
 	for (const index of indicesToDelete) {
-		const filePath = `D:\\Programming\\Tauri\\haru\\src-tauri\\documents\\Notes\\note_${index}.md`;
-		try {
-			await invoke('delete_path', { path: filePath });
-			console.log(`Deleted note_${index}.md`);
-		} catch (err) {
-			console.error(`Error deleting note_${index}.md:`, err);
-		}
+		const filePath = `quick_notes/note_${index}.md`;
+		await deleteFile(filePath);
+		console.log(`Deleted ${filePath}`);
 	}
 
 	// Now rename remaining files to fill gaps
@@ -60,25 +51,20 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 			currentIndex++;
 		}
 		
-		const currentFilePath = `D:\Programming\Tauri\haru\src-tauri\documents\Notes\\note_${currentIndex}.md`;
+		const currentFilePath = `quick_notes/note_${currentIndex}.md`;
 		
 		// Check if file exists
-		try {
-			await invoke('read_file', { path: currentFilePath });
-		} catch {
+		const content = await readFile(currentFilePath);
+		if (content === null) {
 			// No more files exist
 			break;
 		}
 		
 		// If current index doesn't match new index, rename the file
 		if (currentIndex !== newIndex) {
-			const newFilePath = `D:\Programming\Tauri\haru\src-tauri\documents\Notes\\note_${newIndex}.md`;
-			try {
-				await invoke('rename_path', { oldPath: currentFilePath, newPath: newFilePath });
-				console.log(`Renamed note_${currentIndex}.md to note_${newIndex}.md`);
-			} catch (err) {
-				console.error(`Error renaming note_${currentIndex}.md:`, err);
-			}
+			const newFilePath = `quick_notes/note_${newIndex}.md`;
+			await renameFile(currentFilePath, newFilePath);
+			console.log(`Renamed ${currentFilePath} to ${newFilePath}`);
 		}
 		
 		newIndex++;
@@ -87,6 +73,7 @@ export async function deleteQuicknotes(indices: boolean[]): Promise<void> {
 }
 
 export async function createQuicknote(number: number): Promise<void> {
-	const path = 'D:\Programming\Tauri\haru\src-tauri\documents\Notes' + `\\note_${number}.md`;
-	await invoke('save_file', { path, content: '' });
+	await createDir('quick_notes');
+	const path = `quick_notes/note_${number}.md`;
+	await saveFile(path, '');
 }

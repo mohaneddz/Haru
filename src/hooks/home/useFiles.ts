@@ -4,6 +4,8 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { createFileApi, createFolderApi, renameApi, deleteApi, saveApi } from '@/utils/home/files/filesManip';
 
+import { getStoreValue, setStoreValue } from '@/config/store';
+
 export function useFiles() {
 	const [size, setSize] = createSignal(240);
 	const [fileTree, setFileTree] = createSignal<FileNode[]>([]);
@@ -40,46 +42,47 @@ export function useFiles() {
 		},
 	};
 
-	onMount(() => {
-		restoreFiles('D:\\Obsidian Vault - Copy\\02 - AREAS\\01 - School');
+	onMount(async () => {
+		const folder = await getStoreValue<string>('lastOpenedFolder') ?? '';
+		refreshFileTree(folder);
 	});
 
 	// FILES API FUNCTIONS ------------------------------------------
 
-	const createFileNode = async (targetDir?: string) => {
+	const createNewFile = async (targetDir?: string) => {
 		const currentPath = targetDir || dir();
 		await createFileApi(currentPath);
-		await restoreFiles(dir());
+		await refreshFileTree(dir());
 	};
 
-	const createFolderNode = async (targetDir?: string) => {
+	const createNewFolder = async (targetDir?: string) => {
 		const currentPath = targetDir || dir();
 		await createFolderApi(currentPath);
-		await restoreFiles(dir());
+		await refreshFileTree(dir());
 	};
 
-	const renameNode = async (node: FileNode, newName: string) => {
+	const renameFile = async (node: FileNode, newName: string) => {
 		await renameApi(node.path, node.path.replace(/[^\\/]+$/, newName));
-		restoreFiles(dir());
+		refreshFileTree(dir());
 	};
 
-	const deleteNode = async (node: FileNode) => {
+	const deleteFile = async (node: FileNode) => {
 		await deleteApi(node.path);
-		await restoreFiles(dir());
+		await refreshFileTree(dir());
 	};
 
-	const saveNode = async (node: FileNode, content: string) => {
+	const saveFileContent = async (node: FileNode, content: string) => {
 		await saveApi(node.path, content);
 	};
 
 	// LOAD FILES ------------------------------------------
 
-	async function getAllPaths(folderPath: string): Promise<string[]> {
+	async function getAllFilePaths(folderPath: string): Promise<string[]> {
 		const paths: string[] = await invoke('read_dir_recursive', { path: folderPath });
 		return paths;
 	}
 
-	function buildFileTree(paths: string[], basePath: string): FileNode[] {
+	function buildFileTreeStructure(paths: string[], basePath: string): FileNode[] {
 		const root: Record<string, any> = {};
 
 		for (const fullPath of paths) {
@@ -141,33 +144,34 @@ export function useFiles() {
 		return convert(root);
 	}
 
-	const getFolder = async (): Promise<string | null> => {
+	const selectDirectory = async (): Promise<string | null> => {
 		const folder = await open({ multiple: false, directory: true, title: 'Select Folder' });
 		return typeof folder === 'string' ? folder : null;
 	};
 
-	const restoreFiles = async (folder: string) => {
+	const refreshFileTree = async (folder: string) => {
 		setDir(folder);
-		const paths = await getAllPaths(folder);
-		const tree = buildFileTree(paths, folder);
+		const paths = await getAllFilePaths(folder);
+		const tree = buildFileTreeStructure(paths, folder);
 		// console.log('File tree:', tree);
 		setFileTree(tree);
 	};
 
-	const loadFiles = async () => {
-		const folder = await getFolder();
+	const openDirectory = async () => {
+		const folder = await selectDirectory();
 		if (folder) {
-			restoreFiles(folder);
+			setStoreValue('lastOpenedFolder', folder);
+			refreshFileTree(folder);
 		}
 	};
 
 	// USER INTERACTIONS ------------------------------------------
 
-	function startRename(node: FileNode) {
+	function beginRenaming(node: FileNode) {
 		setRenamingNode(node.path);
 	}
 
-	function cancelRename() {
+	function endRenaming() {
 		setRenamingNode(null);
 	}
 
@@ -182,7 +186,7 @@ export function useFiles() {
 		return null;
 	}
 
-	const deleteLastTouched = async () => {
+	const deleteLastSelectedNode = async () => {
 		const path = lastTouched();
 		if (path) {
 			await deleteApi(path);
@@ -191,27 +195,27 @@ export function useFiles() {
 
 	return {
 		fileTree,
-		loadFiles,
+		openDirectory,
 		dir,
 		resize,
 		size,
-		createFileNode,
-		createFolderNode,
-		restoreFiles,
-		renameNode,
-		deleteNode,
+		createNewFile,
+		createNewFolder,
+		refreshFileTree,
+		renameFile,
+		deleteFile,
 		renamingNode,
 		setRenamingNode,
-		startRename,
-		cancelRename,
+		beginRenaming,
+		endRenaming,
 		saveApi,
 		findNodeByPath,
 		setDir,
 		lastTouched,
 		setLastTouched,
-		deleteLastTouched,
+		deleteLastSelectedNode,
 		openNodes,
 		setOpenNodes,
-		saveNode
+		saveFileContent,
 	};
 }

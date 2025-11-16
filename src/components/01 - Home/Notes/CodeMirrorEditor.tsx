@@ -12,6 +12,7 @@ import { markdownRenderPlugin } from "./MarkdownRenderPlugin"; // Assuming Markd
 interface Props {
   content: string;
   onChange: (v: string) => void;
+  readOnly?: boolean;
   onBlur?: () => void;
   class?: string;
 }
@@ -36,6 +37,7 @@ export default function CodeMirrorEditor(props: Props) {
       markdownRenderPlugin(), // <-- Remove or keep commented
 
       keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
+      EditorState.readOnly.of(props.readOnly || false),
       EditorView.updateListener.of((u: ViewUpdate) => {
         if (u.docChanged) {
           props.onChange(u.state.doc.toString());

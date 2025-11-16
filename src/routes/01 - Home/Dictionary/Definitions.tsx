@@ -1,52 +1,29 @@
-import { loadDefinitions } from '@/utils/home/dictionary/definitionUtils';
-import { createSignal, onMount, For } from 'solid-js';
+import { For } from 'solid-js';
 import DefinitionRow from '@/components/01 - Home/Dictionary/DefinitionRow';
 import Modal from '@/components/core/Modal';
-import { Trash, Pen, ChevronDown, ChevronUp } from 'lucide-solid';
+import { Trash, Pen, RefreshCw, ChevronDown, ChevronUp } from 'lucide-solid';
 import UniversalFilter from '@/components/core/UniversalFilter';
 import Checkbox from '@/components/core/Input/Checkbox';
+import { useDefinitions } from '@/hooks/useDefinitions';
 
 export default function Definitions() {
-
-  const [definitions, setDefinitions] = createSignal<Definition[]>([]);
-  const [selectedIndices, setSelectedIndices] = createSignal<number[]>([]);
-  const [showDeleteModal, setShowDeleteModal] = createSignal(false);
-  const [showAddModal, setShowAddModal] = createSignal(false);
-  const [filtered, setFiltered] = createSignal<Definition[]>([]);
-  const [sortField, setSortField] = createSignal('dateAdded');
-
-  onMount(async () => {
-    const data = await loadDefinitions();
-    sortDefinitions('dateAdded', 'asc');
-    setDefinitions(data);
-    setFiltered(data);
-  });
-
-  const sortDefinitions = (field: keyof Definition, order: 'asc' | 'desc') => {
-    setSortField(field);
-    setFiltered((prev) =>
-      [...prev].sort((a: Definition, b: Definition) => {
-        if (a[field] > b[field]) return order === 'asc' ? 1 : -1;
-        if (a[field] < b[field]) return order === 'asc' ? -1 : 1;
-        return 0;
-      })
-    );
-  };
-
-  const searchForTerm = (term: string) => {
-    setFiltered(
-      definitions().filter((def) =>
-        def.term.toLowerCase().includes(term.toLowerCase()) ||
-        def.definition.toLowerCase().includes(term.toLowerCase())
-      )
-    );
-  }
-
-  const toggleSelect = (idx: number) => {
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-  };
+  const {
+    definitions,
+    selectedIndices,
+    setSelectedIndices,
+    showDeleteModal,
+    setShowDeleteModal,
+    showAddModal,
+    setShowAddModal,
+    filtered,
+    sortField,
+    sortDefinitions,
+    searchForTerm,
+    toggleSelect,
+    deleteSelected,
+    addDefinition,
+    refreshDefinitions,
+  } = useDefinitions();
 
   return (
     <div class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll mt-20">
@@ -58,15 +35,7 @@ export default function Definitions() {
           <div class="flex space-x-2">
             <button
               class="bg-red-600 text-text px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
-              onClick={() => {
-                setDefinitions((prev) =>
-                  prev.filter((_, i) => !selectedIndices().includes(i))
-                );
-                setFiltered((prev) =>
-                  prev.filter((_, i) => !selectedIndices().includes(i))
-                );
-                setShowDeleteModal(false);
-              }}
+              onClick={deleteSelected}
             >
               Delete
             </button>
@@ -111,18 +80,9 @@ export default function Definitions() {
             <button
               class="bg-accent-dark-1 text-text px-4 py-2 rounded hover:brightness-105 transition-colors cursor-pointer"
               onClick={() => {
-                const newDefinition = {
-                  dateAdded: new Date().toISOString(),
-                  term: (document.getElementById('termInput') as HTMLTextAreaElement).value,
-                  definition: (document.getElementById('definitionInput') as HTMLTextAreaElement).value,
-                };
-                if (newDefinition.term && newDefinition.definition) {
-
-                  setDefinitions((prev) => [...prev, newDefinition]);
-                  setFiltered((prev) => [...prev, newDefinition]);
-                  setSelectedIndices((prev) => [...prev, definitions().length]);
-                }
-                setShowAddModal(false);
+                const term = (document.getElementById('termInput') as HTMLTextAreaElement).value;
+                const definition = (document.getElementById('definitionInput') as HTMLTextAreaElement).value;
+                addDefinition(term, definition);
               }}
             >
               Add
@@ -262,6 +222,11 @@ export default function Definitions() {
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
                   hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowAddModal.bind(null, true)}>
         <Pen class="w-6 h-6 text-text " />
+      </div>
+
+      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-36 right-12 bg-accent-dark-2 rounded-full p-2
+                  hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={refreshDefinitions}>
+        <RefreshCw class="w-6 h-6 text-text " />
       </div>
 
     </div>

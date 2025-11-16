@@ -8,6 +8,8 @@ interface Definition {
 
 interface Translation {
     dateAdded: string;
+    from: string;
+    to: string;
     term: string;
     translation: string;
     selected?: boolean = false;

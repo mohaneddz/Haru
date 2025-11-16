@@ -2,7 +2,7 @@ import UniversalFilter from "@/components/core/UniversalFilter";
 import QuickNote from "@/components/01 - Home/Notes/QuickNote";
 
 import { StickyNote } from "lucide-solid";
-import { createSignal, For, onMount } from "solid-js";
+import { createSignal, Index, onMount } from "solid-js";
 import { loadQuickNotes, deleteQuicknotes, createQuicknote } from "@/utils/home/useQuickNotes";
 
 import { Pen, Trash } from "lucide-solid";
@@ -78,31 +78,31 @@ export default function Quicknotes() {
         </div>
 
         <div class="grid grid-cols-4 gap-4 mt-10 w-full max-w-[80%]">
-          <For each={filteredNotes()}>
+          <Index each={filteredNotes()}>
             {(note, _) => (
               <QuickNote
-                content={() => note.content}
-                index={note.originalIndex}
-                selected={() => selectedNotes().includes(note.originalIndex)}
+                content={() => note().content}
+                index={note().originalIndex}
+                selected={() => selectedNotes().includes(note().originalIndex)}
                 onSelectionChange={(isSelected) => {
                   setSelectedNotes(prev => {
                     if (isSelected) {
-                      return [...prev, note.originalIndex];
+                      return [...prev, note().originalIndex];
                     } else {
-                      return prev.filter(i => i !== note.originalIndex);
+                      return prev.filter(i => i !== note().originalIndex);
                     }
                   });
                 }}
                 onChange={(newContent) => {
                   setQuicknotes((prev) => {
                     const newNotes = [...prev];
-                    newNotes[note.originalIndex] = newContent;
+                    newNotes[note().originalIndex] = newContent;
                     return newNotes;
                   });
                 }}
               />
             )}
-          </For>
+          </Index>
         </div>
 
         <div
@@ -127,13 +127,13 @@ export default function Quicknotes() {
               </p>
               <div class="flex gap-3 justify-end">
                 <button
-                  class="px-4 py-2 bg-gray-600 text-text rounded hover:bg-gray-500 transition"
+                  class="px-4 py-2 bg-gray-600 text-text rounded hover:bg-gray-500 transition clickable"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  class="px-4 py-2 bg-red-600 text-text rounded hover:bg-red-500 transition"
+                  class="px-4 py-2 bg-red-600 text-text rounded hover:bg-red-500 transition clickable"
                   onClick={deleteSelectedNotes}
                 >
                   Delete

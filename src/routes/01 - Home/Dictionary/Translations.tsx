@@ -1,53 +1,30 @@
-import { loadTranslations } from '@/utils/home/dictionary/translationUtils';
-import { createSignal, onMount, For } from 'solid-js';
+import { For } from 'solid-js';
 import TranslationRow from '@/components/01 - Home/Dictionary/TranslationRow';
 import Modal from '@/components/core/Modal';
-import { Trash, Pen, ChevronDown, ChevronUp } from 'lucide-solid';
+import { Trash, Pen, RefreshCw, ChevronDown, ChevronUp } from 'lucide-solid';
 import UniversalFilter from '@/components/core/UniversalFilter';
 import Checkbox from '@/components/core/Input/Checkbox';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export default function Translation() {
-
-  const [translations, setTranslations] = createSignal<Translation[]>([]);
-  const [selectedIndices, setSelectedIndices] = createSignal<number[]>([]);
-  const [showDeleteModal, setShowDeleteModal] = createSignal(false);
-  const [showAddModal, setShowAddModal] = createSignal(false);
-
-  const [filtered, setFiltered] = createSignal<Translation[]>([]);
-  const [sortField, setSortField] = createSignal('dateAdded');
-
-  onMount(async () => {
-    const data = await loadTranslations();
-    sortTranslations('dateAdded', 'asc');
-    setTranslations(data);
-    setFiltered(data);
-  });
-
-  const sortTranslations = (field: keyof Translation, order: 'asc' | 'desc') => {
-    setSortField(field);
-    setFiltered((prev) =>
-      [...prev].sort((a: Translation, b: Translation) => {
-        if (a[field] > b[field]) return order === 'asc' ? 1 : -1;
-        if (a[field] < b[field]) return order === 'asc' ? -1 : 1;
-        return 0;
-      })
-    );
-  };
-
-  const searchForTerm = (term: string) => {
-    setFiltered(
-      translations().filter((tr) =>
-        tr.term.toLowerCase().includes(term.toLowerCase()) ||
-        tr.translation.toLowerCase().includes(term.toLowerCase())
-      )
-    );
-  }
-
-  const toggleSelect = (idx: number) => {
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-  };
+  const {
+    translations,
+    selectedIndices,
+    setSelectedIndices,
+    showDeleteModal,
+    setShowDeleteModal,
+    showAddModal,
+    setShowAddModal,
+    filtered,
+    sortField,
+    sortTranslations,
+    searchForTerm,
+    toggleSelect,
+    deleteSelected,
+    addTranslation,
+    editTranslation,
+    refreshTranslations,
+  } = useTranslations();
 
   return (
     <div class="flex flex-col items-center justify-start h-full w-full overflow-y-scroll mt-20">
@@ -59,15 +36,7 @@ export default function Translation() {
           <div class="flex space-x-2">
             <button
               class="bg-red-600 text-text px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
-              onClick={() => {
-                setTranslations((prev) =>
-                  prev.filter((_, i) => !selectedIndices().includes(i))
-                );
-                setFiltered((prev) =>
-                  prev.filter((_, i) => !selectedIndices().includes(i))
-                );
-                setShowDeleteModal(false);
-              }}
+              onClick={deleteSelected}
             >
               Delete
             </button>
@@ -83,8 +52,8 @@ export default function Translation() {
 
       <Modal show={showAddModal()} onClose={() => setShowAddModal(false)}>
         <div class="flex flex-col items-center justify-center p-4">
-          <h2 class="text-lg font-semibold mb-12">Add New Definition</h2>
-          <p class="text-sm text-muted mb-4">Please enter the term and definition for the new entry.</p>
+          <h2 class="text-lg font-semibold mb-12">Add New Translation</h2>
+          <p class="text-sm text-muted mb-4">Please enter the term, translation, from, and to for the new entry.</p>
           {/* Add form for new definition here */}
           <textarea
             id='termInput'
@@ -100,7 +69,29 @@ export default function Translation() {
           <textarea
             id='translationInput'
             class="bg-transparent px-1 py-2 w-full resize-none mb-4 border border-border-light-1/40"
-            placeholder="Enter Translation"
+            placeholder="Enter translation"
+            rows={1}
+            style="white-space:pre-wrap;word-break:break-word;overflow:hidden;"
+            onInput={(e) => {
+              e.currentTarget.style.height = "auto";
+              e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+            }}
+          />
+          <textarea
+            id='fromInput'
+            class="bg-transparent px-1 py-2 w-full resize-none mb-4 border border-border-light-1/40"
+            placeholder="Enter from (e.g., EN)"
+            rows={1}
+            style="white-space:pre-wrap;word-break:break-word;overflow:hidden;"
+            onInput={(e) => {
+              e.currentTarget.style.height = "auto";
+              e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+            }}
+          />
+          <textarea
+            id='toInput'
+            class="bg-transparent px-1 py-2 w-full resize-none mb-4 border border-border-light-1/40"
+            placeholder="Enter to (e.g., AR)"
             rows={1}
             style="white-space:pre-wrap;word-break:break-word;overflow:hidden;"
             onInput={(e) => {
@@ -112,18 +103,11 @@ export default function Translation() {
             <button
               class="bg-accent-dark-1 text-text px-4 py-2 rounded hover:brightness-105 transition-colors cursor-pointer"
               onClick={() => {
-                const newTranslation = {
-                  dateAdded: new Date().toISOString(),
-                  term: (document.getElementById('termInput') as HTMLTextAreaElement).value,
-                  translation: (document.getElementById('translationInput') as HTMLTextAreaElement).value,
-                };
-                if (newTranslation.term && newTranslation.translation) {
-
-                  setTranslations((prev) => [...prev, newTranslation]);
-                  setFiltered((prev) => [...prev, newTranslation]);
-                  setSelectedIndices((prev) => [...prev, translations().length]);
-                }
-                setShowAddModal(false);
+                const term = (document.getElementById('termInput') as HTMLTextAreaElement).value;
+                const translation = (document.getElementById('translationInput') as HTMLTextAreaElement).value;
+                const from = (document.getElementById('fromInput') as HTMLTextAreaElement).value;
+                const to = (document.getElementById('toInput') as HTMLTextAreaElement).value;
+                addTranslation(from, to, term, translation);
               }}
             >
               Add
@@ -164,8 +148,7 @@ export default function Translation() {
                   }} />
               </th>
               <th
-                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative"
-                style="width: 120px;"
+                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative w-[120px]"
                 onclick={() =>
                   sortTranslations(
                     'dateAdded',
@@ -189,8 +172,55 @@ export default function Translation() {
                 </span>
               </th>
               <th
-                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative"
-                style="width: 20%;"
+                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative w-[60px]"
+                onclick={() =>
+                  sortTranslations(
+                    'from',
+                    sortField() === 'from' &&
+                      filtered()[0]?.from <= filtered()[filtered().length - 1]?.from
+                      ? 'desc'
+                      : 'asc'
+                  )
+                }
+              >
+                <span class="gap-2 justify-start text-muted flex flex-nowrap truncate">
+                  From
+                  {sortField() === 'from' && (
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2">
+                      {filtered()[0]?.from <= filtered()[filtered().length - 1]?.from
+                        ? <ChevronDown />
+                        : <ChevronUp />
+                      }
+                    </span>
+                  )}
+                </span>
+              </th>
+              <th
+                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative w-[80px]"
+                onclick={() =>
+                  sortTranslations(
+                    'to',
+                    sortField() === 'to' &&
+                      filtered()[0]?.to <= filtered()[filtered().length - 1]?.to
+                      ? 'desc'
+                      : 'asc'
+                  )
+                }
+              >
+                <span class="gap-2 justify-start text-muted flex flex-nowrap truncate">
+                  To
+                  {sortField() === 'to' && (
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2">
+                      {filtered()[0]?.to <= filtered()[filtered().length - 1]?.to
+                        ? <ChevronDown />
+                        : <ChevronUp />
+                      }
+                    </span>
+                  )}
+                </span>
+              </th>
+              <th
+                class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative w-[30%]"
                 onclick={() =>
                   sortTranslations(
                     'term',
@@ -215,7 +245,6 @@ export default function Translation() {
               </th>
               <th
                 class="cursor-pointer px-4 py-2 text-left text-sm font-medium relative"
-                style="width: auto;"
                 onclick={() =>
                   sortTranslations(
                     'translation',
@@ -245,10 +274,16 @@ export default function Translation() {
               {(tr, i) => (
                 <TranslationRow
                   dateAdded={tr.dateAdded}
+                  from={tr.from}
+                  to={tr.to}
                   term={tr.term}
                   translation={tr.translation}
                   selected={selectedIndices().includes(i())}
                   onSelect={() => toggleSelect(i())}
+                  onEdit={(field, value) => {
+                    const index = translations().findIndex(t => t === tr);
+                    if (index !== -1) editTranslation(index, field, value);
+                  }}
                 />
               )}
             </For>
@@ -264,6 +299,11 @@ export default function Translation() {
       <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-24 right-12 bg-accent-dark-2 rounded-full p-2
                         hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={setShowAddModal.bind(null, true)}>
         <Pen class="w-6 h-6 text-text " />
+      </div>
+
+      <div class="fixed z-50 aspect-square flex items-center justify-center mt-4 bottom-36 right-12 bg-accent-dark-2 rounded-full p-2
+                  hover:scale-105 hover:brightness-105 active:scale-95 active:brightness-95 cursor-pointer transition duration-200 " onClick={refreshTranslations}>
+        <RefreshCw class="w-6 h-6 text-text " />
       </div>
 
     </div>

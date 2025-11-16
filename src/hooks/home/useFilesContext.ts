@@ -5,12 +5,12 @@ export const useFilesContext = (filesInstance: ReturnType<typeof import('@/hooks
     const {
         fileTree,
         dir,
-        createFileNode,
-        createFolderNode,
+        createNewFile,
+        createNewFolder,
         setRenamingNode,
         findNodeByPath,
-        deleteNode,
-        restoreFiles,
+        deleteFile,
+        refreshFileTree,
     } = filesInstance;
 
     const [menuVisible, setMenuVisible] = createSignal(false);
@@ -54,22 +54,22 @@ export const useFilesContext = (filesInstance: ReturnType<typeof import('@/hooks
 			}
 		} else if (action === 'delete') {
 			if (node) {
-				await deleteNode(node);
+				await deleteFile(node);
 			}
 		} else if (action === 'createFile') {
 			if (node && node.type === 'folder') {
-				await createFileNode(node.path);
+				await createNewFile(node.path);
 			} else {
-				await createFileNode(); 
+				await createNewFile(); 
 			}
 		} else if (action === 'createFolder') {
 			if (node && node.type === 'folder') {
-				await createFolderNode(node.path); 
+				await createNewFolder(node.path); 
 			} else {
-				await createFolderNode(); 
+				await createNewFolder(); 
 			}
 		} else if (action === 'refresh') {
-			await restoreFiles(dir());
+			await refreshFileTree(dir());
 		}
 		// Removed setMenuVisible(false) - menu closes in component after action completes
 	}

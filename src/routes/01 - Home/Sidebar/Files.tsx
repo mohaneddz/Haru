@@ -18,20 +18,20 @@ export default function Files(props: Props) {
     const filesInstance = useFiles();
     const {
         fileTree,
-        loadFiles,
+        openDirectory,
         resize,
         size,
-        createFileNode,
-        createFolderNode,
-        restoreFiles,
+        createNewFile,
+        createNewFolder,
+        refreshFileTree,
         dir,
-        deleteNode,
-        renameNode,
+        deleteFile,
+        renameFile,
         renamingNode,
         setRenamingNode,
         lastTouched,
         setLastTouched,
-        deleteLastTouched,
+        deleteLastSelectedNode,
     } = filesInstance;
     const { handleContextMenu, contextMenuItems, menuVisible, menuX, menuY, menuContext, setMenuVisible, handleMenuAction } = useFilesContext(filesInstance);
 
@@ -58,19 +58,19 @@ export default function Files(props: Props) {
 
                 <div class="center relative top-0 gap-4 min-w-full max-w-full overflow-hidden py-4">
 
-                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => restoreFiles(dir())}>
+                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => refreshFileTree(dir())}>
                         <RefreshCcwIcon class="text-center hover:text-accent inline-block" size={16} />
                     </div>
-                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => createFileNode()}>
+                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => createNewFile()}>
                         <FilePlus class="text-center hover:text-accent inline-block" size={16} />
                     </div>
-                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => createFolderNode()}>
+                    <div class=" aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer" onClick={() => createNewFolder()}>
                         <FolderPlus class="text-center hover:text-accent inline-block" size={16} />
                     </div>
                     <div class={`aspect-square h-min rounded-md bg-background-light-1 flex items-center justify-center cursor-pointer ${lastTouched() ? 'hover:text-accent' : 'hover:text-text-light-1'}`}
                         onClick={async () => {
-                            await deleteLastTouched();
-                            await restoreFiles(dir());
+                            await deleteLastSelectedNode();
+                            await refreshFileTree(dir());
                         }}>
                         <Trash class="text-center inline-block" size={16} />
                     </div>
@@ -83,8 +83,8 @@ export default function Files(props: Props) {
                             node={node}
                             level={0}
                             setCurrFile={props.setCurrFile}
-                            onRename={renameNode}
-                            onDelete={() => deleteNode(node)}
+                            onRename={renameFile}
+                            onDelete={() => deleteFile(node)}
                             onContextMenu={handleContextMenu}
                             lastTouched={lastTouched}
                             setLastTouched={setLastTouched}
@@ -97,7 +97,7 @@ export default function Files(props: Props) {
             </ul>
 
 
-            <div onClick={loadFiles} class="absolute bottom-4 w-full text-text px-4 py-2 cursor-pointer text-center border-t-1 bg-background hover:brightness-120 border-border-light-1 select-none">
+            <div onClick={openDirectory} class="absolute bottom-4 w-full text-text px-4 py-2 cursor-pointer text-center border-t-1 bg-background hover:brightness-120 border-border-light-1 select-none">
                 Select Folder
             </div>
 

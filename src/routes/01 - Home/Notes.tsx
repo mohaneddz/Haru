@@ -19,7 +19,7 @@ export default function Notes() {
 
       <div class="w-full flex flex-col h-full relative">
 
-        <NoteTopBar />
+        <NoteTopBar currFile={currFile} />
 
         <NotesToolBar />
 
@@ -33,6 +33,7 @@ export default function Notes() {
 
           <CodeMirrorEditor
             content={content()}
+            readOnly={currFile() === ''}
             onChange={(v) => {
               setContent(v);
               saveApi(currFile(), v);

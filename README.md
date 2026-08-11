@@ -37,6 +37,8 @@ Built with **Tauri + SolidJS + Rust + Multiple Local AI Models**.
 
 HARU is a **local AI assistant** powered by offline pipelines.
 
+**Status:** By far the largest and most ambitious project in the portfolio, and the least stable — Tauri is pinned to beta releases (`2.0.0-beta.x`), the working tree currently has ~20 files of uncommitted changes across Home/Flashcards/Library/Paths and two Python backend workers, and there's a known stub (Sudoku settings) and dead code (an abandoned Todoist integration in `useGoals.ts`). Treat "what works" below as the target architecture rather than a guaranteed-stable build.
+
 Core functionalities include:
 
 * Chats & Voice Conversations

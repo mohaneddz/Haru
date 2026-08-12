@@ -24,7 +24,7 @@ export default function Paths() {
     saveSettings,
     indexLocation,
     setIndexLocation,
-
+    openFolder
   } = usePaths();
 
   const navigate = useNavigate();
@@ -48,14 +48,14 @@ export default function Paths() {
             <span class="text-gray-500"> Notes Location</span>
           </label>
           <div class="flex gap-4">
-            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => selectFolder(setNotesLocation)}>
+            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => openFolder(NotesLocation())}>
               <Folder size={8} class="w-8 h-8 text-gray-400" />
             </div>
             <Input
               readonly
-              searchTerm={NotesLocation()}
-              setSearchTerm={setNotesLocation}
-              class="w-full text-sm"
+              Value={NotesLocation()}
+              setValue={setNotesLocation}
+              class="w-full text-sm opacity-50"
               id="default-notes-location"
             />
           </div>
@@ -64,14 +64,14 @@ export default function Paths() {
             <span class="text-gray-500"> Quicknotes Location</span>
           </label>
           <div class="flex gap-4">
-            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => selectFolder(setQuicknotesLocation)}>
+            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => openFolder(QuicknotesLocation())}>
               <Folder size={8} class="w-8 h-8 text-gray-400" />
             </div>
             <Input
               readonly
-              searchTerm={QuicknotesLocation()}
-              setSearchTerm={setQuicknotesLocation}
-              class="w-full text-sm"
+              Value={QuicknotesLocation()}
+              setValue={setQuicknotesLocation}
+              class="w-full text-sm opacity-50"
               id="default-quicknotes-location"
             />
           </div>
@@ -81,14 +81,14 @@ export default function Paths() {
             <span class="text-gray-500">Modules Location</span>
           </label>
           <div class="flex gap-4">
-            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => selectFolder(setDocumentsLocation)}>
+            <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-md text-text/70 clickable" onClick={() => openFolder(DocumentsLocation())}>
               <Folder size={8} class="w-8 h-8 text-gray-400" />
             </div>
             <Input
               readonly
-              searchTerm={DocumentsLocation()}
-              setSearchTerm={setDocumentsLocation}
-              class="w-full text-sm"
+              Value={DocumentsLocation()}
+              setValue={setDocumentsLocation}
+              class="w-full text-sm opacity-50"
               id="default-documents-location"
             />
           </div>
@@ -104,8 +104,8 @@ export default function Paths() {
             </div>
             <Input
               readonly
-              searchTerm={indexLocation()}
-              setSearchTerm={setIndexLocation}
+              Value={indexLocation()}
+              setValue={setIndexLocation}
               class="w-full text-sm"
               id="default-index-location"
             />
@@ -127,8 +127,8 @@ export default function Paths() {
                 </div>
                 <Input
                   readonly
-                  searchTerm={location}
-                  setSearchTerm={(value) => {
+                  Value={location}
+                  setValue={(value) => {
                     const newLocations = [...RAGLocation()];
                     newLocations[index()] = value;
                     setRAGLocation(newLocations);
@@ -136,7 +136,7 @@ export default function Paths() {
                   class="w-full text-sm"
                   id={`rag-location-${index()}`}
                 />
-              </div> 
+              </div>
             )}</For>
             <div class="absolute -right-28 top-0 h-full flex gap-2 center">
               <div class="aspect-square px-2 center bg-sidebar-light-2 border border-border-light-2 rounded-full text-text/70 clickable" onClick={addRAGLocation}>

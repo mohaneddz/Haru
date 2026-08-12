@@ -4,7 +4,7 @@ import CodeMirrorEditor from "@/components/01 - Home/Notes/CodeMirrorEditor";
 import { Link } from "lucide-solid";
 
 import NoteTopBar from "@/components/01 - Home/Notes/NoteTopBar";
-import NotesToolBar from "@/components/01 - Home/Notes/NotesToolBar";
+// import NotesToolBar from "@/components/01 - Home/Notes/NotesToolBar";
 import { useNotes } from "@/hooks/home/useNotes";
 import { saveApi } from "@/utils/home/files/filesManip";
 
@@ -21,7 +21,7 @@ export default function Notes() {
 
         <NoteTopBar currFile={currFile} />
 
-        <NotesToolBar />
+        {/* <NotesToolBar /> */}
 
         <div
           ref={el => editorContainerRef = el}

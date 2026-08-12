@@ -1,20 +1,24 @@
+import { join } from "@tauri-apps/api/path";
+import { appDataDir } from "@tauri-apps/api/path";
+
 import { onMount } from 'solid-js';
 import { Setter } from 'solid-js';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { createSignal } from 'solid-js';
 import { getStoreValue, setStoreValue } from '@/config/store';
+import { revealItemInDir } from '@tauri-apps/plugin-opener';
 
 export default function usePaths() {
-	const [indexLocation, setIndexLocation] = createSignal('/path/to/default/index');
-	const [NotesLocation, setNotesLocation] = createSignal('/path/to/default/notes');
-	const [QuicknotesLocation, setQuicknotesLocation] = createSignal('/path/to/default/quicknotes');
-	const [DocumentsLocation, setDocumentsLocation] = createSignal('/path/to/default/documents');
-	const [RAGLocation, setRAGLocation] = createSignal(['/path/to/default/rag1']);
+	const [indexLocation, setIndexLocation] = createSignal('');
+	const [NotesLocation, setNotesLocation] = createSignal('');
+	const [QuicknotesLocation, setQuicknotesLocation] = createSignal('');
+	const [DocumentsLocation, setDocumentsLocation] = createSignal('');
+	const [RAGLocation, setRAGLocation] = createSignal(['']);
 
 	// Function to add a new RAG location
 	const addRAGLocation = () => {
-		setRAGLocation([...RAGLocation(), `/path/to/new/rag${RAGLocation().length + 1}`]);
+		setRAGLocation([...RAGLocation(), `${RAGLocation().length + 1}`]);
 	};
 
 	// Function to remove the last RAG location
@@ -31,10 +35,25 @@ export default function usePaths() {
 		}
 	}
 
+	async function openFolder(path: string) {
+		try {
+			await revealItemInDir(path);
+		} catch (error) {
+			console.error('Error opening folder:', error);
+		}
+	}
+
+	async function loadDefaultAppDataPath(folder: string) {
+		const base = await appDataDir(); 
+		return await join(base, folder); 
+	}
+
 	onMount(async () => {
-		const storedNotesLocation = await getStoreValue('notesLocation');
-		const storedQuicknotesLocation = await getStoreValue('quicknotesLocation');
-		const storedDocumentsLocation = await getStoreValue('documentsLocation');
+		
+		const storedNotesLocation = await getStoreValue('notesLocation') || await loadDefaultAppDataPath('notes');
+		const storedQuicknotesLocation = await getStoreValue('quicknotesLocation') || await loadDefaultAppDataPath('quicknotes');
+		const storedDocumentsLocation = await getStoreValue('documentsLocation') || await loadDefaultAppDataPath('documents');
+
 		const storedRAGLocations = await getStoreValue('ragLocations');
 		const storedIndexLocation = await getStoreValue('indexLocation');
 
@@ -97,5 +116,6 @@ export default function usePaths() {
 		saveSettings,
 		indexLocation,
 		setIndexLocation,
+		openFolder,
 	};
 }

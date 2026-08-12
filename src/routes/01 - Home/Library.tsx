@@ -131,7 +131,7 @@ export default function Library() {
               }}
             />
             {!closedSections().has(section.name) && (
-              <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] my-8">
+              <div class="grid grid-cols-3 gap-8 w-full max-w-[80%] py-8 my-4">
                 <For each={section.courses}>
                   {(course) => (
                     <CourseCard

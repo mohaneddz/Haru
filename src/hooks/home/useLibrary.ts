@@ -5,6 +5,7 @@ import { loadCourses, loadCoursesSections } from '@/utils/home/courses/courseUti
 import { invoke } from '@tauri-apps/api/core';
 
 export default function useLibrary() {
+
 	// filters signal holds the latest requested filter state
 	const [filters, _setFilters] = createSignal<FilterState>({
 		searchQuery: '',

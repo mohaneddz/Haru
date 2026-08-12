@@ -24,14 +24,14 @@ export default function CourseCard(props: Props) {
 
   return (
     <a
-      class="group p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 overflow-hidden block"
+      class="group p-0.25 bg-gradient-to-br from-border-light-2 to-border-dark-2 rounded-lg transition duration-100 hover:scale-105 cursor-pointer active:scale-100 block"
       style="box-shadow: 0 8px 32px 0 rgba(0,0,0,0.45);"
       href={`/home/library/${props.field.toLowerCase().replace(/\s+/g, '-')}/${props.title.toLowerCase().replace(/\s+/g, '-')}`}
       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 64px 0 rgba(0,0,0,0.55)'}
       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px 0 rgba(0,0,0,0.45)'}
     >
 
-      <div class="relative animated pulse bg-background-light-3 rounded-lg p-0 shadow-md hover:shadow-lg transition-shadow duration-300 aspect-[5/3] w-full">
+      <div class="relative animated pulse bg-background-light-3 rounded-lg p-0 shadow-md hover:shadow-lg transition-shadow duration-300 aspect-[5/3] w-full overflow-hidden">
 
         <img
           src={image()}
@@ -48,10 +48,10 @@ export default function CourseCard(props: Props) {
 
           {/* Tags with hover mechanism */}
           {props.tags && props.tags.length > 0 ? (
-            <div class="flex flex-wrap gap-1 mt-1">
+            <div class="flex flex-nowrap gap-1 mt-1">
               <For each={props.tags.slice(0, 2)}>
                 {(tag) => (
-                  <span class="px-1.5 py-0.5 bg-accent/20 text-accent text-xs rounded-full transition-transform duration-300 translate-y-4 group-hover:translate-y-0">
+                  <span class="px-1.5 py-0.5 bg-accent/20 text-accent text-xs rounded-full transition-transform duration-300 translate-y-4 group-hover:translate-y-0 text-nowrap truncate">
                     {tag}
                   </span>
                 )}

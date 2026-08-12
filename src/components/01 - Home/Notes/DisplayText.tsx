@@ -1,8 +1,10 @@
 import { Component, createEffect,  createSignal } from "solid-js";
 import { SolidMarkdown } from "solid-markdown";
+
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+
 import "katex/dist/katex.min.css";
 
 interface Props {

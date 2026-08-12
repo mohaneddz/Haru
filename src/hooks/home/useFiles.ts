@@ -43,7 +43,7 @@ export function useFiles() {
 	};
 
 	onMount(async () => {
-		const folder = await getStoreValue<string>('lastOpenedFolder') ?? '';
+		const folder = await getStoreValue<string>('notesLocation') ?? '';
 		refreshFileTree(folder);
 	});
 
@@ -160,7 +160,7 @@ export function useFiles() {
 	const openDirectory = async () => {
 		const folder = await selectDirectory();
 		if (folder) {
-			setStoreValue('lastOpenedFolder', folder);
+			setStoreValue('notesLocation', folder);
 			refreshFileTree(folder);
 		}
 	};

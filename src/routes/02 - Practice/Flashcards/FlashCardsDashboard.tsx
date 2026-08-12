@@ -2,7 +2,7 @@ import UniversalFilter from "@/components/core/UniversalFilter";
 import FlashDeck from "@/components/02 - Practice/training/Flashcards/FlashDeckCard";
 import Modal from "@/components/core/Modal";
 import { onMount, createSignal, For, createMemo } from "solid-js"; // Import createMemo
-import { loadFlashDecks } from "@/utils/training/flashcardUtils";
+import { loadFlashDecks, saveFlashDecks, loadFlashcards } from "@/utils/training/flashcardUtils";
 
 import Pen from 'lucide-solid/icons/pen';
 import Flame from 'lucide-solid/icons/flame';
@@ -11,20 +11,29 @@ interface Deck {
   title: string;
   description: string;
   id: number;
+  filename: string;
 }
 
 export default function FlashCardsDashboard() {
-
-  onMount(async () => {
-    const decks = await loadFlashDecks();
-    setDecks(decks);
-  });
 
   const [showAddModal, setShowAddModal] = createSignal(false);
   const [showDeleteModal, setShowDeleteModal] = createSignal(false);
   const [deckToDelete, setDeckToDelete] = createSignal<number | null>(null);
   const [decks, setDecks] = createSignal<Deck[]>([]);
   const [searchQuery, setSearchQuery] = createSignal(""); // 1. Signal for the search query
+  const [newTitle, setNewTitle] = createSignal("");
+  const [newDescription, setNewDescription] = createSignal("");
+  const [deckStatuses, setDeckStatuses] = createSignal<{id: number, hasFlashcards: boolean}[]>([]);
+
+  onMount(async () => {
+    const decks = await loadFlashDecks();
+    setDecks(decks);
+    const statuses = await Promise.all(decks.map(async (deck: { id: any; filename?: string | undefined; }) => ({
+      id: deck.id,
+      hasFlashcards: (await loadFlashcards(deck)).length > 0
+    })));
+    setDeckStatuses(statuses);
+  });
 
   // add handler to accept the object emitted by UniversalFilter
   const handleFilterChange = (filterData: any) => {
@@ -48,20 +57,34 @@ export default function FlashCardsDashboard() {
     );
   });
 
-  const addDeck = () => {
+  const addDeck = async () => {
+    const title = newTitle().trim();
+    const description = newDescription().trim();
+    if (!title) return; // Prevent adding empty title
+    const currentDecks = decks() || [];
+    const newId = currentDecks.length > 0 ? Math.max(...currentDecks.map(d => d.id)) + 1 : 1;
     const newDeck: Deck = {
-      title: "New Deck",
-      description: "This is a new deck of flashcards.",
-      id: decks().length + 1
+      title,
+      description,
+      id: newId,
+      filename: `${newId}.csv`
     };
-    setDecks([...decks(), newDeck]);
+    const updatedDecks = [...currentDecks, newDeck];
+    setDecks(updatedDecks);
+    setDeckStatuses([...deckStatuses(), { id: newId, hasFlashcards: false }]);
+    await saveFlashDecks(updatedDecks);
+    setNewTitle("");
+    setNewDescription("");
     setShowAddModal(false);
   };
 
-  const deleteDeck = () => {
+  const deleteDeck = async () => {
     const deckId = deckToDelete();
     if (deckId !== null) {
-      setDecks(decks().filter(deck => deck.id !== deckId));
+      const updatedDecks = decks().filter(deck => deck.id !== deckId);
+      setDecks(updatedDecks);
+      setDeckStatuses(deckStatuses().filter(status => status.id !== deckId));
+      await saveFlashDecks(updatedDecks);
     }
     setDeckToDelete(null);
     setShowDeleteModal(false);
@@ -73,11 +96,11 @@ export default function FlashCardsDashboard() {
       <Modal onClose={() => setShowAddModal(false)} show={showAddModal()}>
         <div class="flex flex-col gap-4 p-6">
           <h2 class="text-2xl font-bold text-accent">Add New Deck</h2>
-          <input type="text" placeholder="Deck Title" class="p-2 border border-gray-500 rounded-md" />
-          <textarea placeholder="Deck Description" class="p-2 border border-gray-500 rounded-md h-24"></textarea>
+          <input type="text" placeholder="Deck Title" class="p-2 border border-gray-500 rounded-md" value={newTitle()} onInput={(e) => setNewTitle(e.target.value)} />
+          <textarea placeholder="Deck Description" class="p-2 border border-gray-500 rounded-md h-24" value={newDescription()} onInput={(e) => setNewDescription(e.target.value)}></textarea>
           <div class="center">
-            <button class="bg-accent text-text px-4 py-2 rounded-md" onClick={() => addDeck()}>Add Deck</button>
-            <button class="bg-gray-500 text-text px-4 py-2 rounded-md ml-2" onClick={() => setShowAddModal(false)}>Cancel</button>
+            <button class="bg-accent text-text px-4 py-2 rounded-md clickable" onClick={() => addDeck()}>Add Deck</button>
+            <button class="bg-gray-500 text-text px-4 py-2 rounded-md ml-2 clickable" onClick={() => setShowAddModal(false)}>Cancel</button>
           </div>
         </div>
       </Modal>
@@ -107,18 +130,22 @@ export default function FlashCardsDashboard() {
           <div class="grid grid-cols-4 gap-4 p-4">
             {/* 4. Use the filteredDecks signal for rendering */}
             <For each={filteredDecks()}>
-              {(deck) => (
-                <FlashDeck
-                  title={deck.title}
-                  description={deck.description}
-                  id={deck.id}
-                  class="w-full h-full"
-                  onDelete={() => {
-                    setDeckToDelete(deck.id);
-                    setShowDeleteModal(true);
-                  }}
-                />
-              )}
+              {(deck) => {
+                const status = deckStatuses().find(s => s.id === deck.id);
+                return (
+                  <FlashDeck
+                    title={deck.title}
+                    description={deck.description}
+                    id={deck.id}
+                    class="w-full h-full"
+                    hasFlashcards={status?.hasFlashcards ?? false}
+                    onDelete={() => {
+                      setDeckToDelete(deck.id);
+                      setShowDeleteModal(true);
+                    }}
+                  />
+                );
+              }}
             </For>
           </div>
         </div>

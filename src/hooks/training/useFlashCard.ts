@@ -1,7 +1,6 @@
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { loadFlashcards } from "@/utils/training/flashcardUtils";
 
-
 export default function useFlashcard() {
 	const INITIAL_TIME = 5;
 	const [timer, setTimer] = createSignal(INITIAL_TIME);
@@ -11,6 +10,10 @@ export default function useFlashcard() {
 	const [answer, setAnswer] = createSignal('');
 	const [result, setResult] = createSignal('');
 	const [isPaused, setIsPaused] = createSignal(false);
+	const [type, setType] = createSignal<'input' | 'tf' | 'multi-choice'>('input');
+	const [options, setOptions] = createSignal<string[]>([]);
+	const [correct, setCorrect] = createSignal<number>(-1);
+	const [selectedOption, setSelectedOption] = createSignal<number>(-1);
 
 	let interval: ReturnType<typeof setInterval>;
 
@@ -41,8 +44,15 @@ export default function useFlashcard() {
 	}
 
 	function compareAnswers() {
-		if (answer().trim().toLowerCase() === expectedAnswer().trim().toLowerCase()) setResult('Correct!');
-		else setResult('Incorrect');
+		let isCorrect = false;
+		if (type() === 'input') {
+			isCorrect = answer().trim().toLowerCase() === expectedAnswer().trim().toLowerCase();
+		} else if (type() === 'tf') {
+			isCorrect = (selectedOption() === 0 && expectedAnswer() === 'True') || (selectedOption() === 1 && expectedAnswer() === 'False');
+		} else if (type() === 'multi-choice') {
+			isCorrect = selectedOption() === correct();
+		}
+		setResult(isCorrect ? 'Correct!' : 'Incorrect');
 		clearInterval(interval);
 		// Set width instantly to its current state without a transition when answer is submitted
 		setWidth((timer() / INITIAL_TIME) * 100);
@@ -53,12 +63,15 @@ export default function useFlashcard() {
 		const id = parseInt(params.get('id') || '1', 10);
 
 		console.log(`Loading flashcards for deck ID: ${id}`);
-		loadFlashcards(id)
+		loadFlashcards({ id }) // Fixed: Pass an object with id property
 			.then((cards) => {
 				if (cards.length > 0) {
 					const card = cards[0];
 					setQuestion(stripQuotes(card.question));
 					setExpectedAnswer(stripQuotes(card.answer));
+					setType(card.type as "input" | "tf" | "multi-choice"); // Fixed: Add type assertion for union type
+					setOptions(card.options || []);
+					setCorrect(card.correct || -1);
 				}
 			})
 			.catch((error) => {
@@ -82,6 +95,10 @@ export default function useFlashcard() {
 		startTimer,
 		compareAnswers,
 		setIsPaused,
-		pauseTimer
+		pauseTimer,
+		type,
+		options,
+		selectedOption,
+		setSelectedOption
 	};
 }

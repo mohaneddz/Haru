@@ -1,6 +1,6 @@
 import { createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { loadFlashcards } from '@/utils/training/flashcardUtils';
+import { loadFlashcards, getFlashcardFilename } from '@/utils/training/flashcardUtils';
 import { Flashcard } from '@/types/home/flashcard';
 
 export default function useFlashcards() {
@@ -11,9 +11,7 @@ export default function useFlashcards() {
 	const [newCardQuestion, setNewCardQuestion] = createSignal('');
 	const [newCardAnswer, setNewCardAnswer] = createSignal('');
 	const [singleDeleteCardId, setSingleDeleteCardId] = createSignal<number | null>(null);
-	const [editCard, setEditCard] = createSignal<{ id: number; question: string; answer: string } | null>(null);
-	const [editCardQuestion, setEditCardQuestion] = createSignal('');
-	const [editCardAnswer, setEditCardAnswer] = createSignal('');
+	const [editCard, setEditCard] = createSignal<{ id: number; question: string; answer: string; type: string; options?: string[]; correct?: number } | null>(null);
 
 	const navigate = useNavigate();
 
@@ -26,22 +24,25 @@ export default function useFlashcards() {
 			accuracy: '85%',
 			attempts: '10',
 			type: 'input',
+			filename: getFlashcardFilename(1),
 		},
 	]);
 	const [cardToDelete, setCardToDelete] = createSignal<number | null>(null);
 
 	onMount(() => {
-		loadFlashcards(1)
+		loadFlashcards({ id: 1 })
 			.then((cards) => {
 				const processedCards = cards.map((card) => ({
 					...card,
 					question: card.question.slice(1, -1),
 					type: card.type as "input" | "tf" | "multi-choice",
 					answer: card.answer.slice(1, -1),
+					options: card.options,
+					correct: card.correct,
 					accuracy: `${Math.round((card.numCorr / (card.numCorr + card.numWrong)) * 100)}%`,
 					attempts: `${card.numCorr + card.numWrong}`,
 					lastDone: new Date(card.lastDone).toISOString().split('T')[0],
-					lastModified: new Date().toISOString().split('T')[0], // YYYY-MM-DD-HH:mm:ss
+					lastModified: new Date().toISOString().split('T')[0],
 				}));
 				setFlashcards(processedCards);
 			})
@@ -89,25 +90,24 @@ export default function useFlashcards() {
 		navigate(`/practice/flashcards/revision?id=${cardId}`);
 	};
 
-	const confirmEdit = () => {
+	const confirmEdit = (updatedCard: { type: string; question: string; answer: string; options?: string[]; correct?: number }) => {
 		const cardId = editCard()?.id;
 		console.log(`Card : ${JSON.stringify(cardId)}`);
 		if (cardId) {
 			setFlashcards((prev) =>
 				prev.map((c) =>
 					c.id === cardId
-						? { ...c, question: editCardQuestion(), answer: editCardAnswer() }
+						? { ...c, ...updatedCard, type: updatedCard.type as "input" | "tf" | "multi-choice", filename: getFlashcardFilename(cardId) } // Fixed: Add type assertion
 						: c
 				)
 			);
 			setIsEditModalOpen(false);
 			setEditCard(null);
 			console.log(`Card with ID: ${cardId} edited successfully`);
-			// console.log(`now all card names: ${flashcards().map(c => c.question).join(', ')}`); // Log all card names
 		}
 	};
 
-	const confirmAdd = (newCard: { question: string; answer: string }) => {
+	const confirmAdd = (newCard: { type: string; question: string; answer: string; options?: string[]; correct?: number }) => {
 		const newId = Math.max(...flashcards().map((card) => card.id)) + 1;
 		setFlashcards((prev) => [
 			...prev,
@@ -115,10 +115,13 @@ export default function useFlashcards() {
 				id: newId,
 				question: newCard.question,
 				answer: newCard.answer,
+				type: newCard.type as "input" | "tf" | "multi-choice", // Fixed: Add type assertion
+				options: newCard.options,
+				correct: newCard.correct,
 				lastModified: new Date().toISOString().split('T')[0],
 				accuracy: '0%',
 				attempts: '0',
-				type: 'input',
+				filename: getFlashcardFilename(newId),
 			},
 		]);
 		setIsAddModalOpen(false);
@@ -132,7 +135,7 @@ export default function useFlashcards() {
 		if (id !== null) {
 			const card = flashcards().find((card) => card.id === id);
 			if (card) {
-				setEditCard({ id: card.id, question: card.question, answer: card.answer });
+				setEditCard({ id: card.id, question: card.question, answer: card.answer, type: card.type, options: card.options, correct: card.correct });
 				setIsEditModalOpen(true);
 			}
 		}
@@ -186,7 +189,5 @@ export default function useFlashcards() {
 		newCardAnswer,
 		selectAll,
 		setNewCardAnswer,
-		setEditCardQuestion,
-		setEditCardAnswer,
 	};
 }

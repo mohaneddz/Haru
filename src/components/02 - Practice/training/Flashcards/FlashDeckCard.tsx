@@ -8,6 +8,7 @@ interface Props {
     id?: number;
     class?: string;
     onDelete?: () => void;
+    hasFlashcards: boolean;
 }
 
 export default function FlashDeckCard(props: Props) {
@@ -24,7 +25,7 @@ export default function FlashDeckCard(props: Props) {
                 <p class="text-xs opacity-80 truncate text-left w-[80%]">{props.description}</p>
 
                 <div class="flex gap-2 w-full">
-                    <a href={`/practice/flashcards/revision?id=${props.id}`} class="text-center bg-accent w-full hover:scale-103 hover:bg-accent-dark-1 transition-all duration-75 cursor-pointer p-1 rounded">Start</a>
+                    <a href={`/practice/flashcards/revision?id=${props.id}`} class={`text-center bg-accent w-full hover:scale-103 hover:bg-accent-dark-1 transition-all duration-75 cursor-pointer p-1 rounded ${!props.hasFlashcards ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>Start</a>
                     <a href={`/practice/flashcards/${props.id}`} class="text-center bg-sidebar-light-3 w-full hover:scale-103 hover:bg-sidebar-light-1 transition-all duration-75 cursor-pointer p-1 rounded">Edit</a>
                 </div>
 

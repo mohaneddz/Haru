@@ -6,4 +6,7 @@ export interface Flashcard {
     accuracy: string; 
     attempts: string;
     type: 'input' | 'tf' | 'multi-choice'; 
+    options?: string[];
+    correct?: number;
+    filename?: string; // Added: dynamically generated filename based on ID and hashed timestamp
 }

@@ -1,10 +1,9 @@
 import UniversalFilter from "@/components/core/UniversalFilter";
 import FlashcCardListItem from "@/components/02 - Practice/training/Flashcards/FlashcCardListItem";
 import { Flame, ArrowLeft, Pen, Trash2 } from 'lucide-solid';
-import { For } from "solid-js";
+import { For, createSignal, createEffect } from "solid-js";
 import Modal from "@/components/core/Modal";
 import useFlashcards from "@/hooks/training/useFlashcards";
-import SelectInput from "@/components/core/Input/SelectInput";
 
 export default function FlashCardsDeck() {
     const {
@@ -34,9 +33,34 @@ export default function FlashCardsDeck() {
         selectAll,
         setNewCardAnswer,
         confirmEdit,
-        setEditCardQuestion,
-        setEditCardAnswer
+        // Removed: setEditCardQuestion, setEditCardAnswer (no longer provided by hook)
     } = useFlashcards();
+
+    // Add state for new card type
+    const [newCardType, setNewCardType] = createSignal('input');
+    // Add states for multi-choice options and correct answer
+    const [newCardOptions, setNewCardOptions] = createSignal(['', '', '', '']);
+    const [newCardCorrect, setNewCardCorrect] = createSignal(0);
+
+    // Add states for edit card type, options, and correct
+    const [editCardType, setEditCardType] = createSignal('input');
+    const [editCardOptions, setEditCardOptions] = createSignal(['', '', '', '']);
+    const [editCardCorrect, setEditCardCorrect] = createSignal(0);
+    // Added: Local signals for editable question and answer in edit modal
+    const [editQuestion, setEditQuestion] = createSignal('');
+    const [editAnswer, setEditAnswer] = createSignal('');
+
+    // Initialize edit states when edit modal opens
+    createEffect(() => {
+        if (isEditModalOpen()) {
+            setEditCardType(editCard()?.type || 'input');
+            setEditCardOptions(editCard()?.options || ['', '', '', '']);
+            setEditCardCorrect(editCard()?.correct || 0);
+            // Added: Initialize local signals with current values
+            setEditQuestion(editCard()?.question || '');
+            setEditAnswer(editCard()?.answer || '');
+        }
+    });
 
     return (
         <div class="w-full h-screen flex flex-col items-center justify-start ">
@@ -45,31 +69,83 @@ export default function FlashCardsDeck() {
             <Modal onClose={() => setIsAddModalOpen(false)} show={isAddModalOpen()}>
                 <div class="flex flex-col justify-between mb-4 w-[20vw] gap-4">
                     <p class="text-3xl font-bold w-full text-accent text-center mb-8">Add New Card</p>
-                    <SelectInput
-                        options={[
-                            { value: 'input', label: 'Input' },
-                            { value: 'tf', label: 'True/False' },
-                            { value: 'multi-choice', label: 'Multi-Choice' }
-                        ]}
-                    />
+                    <select
+                        value={newCardType()}
+                        onChange={(e) => setNewCardType(e.currentTarget.value)}
+                        class="w-full p-2 border border-gray-500 rounded-md"
+                    >
+                        <option value="input">Input</option>
+                        <option value="tf">True/False</option>
+                        <option value="multi-choice">Multi-Choice</option>
+                    </select>
                     <textarea
                         placeholder="Question"
                         class="w-full p-2 border border-gray-500 rounded-md"
                         value={newCardQuestion()}
                         onInput={(e) => setNewCardQuestion(e.currentTarget.value)}
                     />
-                    <textarea
-                        placeholder="Answer"
-                        class="w-full p-2 border border-gray-500 rounded-md"
-                        value={newCardAnswer()}
-                        onInput={(e) => setNewCardAnswer(e.currentTarget.value)}
-                    />
+                    {/* Conditionally render answer input based on type */}
+                    {newCardType() === 'input' && (
+                        <textarea
+                            placeholder="Answer"
+                            class="w-full p-2 border border-gray-500 rounded-md"
+                            value={newCardAnswer()}
+                            onInput={(e) => setNewCardAnswer(e.currentTarget.value)}
+                        />
+                    )}
+                    {newCardType() === 'tf' && (
+                        <div class="flex gap-4">
+                            <label>
+                                <input type="radio" name="tf" value="True" checked={newCardAnswer() === 'True'} onChange={() => setNewCardAnswer('True')} />
+                                True
+                            </label>
+                            <label>
+                                <input type="radio" name="tf" value="False" checked={newCardAnswer() === 'False'} onChange={() => setNewCardAnswer('False')} />
+                                False
+                            </label>
+                        </div>
+                    )}
+                    {newCardType() === 'multi-choice' && (
+                        <div class="flex flex-col gap-2">
+                            {newCardOptions().map((option, index) => (
+                                <input
+                                    type="text"
+                                    placeholder={`Option ${index + 1} (leave empty if undefined)`}
+                                    class="w-full p-2 border border-gray-500 rounded-md"
+                                    value={option}
+                                    onInput={(e) => {
+                                        const newOptions = [...newCardOptions()];
+                                        newOptions[index] = e.currentTarget.value;
+                                        setNewCardOptions(newOptions);
+                                    }}
+                                />
+                            ))}
+                            <select
+                                class="w-full p-2 border border-gray-500 rounded-md"
+                                value={newCardCorrect()}
+                                onChange={(e) => setNewCardCorrect(parseInt(e.currentTarget.value))}
+                            >
+                                {newCardOptions().map((_, index) => (
+                                    <option value={index}>Correct: Option {index + 1}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <div class="space-x-2 center w-full">
                         <button
                             onClick={() => {
-                                confirmAdd({ question: newCardQuestion(), answer: newCardAnswer() });
+                                confirmAdd({
+                                    type: newCardType(),
+                                    question: newCardQuestion(),
+                                    answer: newCardType() === 'multi-choice' ? '' : newCardAnswer(),
+                                    options: newCardType() === 'multi-choice' ? newCardOptions() : undefined,
+                                    correct: newCardType() === 'multi-choice' ? newCardCorrect() : undefined
+                                });
                                 setNewCardQuestion("");
                                 setNewCardAnswer("");
+                                setNewCardType('input');
+                                setNewCardOptions(['', '', '', '']);
+                                setNewCardCorrect(0);
                             }}
                             class="clickable bg-accent text-text px-4 py-2 rounded-lg"
                         >
@@ -84,23 +160,89 @@ export default function FlashCardsDeck() {
             <Modal onClose={() => setIsEditModalOpen(false)} show={isEditModalOpen()}>
                 <div class="flex flex-col justify-between mb-4 w-[20vw] gap-8">
                     <p class="text-3xl font-bold w-full text-accent text-center">Edit Card</p>
+                    <select
+                        value={editCardType()}
+                        onChange={(e) => {
+                            setEditCardType(e.currentTarget.value);
+                            // Reset options and correct when changing type to multi-choice
+                            if (e.currentTarget.value === 'multi-choice') {
+                                setEditCardOptions(['', '', '', '']);
+                                setEditCardCorrect(0);
+                            } else {
+                                setEditCardOptions(['', '', '', '']);
+                                setEditCardCorrect(0);
+                            }
+                        }}
+                        class="w-full p-2 border border-gray-500 rounded-md"
+                    >
+                        <option value="input">Input</option>
+                        <option value="tf">True/False</option>
+                        <option value="multi-choice">Multi-Choice</option>
+                    </select>
                     <input
                         type="text"
                         placeholder="Question"
                         class="w-full p-2 border border-gray-500 rounded-md"
-                        value={editCard()?.question || ""}
-                        onInput={(e) => setEditCardQuestion(e.currentTarget.value)}
+                        value={editQuestion()} // Updated: Use local signal
+                        onInput={(e) => setEditQuestion(e.currentTarget.value)} // Updated: Use local setter
                     />
-                    <textarea
-                        placeholder="Answer"
-                        class="w-full p-2 border border-gray-500 rounded-md"
-                        value={editCard()?.answer || ""}
-                        onInput={(e) => setEditCardAnswer(e.currentTarget.value)}
-                    />
+                    {/* Conditionally render answer input based on type */}
+                    {editCardType() === 'input' && (
+                        <textarea
+                            placeholder="Answer"
+                            class="w-full p-2 border border-gray-500 rounded-md"
+                            value={editAnswer()} // Updated: Use local signal
+                            onInput={(e) => setEditAnswer(e.currentTarget.value)} // Updated: Use local setter
+                        />
+                    )}
+                    {editCardType() === 'tf' && (
+                        <div class="flex gap-4">
+                            <label>
+                                <input type="radio" name="edit-tf" value="True" checked={editAnswer() === 'True'} onChange={() => setEditAnswer('True')} /> // Updated: Use local signal
+                                True
+                            </label>
+                            <label>
+                                <input type="radio" name="edit-tf" value="False" checked={editAnswer() === 'False'} onChange={() => setEditAnswer('False')} /> // Updated: Use local signal
+                                False
+                            </label>
+                        </div>
+                    )}
+                    {editCardType() === 'multi-choice' && (
+                        <div class="flex flex-col gap-2">
+                            {editCardOptions().map((option, index) => (
+                                <input
+                                    type="text"
+                                    placeholder={`Option ${index + 1} (leave empty if undefined)`}
+                                    class="w-full p-2 border border-gray-500 rounded-md"
+                                    value={option}
+                                    onInput={(e) => {
+                                        const newOptions = [...editCardOptions()];
+                                        newOptions[index] = e.currentTarget.value;
+                                        setEditCardOptions(newOptions);
+                                    }}
+                                />
+                            ))}
+                            <select
+                                class="w-full p-2 border border-gray-500 rounded-md"
+                                value={editCardCorrect()}
+                                onChange={(e) => setEditCardCorrect(parseInt(e.currentTarget.value))}
+                            >
+                                {editCardOptions().map((_, index) => (
+                                    <option value={index}>Correct: Option {index + 1}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <div class="space-x-2 center w-full">
                         <button
                             onClick={() => {
-                                confirmEdit();
+                                confirmEdit({
+                                    type: editCardType(),
+                                    question: editQuestion(), // Updated: Use local signal
+                                    answer: editCardType() === 'multi-choice' ? '' : editAnswer(), // Updated: Use local signal
+                                    options: editCardType() === 'multi-choice' ? editCardOptions() : undefined,
+                                    correct: editCardType() === 'multi-choice' ? editCardCorrect() : undefined
+                                });
                                 setNewCardQuestion("");
                                 setNewCardAnswer("");
                             }}
@@ -149,7 +291,8 @@ export default function FlashCardsDeck() {
 
                 <div class="flex-shrink-0">
 
-                    <UniversalFilter icon={Flame} title="Search Flashcards" onFilterChange={() => { }} class="w-full" />
+                    <UniversalFilter
+                        icon={<Flame class="text-accent" />} title="Search Flashcards" placeholder="Type to search..." onFilterChange={() => { }} class="w-full mb-8" />
                 </div>
 
                 {/* main content */}

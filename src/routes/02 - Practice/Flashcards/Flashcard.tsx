@@ -11,6 +11,7 @@ import RotateCw from "lucide-solid/icons/rotate-cw";
 import useFlashCard from "@/hooks/training/useFlashCard";
 
 export default function Flashcard() {
+
     const {
         timer,
         width,
@@ -22,7 +23,11 @@ export default function Flashcard() {
         startTimer,
         compareAnswers,
         setIsPaused,
-        pauseTimer
+        pauseTimer,
+        type,
+        options,
+        selectedOption,
+        setSelectedOption
     } = useFlashCard();
 
     return (
@@ -40,6 +45,7 @@ export default function Flashcard() {
                         <RotateCw class="absolute bottom-4 right-4 w-4 h-4 text-gray-400 hover:text-accent transition-colors cursor-pointer"
                             onClick={() => {
                                 setAnswer('');
+                                setSelectedOption(-1);
                                 setIsPaused(false);
                                 startTimer();
                             }} />
@@ -65,18 +71,48 @@ export default function Flashcard() {
                             style={{ width: `${width()}%`, transition: result() === "" ? 'width 1s linear' : 'none' }}
                         ></div>
                     </div>
-                    <input
-                        type="text"
-                        class="h-40 bg-background-light-2 text-center center rounded-md border border-gray-500"
-                        placeholder="Your answer here.."
-                        onInput={(e) => setAnswer(e.currentTarget.value)}
-                        value={answer()}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                compareAnswers();
-                            }
-                        }}
-                    />
+                    {type() === 'input' && (
+                        <input
+                            type="text"
+                            class="h-40 bg-background-light-2 text-center center rounded-md border border-gray-500"
+                            placeholder="Your answer here.."
+                            onInput={(e) => setAnswer(e.currentTarget.value)}
+                            value={answer()}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    compareAnswers();
+                                }
+                            }}
+                        />
+                    )}
+                    {type() === 'tf' && (
+                        <div class="flex gap-4 justify-center">
+                            <button
+                                class={`px-4 py-2 rounded-md ${selectedOption() === 0 ? 'bg-accent' : 'bg-gray-500'}`}
+                                onClick={() => setSelectedOption(0)}
+                            >
+                                True
+                            </button>
+                            <button
+                                class={`px-4 py-2 rounded-md ${selectedOption() === 1 ? 'bg-accent' : 'bg-gray-500'}`}
+                                onClick={() => setSelectedOption(1)}
+                            >
+                                False
+                            </button>
+                        </div>
+                    )}
+                    {type() === 'multi-choice' && (
+                        <div class="flex flex-col gap-2">
+                            {options().map((option, index) => (
+                                <button
+                                    class={`p-2 rounded-md border ${selectedOption() === index ? 'bg-accent border-accent' : 'bg-gray-500 border-gray-500'}`}
+                                    onClick={() => setSelectedOption(index)}
+                                >
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <div class="flex justify-between gap-8 mt-4">
                         <SkipBack class="w-8 h-8" />
                         <div class="center">

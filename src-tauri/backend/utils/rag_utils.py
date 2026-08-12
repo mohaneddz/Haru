@@ -239,7 +239,6 @@ class RAGSystem:
         else:
             logging.warning("Attempted to save an empty index. Skipping.")
 
-
     def _load_faiss_index(self):
         if self.index_path.exists() and self.doc_store_path.exists():
             logging.info(f"Loading FAISS index from {self.index_path}")
@@ -280,7 +279,6 @@ class RAGSystem:
         gc.collect()
         logging.info("RAG System resources cleaned up.")
 
-
 class DocumentHandler:
     def __init__(self, rag_system: RAGSystem):
         self.rag_system = rag_system
@@ -309,7 +307,6 @@ class DocumentHandler:
     def on_modified(self, event):
         if not event.is_directory:
             self._debounce(event.src_path, lambda: self._process_and_index(event.src_path))
-
 
 def start_watcher(rag_system: RAGSystem):
     from watchdog.observers import Observer

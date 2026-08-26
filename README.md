@@ -1,3 +1,5 @@
+![Haru](screenshots/cover.avif)
+
 # 🧠 HARU — The Intelligence Assistant
 
 **A fully local, privacy-first desktop studying assistant that makes you smarter, faster, and more capable.**
